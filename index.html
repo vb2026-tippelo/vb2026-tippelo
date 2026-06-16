@@ -179,6 +179,15 @@ const KO=['r32','r16','qf','sf','bronze','final'];
 const DS={perfect:8,resultGD:5,result:3,oneGoal:1,winner:25,topScorer:25,ko:2};
 const TEAMS=GD.flatMap(g=>g.teams);
 const TOPSCORERS=['Kylian Mbappé','Ousmane Dembélé','Michael Olise','Lionel Messi','Lautaro Martínez','Julián Álvarez','Cristiano Ronaldo','Rafael Leão','Harry Kane','Bukayo Saka','Phil Foden','Cole Palmer','Lamine Yamal','Mikel Oyarzabal','Álvaro Morata','Nico Williams','Vinícius Júnior','Rodrygo','Endrick','Raphinha','Florian Wirtz','Kai Havertz','Jamal Musiala','Memphis Depay','Cody Gakpo','Xavi Simons','Romelu Lukaku','Kevin De Bruyne','Jeremy Doku','Erling Haaland','Luka Modrić','Darwin Núñez','Federico Valverde','James Rodríguez','Luis Díaz','Achraf Hakimi','Youssef En-Nesyri','Sadio Mané','Sébastien Haller','Breel Embolo','Granit Xhaka','Takefusa Kubo','Son Heung-min','Christian Pulisic','Folarin Balogun','Santiago Giménez','Hirving Lozano','Jonathan David','Alphonso Davies','Mohamed Salah','Mehdi Taremi','Chris Wood','Salem Al-Dawsari','Riyad Mahrez','Marcel Sabitzer','Mohammed Kudus','Edin Džeko','Patrik Schick','Alexander Isak','Enner Valencia','Moisés Caicedo','Eldor Shomurodov'];
+const ENG_ALIASES={'Mexikó':['mexico'],'Dél-Afrika':['south africa'],'Dél-Korea':['korea republic','south korea','korea'],'Csehország':['czech republic','czechia'],'Kanada':['canada'],'Bosznia-Hercegovina':['bosnia'],'Katar':['qatar'],'Svájc':['switzerland'],'Brazília':['brazil'],'Marokkó':['morocco'],'Haiti':['haiti'],'Skócia':['scotland'],'USA':['united states','usa'],'Paraguay':['paraguay'],'Ausztrália':['australia'],'Törökország':['turkey','türkiye','turkiye'],'Németország':['germany'],'Curaçao':['curacao','curaçao'],'Elefántcsontpart':['ivory coast',"côte d'ivoire",'cote d ivoire'],'Ecuador':['ecuador'],'Hollandia':['netherlands'],'Japán':['japan'],'Svédország':['sweden'],'Tunézia':['tunisia'],'Belgium':['belgium'],'Egyiptom':['egypt'],'Irán':['iran'],'Új-Zéland':['new zealand'],'Spanyolország':['spain'],'Zöld-foki-sz.':['cape verde','cabo verde'],'Szaúd-Arábia':['saudi arabia'],'Uruguay':['uruguay'],'Franciaország':['france'],'Szenegál':['senegal'],'Irak':['iraq'],'Norvégia':['norway'],'Argentína':['argentina'],'Algéria':['algeria'],'Ausztria':['austria'],'Jordánia':['jordan'],'Portugália':['portugal'],'DR Kongó':['dr congo','congo dr','democratic republic of the congo','congo-kinshasa'],'Üzbegisztán':['uzbekistan'],'Kolumbia':['colombia'],'Anglia':['england'],'Horvátország':['croatia'],'Ghána':['ghana'],'Panama':['panama']};
+function normEng(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+function matchTeamByEng(engName){
+  const n=normEng(engName);
+  for(const[hu,aliases] of Object.entries(ENG_ALIASES)){
+    if(aliases.some(a=>n===a||n.includes(a)||a.includes(n)))return hu;
+  }
+  return null;
+}
 
 const MATCH_IDS=[1,2,7,8,13,14,19,20,25,26,31,32,37,38,43,44];
 const IMP_RESULTS={1:[2,0],2:[2,1],7:[1,1],8:[1,1],13:[1,1],14:[0,1],19:[4,1],20:[2,0],25:[7,1],26:[1,0],31:[2,2],32:[5,1],37:[1,1],38:[2,2],43:[0,0],44:[1,1]};
@@ -349,7 +358,8 @@ let S={
   profEdit:false,profDN:'',profAv:'⚽',
   selLg:null,lgModal:null,lgName:'',lgCode:'',lgErr:'',lgSco:{...DS},
   editLgId:null,editLgSco:null,
-  preModal:false,savedMsgs:{}
+  preModal:false,savedMsgs:{},
+  liveLoading:false,liveErr:'',liveFound:[]
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -457,6 +467,31 @@ async function removeMember(lgId,memberId){
   if(!confirm('Biztosan eltávolítod a tagot a ligából?'))return;
   const nl=S.leagues.map(l=>l.id===lgId?{...l,members:l.members.filter(m=>m!==memberId)}:l);
   await sS('wc_lg',nl,true);SS({leagues:nl});
+}
+async function fetchLiveScores(){
+  SS({liveLoading:true,liveErr:'',liveFound:[]});
+  try{
+    const resp=await fetch('/.netlify/functions/livescores');
+    const data=await resp.json();
+    if(!resp.ok||data.error){SS({liveLoading:false,liveErr:data.error||'Hiba történt a lekérés során.'});return;}
+    const found=[];
+    (data.matches||[]).forEach(am=>{
+      if(am.status!=='FINISHED'||am.homeScore==null||am.awayScore==null)return;
+      const huHome=matchTeamByEng(am.home),huAway=matchTeamByEng(am.away);
+      if(!huHome||!huAway)return;
+      const lm=ALL.find(m=>m.stage==='group'&&((m.home===huHome&&m.away===huAway)||(m.home===huAway&&m.away===huHome)));
+      if(!lm||S.results[lm.id])return;
+      const flip=lm.home===huAway;
+      found.push({mid:lm.id,home:lm.home,away:lm.away,h:flip?am.awayScore:am.homeScore,a:flip?am.homeScore:am.awayScore});
+    });
+    SS({liveLoading:false,liveFound:found,liveErr:found.length?'':'Nincs új, még nem rögzített befejezett meccs.'});
+  }catch(e){SS({liveLoading:false,liveErr:'Nem sikerült elérni a frissítő szolgáltatást.'});}
+}
+async function applyLiveScores(){
+  const nr={...S.results};
+  S.liveFound.forEach(f=>{nr[f.mid]={homeGoals:f.h,awayGoals:f.a};});
+  await sS('wc_r',nr,true);
+  SS({results:nr,liveFound:[],liveErr:'Eredmények rögzítve!'});
 }
 async function saveProf(){
   const{user,users,profDN,profAv}=S;
@@ -870,6 +905,17 @@ function rAdmin(){
   const ms=ALL.filter(m=>m.stage===S.aStage);
   return `<div>
   <div class="sect">⚙️ Admin – Eredmények</div>
+  <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="font-size:13px;color:rgba(255,255,255,.55)">🔄 Élő eredmények lekérése (football-data.org) – csak csoportkörre, automatikus felismerés</div>
+      <button class="btn-sm gold" id="liveBtn" ${S.liveLoading?'disabled':''}>${S.liveLoading?'⏳ Lekérés...':'🔄 Lekérdezés'}</button>
+    </div>
+    ${S.liveErr?`<div style="margin-top:10px;font-size:12.5px;color:rgba(255,255,255,.5)">${S.liveErr}</div>`:''}
+    ${S.liveFound.length?`<div style="margin-top:12px">
+      ${S.liveFound.map(f=>`<div style="font-size:13px;color:rgba(255,255,255,.7);padding:4px 0">${FL[f.home]||''} ${f.home} ${f.h}–${f.a} ${f.away} ${FL[f.away]||''}</div>`).join('')}
+      <button class="btn-green" id="applyLiveBtn" style="margin-top:8px">✓ ${S.liveFound.length} eredmény rögzítése</button>
+    </div>`:''}
+  </div>
   <div class="pill-row">${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
   <div>${ms.map(m=>{
     const r=S.results[m.id],ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
@@ -995,6 +1041,8 @@ function bindMain(hw){
     saveKO(parseInt(e.currentTarget.dataset.mid),document.getElementById('akoIn')?.value||'');
   });
   document.getElementById('cxKo')?.addEventListener('click',()=>SS({editKoId:null}));
+  document.getElementById('liveBtn')?.addEventListener('click',fetchLiveScores);
+  document.getElementById('applyLiveBtn')?.addEventListener('click',applyLiveScores);
   document.getElementById('savAspBtn')?.addEventListener('click',()=>{
     saveAdminSpec(document.getElementById('awIn')?.value||'',readTopscorer('atkIn'));
   });
