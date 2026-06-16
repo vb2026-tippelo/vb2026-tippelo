@@ -255,6 +255,7 @@ const IMP_SPECIAL={
 };
 const IMP_LEAGUE_BIG=['hetesi.endre','berecz.dora','huszka.mate','kiraly.david','varga.richard','toth.zsolt','laszlo.toth','bohar.nandi','nagy.gabor','petri.balazs','laszlo.gonda','csikos.szilard','palfi.zsombor','tapai.gergely','laczko.szabi','adam.virraszto','laszlo.zahemszky','talpai.judit','kovacs.ferenc','peter.szabo','hunyadi.anna','boldizsar.kiss','orovecz.adam','abelovszki.mihaly','szabo.valentin','juhasz.endre','lovasz.roland','barta.zoltan','busa.adam','rizner.adrian','merei.eszter','kovacs.adam','balazs.szikora','gera.bence','zelena.kristof','czeizel.mate','kozo.balint','horvath.adam','garamvolgyi.csaba','balla.tamas.tibor','rosta.tibor','pataki.gabor','berecz.gergo','ifj.gonda.laszlo','toth.tibor','miklos.mark','banfine.gonda.lujza','molnar.erno'];
 const IMP_LEAGUE_SMALL=['hetesi.endre','ferenc.bihary','bence.schriffert','peti','benedek.locskai','david.szabolcs','tomcsi','nagy.geri'];
+const IMP_FRA_SEN={'hetesi.endre':[2,1],'bence.schriffert':[2,0],'peti':[2,0],'benedek.locskai':[2,1],'david.szabolcs':[3,1],'nagy.geri':[3,1],'berecz.dora':[2,0],'huszka.mate':[2,0],'kiraly.david':[3,1],'varga.richard':[3,0],'toth.zsolt':[2,0],'laszlo.toth':[5,1],'bohar.nandi':[3,2],'nagy.gabor':[3,0],'petri.balazs':[3,1],'laszlo.gonda':[2,1],'csikos.szilard':[1,0],'palfi.zsombor':[2,1],'tapai.gergely':[2,1],'laczko.szabi':[2,2],'adam.virraszto':[4,2],'laszlo.zahemszky':[3,0],'talpai.judit':[3,1],'kovacs.ferenc':[2,1],'peter.szabo':[3,1],'hunyadi.anna':[3,0],'boldizsar.kiss':[2,0],'orovecz.adam':[5,0],'abelovszki.mihaly':[1,2],'szabo.valentin':[2,0],'juhasz.endre':[2,1],'lovasz.roland':[2,0],'barta.zoltan':[4,1],'busa.adam':[4,0],'rizner.adrian':[3,0],'merei.eszter':[3,1],'kovacs.adam':[2,1],'balazs.szikora':[3,0],'gera.bence':[2,1],'zelena.kristof':[3,1],'czeizel.mate':[2,2],'kozo.balint':[2,0],'horvath.adam':[2,1],'garamvolgyi.csaba':[3,1],'balla.tamas.tibor':[2,1],'rosta.tibor':[3,1],'pataki.gabor':[1,0],'berecz.gergo':[3,1],'ifj.gonda.laszlo':[2,1],'toth.tibor':[3,0],'miklos.mark':[3,0],'banfine.gonda.lujza':[3,1],'molnar.erno':[1,0]};
 
 function genM(){
   const m=[];let id=1;
@@ -367,9 +368,9 @@ let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
 
 async function init(){
-  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live]=await Promise.all([
+  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2]=await Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
-    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true)
+    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true)
   ]);
   let ul=users||[];
   if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:'admin123',isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
@@ -382,6 +383,10 @@ async function init(){
     if(!nl.find(l=>l.name==='Irány Amerika'))nl=[...nl,{id:'lg_amerika2026',name:'Irány Amerika',code:genCode(),ownerId:'hetesi.endre',members:IMP_LEAGUE_BIG.slice(),scoring:{...DS}}];
     if(!nl.find(l=>l.name==='Forma 1'))nl=[...nl,{id:'lg_forma1_2026',name:'Forma 1',code:genCode(),ownerId:'hetesi.endre',members:IMP_LEAGUE_SMALL.slice(),scoring:{...DS}}];
     await Promise.all([sS('wc_u',ul,true),sS('wc_r',nr,true),sS('wc_t',nt,true),sS('wc_sp',nsp,true),sS('wc_lg',nl,true),sS('wc_import_2026_v1',true,true)]);
+  }
+  if(!impFlag2){
+    Object.entries(IMP_FRA_SEN).forEach(([un,p])=>{const k=`${un}_49`;if(!nt[k])nt={...nt,[k]:{homeGoals:p[0],awayGoals:p[1]}};});
+    await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
   SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null});
