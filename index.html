@@ -493,7 +493,8 @@ async function fetchLiveScores(){
       const flip=lm.home===huAway;
       found.push({mid:lm.id,home:lm.home,away:lm.away,h:flip?am.awayScore:am.homeScore,a:flip?am.homeScore:am.awayScore});
     });
-    SS({liveLoading:false,liveFound:found,liveDebug:{total:(data.matches||[]).length,byStatus,sample:(data.matches||[]).slice(0,5).map(x=>`${x.home} ${x.homeScore??'-'}:${x.awayScore??'-'} ${x.away} (${x.status})`)},liveErr:found.length?'':'Nincs új, még nem rögzített befejezett meccs.'});
+    const koCount=await syncKickoffTimes(data.matches||[]);
+    SS({liveLoading:false,liveFound:found,liveDebug:{total:(data.matches||[]).length,byStatus,koSynced:koCount,sample:(data.matches||[]).slice(0,5).map(x=>`${x.home} ${x.homeScore??'-'}:${x.awayScore??'-'} ${x.away} (${x.status})`)},liveErr:found.length?'':'Nincs új, még nem rögzített befejezett meccs.'});
   }catch(e){SS({liveLoading:false,liveErr:'Nem sikerült elérni a frissítő szolgáltatást.'});}
 }
 async function applyLiveScores(){
@@ -501,6 +502,25 @@ async function applyLiveScores(){
   S.liveFound.forEach(f=>{nr[f.mid]={homeGoals:f.h,awayGoals:f.a};});
   await sS('wc_r',nr,true);
   SS({results:nr,liveFound:[],liveErr:'Eredmények rögzítve!'});
+}
+async function syncKickoffTimes(apiMatches){
+  const koUpdates={};
+  apiMatches.forEach(am=>{
+    if(!am.utcDate)return;
+    const huHome=matchTeamByEng(am.home),huAway=matchTeamByEng(am.away);
+    if(!huHome||!huAway)return;
+    const lm=ALL.find(m=>m.stage==='group'&&((m.home===huHome&&m.away===huAway)||(m.home===huAway&&m.away===huHome)));
+    if(!lm)return;
+    const cur=S.ko[lm.id]||lm.koDefault;
+    if(new Date(am.utcDate).getTime()!==new Date(cur).getTime())koUpdates[lm.id]=am.utcDate;
+  });
+  const n=Object.keys(koUpdates).length;
+  if(n){
+    const newKo={...S.ko,...koUpdates};
+    await sS('wc_ko',newKo,true);
+    SS({ko:newKo});
+  }
+  return n;
 }
 async function refreshLiveIfStale(){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
@@ -520,6 +540,7 @@ async function refreshLiveIfStale(){
       if(am.homeScore==null||am.awayScore==null)return;
       scores[lm.id]={h:flip?am.awayScore:am.homeScore,a:flip?am.homeScore:am.awayScore,status:am.status};
     });
+    await syncKickoffTimes(data.matches);
     const updatedAt=new Date().toISOString();
     await sS('wc_live',{updatedAt,scores},true);
     SS({live:scores,liveUpdatedAt:updatedAt});
@@ -1043,7 +1064,7 @@ function rAdmin(){
       <button class="btn-sm gold" id="liveBtn" ${S.liveLoading?'disabled':''}>${S.liveLoading?'⏳ Lekérés...':'🔄 Lekérdezés'}</button>
     </div>
     ${S.liveErr?`<div style="margin-top:10px;font-size:12.5px;color:rgba(255,255,255,.5)">${S.liveErr}</div>`:''}
-    ${S.liveDebug?`<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.35);line-height:1.5">API válasz: <b>${S.liveDebug.total}</b> meccs összesen${S.liveDebug.total?` (${Object.entries(S.liveDebug.byStatus).map(([k,v])=>`${k}: ${v}`).join(', ')})`:''}${S.liveDebug.sample.length?`<br>Pl.: ${S.liveDebug.sample.join(' · ')}`:''}</div>`:''}
+    ${S.liveDebug?`<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.35);line-height:1.5">API válasz: <b>${S.liveDebug.total}</b> meccs összesen${S.liveDebug.total?` (${Object.entries(S.liveDebug.byStatus).map(([k,v])=>`${k}: ${v}`).join(', ')})`:''}${S.liveDebug.koSynced?`<br><span style="color:#00b050">✓ ${S.liveDebug.koSynced} meccs kezdési ideje frissítve a valódi adatra</span>`:''}${S.liveDebug.sample.length?`<br>Pl.: ${S.liveDebug.sample.join(' · ')}`:''}</div>`:''}
     ${S.liveFound.length?`<div style="margin-top:12px">
       ${S.liveFound.map(f=>`<div style="font-size:13px;color:rgba(255,255,255,.7);padding:4px 0">${FL[f.home]||''} ${f.home} ${f.h}–${f.a} ${f.away} ${FL[f.away]||''}</div>`).join('')}
       <button class="btn-green" id="applyLiveBtn" style="margin-top:8px">✓ ${S.liveFound.length} eredmény rögzítése</button>
