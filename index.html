@@ -179,6 +179,27 @@ const AVS=['⚽','🏆','🦁','🐯','🦅','🦊','🐺','🌟','⭐','🔥','
 const KO=['r32','r16','qf','sf','bronze','final'];
 const DS={perfect:8,resultGD:5,result:3,oneGoal:1,winner:25,topScorer:25,ko:2};
 const TEAMS=GD.flatMap(g=>g.teams);
+function trophyIcon(size,extraStyle){
+  return `<svg viewBox="0 0 100 122" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;${extraStyle||''}" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="tgGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#fbe7ad"/><stop offset="45%" stop-color="#d9b54f"/><stop offset="100%" stop-color="#9c7a2e"/>
+    </linearGradient></defs>
+    <ellipse cx="50" cy="116" rx="22" ry="4.5" fill="#00000022"/>
+    <rect x="28" y="106" width="44" height="9" rx="2.5" fill="url(#tgGrad)"/>
+    <rect x="36" y="95" width="28" height="13" rx="3" fill="url(#tgGrad)"/>
+    <rect x="45" y="80" width="10" height="17" fill="url(#tgGrad)"/>
+    <path d="M22 22 C22 18 25 16 30 16 L70 16 C75 16 78 18 78 22 C78 46 67 64 56 71 L44 71 C33 64 22 46 22 22 Z" fill="url(#tgGrad)"/>
+    <path d="M22 26 C8 27 6 42 16 50 C20 53 24 52 26 49" stroke="url(#tgGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+    <path d="M78 26 C92 27 94 42 84 50 C80 53 76 52 74 49" stroke="url(#tgGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+    <g stroke="#7a5c1f" stroke-width="1.3" opacity=".55" fill="none">
+      <circle cx="50" cy="40" r="15"/>
+      <ellipse cx="50" cy="40" rx="15" ry="5.5"/>
+      <path d="M35 40 Q50 27 65 40"/>
+      <path d="M35 40 Q50 53 65 40"/>
+      <line x1="50" y1="25" x2="50" y2="55"/>
+    </g>
+  </svg>`;
+}
 const TOPSCORERS=['Kylian Mbappé','Ousmane Dembélé','Michael Olise','Lionel Messi','Lautaro Martínez','Julián Álvarez','Cristiano Ronaldo','Rafael Leão','Harry Kane','Bukayo Saka','Phil Foden','Cole Palmer','Lamine Yamal','Mikel Oyarzabal','Álvaro Morata','Nico Williams','Vinícius Júnior','Rodrygo','Endrick','Raphinha','Florian Wirtz','Kai Havertz','Jamal Musiala','Memphis Depay','Cody Gakpo','Xavi Simons','Romelu Lukaku','Kevin De Bruyne','Jeremy Doku','Erling Haaland','Luka Modrić','Darwin Núñez','Federico Valverde','James Rodríguez','Luis Díaz','Achraf Hakimi','Youssef En-Nesyri','Sadio Mané','Sébastien Haller','Breel Embolo','Granit Xhaka','Takefusa Kubo','Son Heung-min','Christian Pulisic','Folarin Balogun','Santiago Giménez','Hirving Lozano','Jonathan David','Alphonso Davies','Mohamed Salah','Mehdi Taremi','Chris Wood','Salem Al-Dawsari','Riyad Mahrez','Marcel Sabitzer','Mohammed Kudus','Edin Džeko','Patrik Schick','Alexander Isak','Enner Valencia','Moisés Caicedo','Eldor Shomurodov'];
 const ENG_ALIASES={'Mexikó':['mexico'],'Dél-Afrika':['south africa'],'Dél-Korea':['korea republic','south korea','korea'],'Csehország':['czech republic','czechia'],'Kanada':['canada'],'Bosznia-Hercegovina':['bosnia'],'Katar':['qatar'],'Svájc':['switzerland'],'Brazília':['brazil'],'Marokkó':['morocco'],'Haiti':['haiti'],'Skócia':['scotland'],'USA':['united states','usa'],'Paraguay':['paraguay'],'Ausztrália':['australia'],'Törökország':['turkey','türkiye','turkiye'],'Németország':['germany'],'Curaçao':['curacao','curaçao'],'Elefántcsontpart':['ivory coast',"côte d'ivoire",'cote d ivoire'],'Ecuador':['ecuador'],'Hollandia':['netherlands'],'Japán':['japan'],'Svédország':['sweden'],'Tunézia':['tunisia'],'Belgium':['belgium'],'Egyiptom':['egypt'],'Irán':['iran'],'Új-Zéland':['new zealand'],'Spanyolország':['spain'],'Zöld-foki-sz.':['cape verde','cabo verde'],'Szaúd-Arábia':['saudi arabia'],'Uruguay':['uruguay'],'Franciaország':['france'],'Szenegál':['senegal'],'Irak':['iraq'],'Norvégia':['norway'],'Argentína':['argentina'],'Algéria':['algeria'],'Ausztria':['austria'],'Jordánia':['jordan'],'Portugália':['portugal'],'DR Kongó':['dr congo','congo dr','democratic republic of the congo','congo-kinshasa'],'Üzbegisztán':['uzbekistan'],'Kolumbia':['colombia'],'Anglia':['england'],'Horvátország':['croatia'],'Ghána':['ghana'],'Panama':['panama']};
 function normEng(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
@@ -625,7 +646,7 @@ function readTopscorer(id){
 
 function render(){
   const root=document.getElementById('root');
-  if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:60px;filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">🏆</div><div style="color:rgba(255,255,255,.5);font-size:16px">Betöltés...</div></div>`;return;}
+  if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(255,255,255,.5);font-size:16px">Betöltés...</div></div>`;return;}
   if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
   const uid=S.user.id,hw=!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`];
   root.innerHTML=rMain(hw);
@@ -635,7 +656,7 @@ function render(){
 function rAuth(){
   const L=S.authMode==='login';
   return `<div class="auth-page"><div style="width:100%;max-width:420px">
-  <div class="auth-hero"><div style="font-size:56px;filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">🏆</div>
+  <div class="auth-hero"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(56)}</div>
     <div class="auth-title">VB 2026 Tippelő</div>
     <div class="auth-sub">Tippelj a focivb összes meccsére!</div>
   </div>
@@ -674,7 +695,7 @@ function rMain(hw){
   const vc=(views[S.view]||rMatches)();
   return `<div style="background:linear-gradient(160deg,#011524 0%,#012030 50%,#011524 100%);min-height:100vh">
   <div class="header"><div class="h-inner">
-    <div class="logo"><span class="logo-t">🏆</span><span class="logo-txt"><b>VB 2026</b> Tippelő</span></div>
+    <div class="logo"><span class="logo-t">${trophyIcon(28)}</span><span class="logo-txt"><b>VB 2026</b> Tippelő</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:20px">${S.user.av||'⚽'}</span>
       <span style="font-size:13px;color:rgba(255,255,255,.65)">${S.user.dn}</span>
@@ -1046,10 +1067,10 @@ function rProfile(){
     ${[{l:'Tipp',v:r.tipped,c:'#4a9eff'},{l:'Értékelt',v:r.fin,c:'#a78bfa'},{l:'⭐ Telitalálat',v:r.pf,c:'#c9a84c'},{l:'🎯 R+GK',v:r.rgd,c:'#60d0ff'},{l:'✓ Kim.',v:r.res3,c:'#00b050'},{l:'Összpont',v:r.pts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
   </div>
   <div class="sect">🤝 Ligáim</div>
-  <div class="lb-card" style="margin-bottom:7px"><span style="font-size:18px">🌍</span><div style="flex:1"><div class="lb-nm">Globális</div><div class="lb-sub">${globalRank.total} résztvevő közül</div></div><div class="lb-pts">${globalRank.rank}.<span style="font-size:13px;font-weight:400;color:#999"> hely</span></div></div>
+  <div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="__global__"><span style="font-size:18px">🌍</span><div style="flex:1"><div class="lb-nm">Globális</div><div class="lb-sub">${globalRank.total} résztvevő közül</div></div><div class="lb-pts">${globalRank.rank}.<span style="font-size:13px;font-weight:400;color:#999"> hely</span></div><span style="color:#bbb;font-size:13px">›</span></div>
   ${!myLgs.length?`<p style="font-size:13px;color:rgba(255,255,255,.4)">Még nem vagy tagja egyéni ligának.</p>`:myLgs.map(l=>{
     const lr=rankInScope(uid,l.members,l.scoring||DS,eff);
-    return `<div class="lb-card" style="margin-bottom:7px"><span style="font-size:18px">🏅</span><div style="flex:1"><div class="lb-nm">${l.name}</div><div class="lb-sub">${lr.total} résztvevő közül</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div></div>`;
+    return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1"><div class="lb-nm">${l.name}</div><div class="lb-sub">${lr.total} résztvevő közül</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
   }).join('')}
   </div>`;
 }
@@ -1243,6 +1264,10 @@ function bindMain(hw){
   document.querySelectorAll('[data-removemem]').forEach(b=>b.addEventListener('click',e=>{
     const[lid,mid]=e.currentTarget.dataset.removemem.split('|');
     removeMember(lid,mid);
+  }));
+  document.querySelectorAll('[data-gotolg]').forEach(el=>el.addEventListener('click',e=>{
+    const lid=e.currentTarget.dataset.gotolg;
+    SS({view:'leaderboard',selLg:lid==='__global__'?null:lid});
   }));
   document.querySelectorAll('[data-gomatch]').forEach(el=>el.addEventListener('click',e=>{
     const mid=parseInt(e.currentTarget.dataset.gomatch),grp=e.currentTarget.dataset.grp;
