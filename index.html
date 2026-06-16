@@ -361,7 +361,7 @@ let S={
   editLgId:null,editLgSco:null,
   preModal:false,savedMsgs:{},
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null
+  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -713,10 +713,12 @@ function rNext24h(){
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const t=S.tips[`${uid}_${m.id}`];
       const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString('hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px">
+      const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
+      return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;cursor:pointer">
         <span style="color:rgba(255,255,255,.4);min-width:74px;font-size:11.5px">${koLbl}</span>
         <span style="flex:1;color:#fff">${FL[home]||''} ${home} – ${away} ${FL[away]||''}</span>
         ${t?`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t.homeGoals}-${t.awayGoals}</span>`:`<span style="color:#e63329;font-size:12px;font-weight:700">nincs tipp</span>`}
+        <span style="color:rgba(255,255,255,.3);font-size:13px">›</span>
       </div>`;
     }).join('')}
   </div>`;
@@ -748,10 +750,11 @@ function rCard(m){
   const catLbl={p8:'⭐ Telitalálat',p5:'🎯 Ered.+Gólkül.',p3:'✓ Kimenetel',p1:'~ 1 gól',p0:'✗'};
 
   const live=!res?S.live[m.id]:null;
+  const hl=S.highlightMatch===m.id;
 
-  if(isTBD) return `<div class="mcard locked"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">Csapatok később kerülnek meghatározásra</div></div>`;
+  if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">Csapatok később kerülnek meghatározásra</div></div>`;
 
-  return `<div class="mcard${locked?' locked':''}">
+  return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
     <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?'<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">🔴 ÉLŐ</span>':''}<span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
     <div class="mc-main">
       <div class="team-b home">${fImg(home,40)}<span class="tname">${home}</span></div>
@@ -1244,6 +1247,14 @@ function bindMain(hw){
     const[lid,mid]=e.currentTarget.dataset.removemem.split('|');
     removeMember(lid,mid);
   }));
+  document.querySelectorAll('[data-gomatch]').forEach(el=>el.addEventListener('click',e=>{
+    const mid=parseInt(e.currentTarget.dataset.gomatch),grp=e.currentTarget.dataset.grp;
+    SS({view:'matches',sg:grp,highlightMatch:mid});
+  }));
+  if(S.highlightMatch&&S.view==='matches'){
+    const el=document.getElementById(`match-${S.highlightMatch}`);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>SS({highlightMatch:null}),2500);}
+  }
 }
 
 setInterval(async()=>{
