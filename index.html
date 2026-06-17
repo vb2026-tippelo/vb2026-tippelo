@@ -678,11 +678,6 @@ async function fetchTodayOdds(){
     const data=await oRes.json();
     if(!Array.isArray(data)){console.log('Odds API h2h hiba:',data);return;}
     let bttsData=[];
-    try{
-      const bRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=btts&oddsFormat=decimal`);
-      const bd=await bRes.json();
-      if(Array.isArray(bd))bttsData=bd;
-    }catch(e){}
     const odds={};
     for(const ev of data){
       const hCode=EN_TEAM[ev.home_team];
@@ -1323,7 +1318,7 @@ function rCard(m){
       <div class="team-b away"><span class="tname">${teamName(away)}</span>${fImg(away,40)}</div>
     </div>
     ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
-    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span>${mOdds.btts?`<span class="mc-odds-pill mc-odds-btts">GG ${mOdds.btts}</span>`:''}</div>`:''}
+    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span></div>`:''}
     ${res&&tip?`<div class="mc-res"><span style="color:#999">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
