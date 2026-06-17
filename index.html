@@ -1164,10 +1164,10 @@ async function toggleTheme(){
   await sS('wc_theme',nt,false);
 }
 function langSwitcher(){
-  return `<select id="langSel" style="background:rgba(var(--ink-rgb),.1);color:var(--text-color);border:1px solid rgba(var(--ink-rgb),.15);border-radius:8px;padding:7px 6px;font-size:13px;cursor:pointer" title="${t('lang_toggle_title')}">
-    <option value="hu" ${S.lang==='hu'?'selected':''}>🇭🇺 HU</option>
-    <option value="en" ${S.lang==='en'?'selected':''}>🇬🇧 EN</option>
-  </select>`;
+  return `<div style="display:flex;gap:2px">
+    <button id="langHu" onclick="setLang('hu')" style="background:${S.lang==='hu'?'rgba(255,255,255,.2)':'rgba(255,255,255,.05)'};border:1px solid rgba(255,255,255,${S.lang==='hu'?'.3':'.1'});border-radius:7px;padding:5px 7px;font-size:17px;cursor:pointer;line-height:1" title="Magyar">🇭🇺</button>
+    <button id="langEn" onclick="setLang('en')" style="background:${S.lang==='en'?'rgba(255,255,255,.2)':'rgba(255,255,255,.05)'};border:1px solid rgba(255,255,255,${S.lang==='en'?'.3':'.1'});border-radius:7px;padding:5px 7px;font-size:17px;cursor:pointer;line-height:1" title="English">🇬🇧</button>
+  </div>`;
 }
 async function setLang(l){
   SS({lang:l});
@@ -1212,7 +1212,7 @@ function rAuth(){
 }
 function bindAuth(){
   document.getElementById('themeToggleAuth')?.addEventListener('click',toggleTheme);
-  document.getElementById('langSel')?.addEventListener('change',e=>setLang(e.target.value));
+  // lang buttons inline onclick
   document.getElementById('sw')?.addEventListener('click',()=>{
     SS({authMode:S.authMode==='login'?'register':'login',authErr:'',
       authU:document.getElementById('au')?.value||'',authP:document.getElementById('ap')?.value||'',authDN:document.getElementById('adn')?.value||''});
@@ -1234,10 +1234,10 @@ function rMain(hw){
     <div class="logo"><span class="logo-t">${trophyIcon(28)}</span><span class="logo-txt"><b>VB 2026</b> <span class="logo-sub">Tippelő</span></span></div>
     <div style="display:flex;align-items:center;gap:8px">
       ${langSwitcher()}
-      <button id="themeToggle" class="btn-sm white" style="padding:8px 10px;font-size:15px" title="${t('theme_toggle_title')}">${S.theme==='light'?'🌙':'☀️'}</button>
+      <button id="themeToggle" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 10px;font-size:15px;cursor:pointer" title="${t('theme_toggle_title')}">${S.theme==='light'?'🌙':'☀️'}</button>
       <span style="font-size:20px">${S.user.av||'⚽'}</span>
-      <span class="u-dname" style="font-size:13px;color:rgba(var(--ink-rgb),.65);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${S.user.dn}</span>
-      <button id="lout" class="btn-sm white">${t('logout')}</button>
+      <span class="u-dname" style="font-size:13px;color:rgba(255,255,255,.75);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${S.user.dn}</span>
+      <button id="lout" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer">${t('logout')}</button>
     </div>
   </div></div>
   <div class="nav"><div class="nav-in">${tabs.map(tb=>`<button class="ntab${S.view===tb.id?' on':''}" data-v="${tb.id}">${tb.l}${tb.id==='pre-tips'&&hw?'<span class="nbadge">!</span>':''}</button>`).join('')}</div></div>
@@ -2267,7 +2267,7 @@ function bindPM(){
 function bindMain(hw){
   document.getElementById('lout')?.addEventListener('click',doLogout);
   document.getElementById('themeToggle')?.addEventListener('click',toggleTheme);
-  document.getElementById('langSel')?.addEventListener('change',e=>setLang(e.target.value));
+  // lang buttons inline onclick
   document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',e=>SS({view:e.currentTarget.dataset.v})));
   document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',e=>SS({sg:e.currentTarget.dataset.g})));
   document.querySelectorAll('[data-as]').forEach(b=>b.addEventListener('click',e=>SS({aStage:e.currentTarget.dataset.as,editRId:null,editTId:null})));
