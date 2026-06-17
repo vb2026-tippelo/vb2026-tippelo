@@ -3133,12 +3133,12 @@ function scheduleNotifs(){
   });
 }
 
-// Live frissítés: 30mp-ként, force=true ha van élő meccs
+// Live frissítés: 60mp-ként, force=true ha van élő meccs
 setInterval(()=>{
   if(!S.user)return;
   const hasLive=Object.keys(S.live||{}).length>0;
   refreshLiveIfStale(hasLive);
-},30*1000);
+},60*1000);
 setInterval(async()=>{
   if(!S.user)return;
   try{
