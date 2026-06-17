@@ -1363,14 +1363,14 @@ function rStandings(){
   }).filter(tm=>tm.p>0).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
   const thirdTable=thirds.length?`<div class="std-card"><div class="std-head"><span class="std-glbl">🥉 ${t('third_table_t')}</span><span class="std-t">${t('third_table_s')}</span></div>
     <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_group')}</th><th>${t('col_played')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
-    <tbody>${thirds.map((tm,i)=>`<tr class="${i<8?'adv':''}"><td><span class="adot ${i<8?'g':''}"></span></td>
+    <tbody>${thirds.map((tm,i)=>`<tr class="${i<8?'adv':''}"><td><span class="adot ${i<8?'g':''}"></span>${i+1}</td>
     <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.group}</td><td>${tm.p}</td>
     <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`:'';
   const groupTables=GD.map(g=>{
     const std=calcStd(g.id,eff,S.mt);
     return `<div class="std-card"><div class="std-head"><span class="std-glbl">${g.id}. ${S.lang==='en'?'GROUP':'CSOPORT'}</span><span class="std-t">${g.teams.map(tm=>fImg(tm,18)).join(' ')}</span></div>
     <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_played')}</th><th>${t('col_w')}</th><th>${t('col_d')}</th><th>${t('col_l')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
-    <tbody>${std.map((tm,i)=>`<tr class="${i<2?'adv':i===2?'padv':''}"><td><span class="adot ${i<2?'g':i===2?'o':''}"></span></td>
+    <tbody>${std.map((tm,i)=>`<tr class="${i<2?'adv':i===2?'padv':''}"><td><span class="adot ${i<2?'g':i===2?'o':''}"></span>${i+1}</td>
     <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.p}</td><td>${tm.w}</td><td>${tm.d}</td><td>${tm.l}</td>
     <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`;
   }).join('');
