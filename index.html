@@ -160,6 +160,9 @@ table.stdt{width:100%;border-collapse:collapse}
 .bk-team.win{color:#001a3a;font-weight:800;background:#fffbf0}
 .bk-sc{font-weight:800;flex-shrink:0}
 .bk-team.bk-slot{color:#aaa;font-size:11px;font-style:italic}
+.bk-venue{font-size:9.5px;color:#999;text-align:center;line-height:1.5;padding:5px 8px 7px;background:#fafbfd}
+.bk-final-wrap .bk-match{border:2px solid #c9a84c;box-shadow:0 4px 16px rgba(201,168,76,.3)}
+.bk-bronze-lbl{text-align:center;font-size:10.5px;font-weight:800;color:rgba(var(--ink-rgb),.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 </head>
@@ -195,7 +198,7 @@ const GD=[
   {id:'L',teams:['Anglia','Horvátország','Ghána','Panama']},
 ];
 const CC={'Mexikó':'mx','Dél-Afrika':'za','Dél-Korea':'kr','Csehország':'cz','Kanada':'ca','Bosznia-Hercegovina':'ba','Katar':'qa','Svájc':'ch','Brazília':'br','Marokkó':'ma','Haiti':'ht','Skócia':'gb-sct','USA':'us','Paraguay':'py','Ausztrália':'au','Törökország':'tr','Németország':'de','Curaçao':'cw','Elefántcsontpart':'ci','Ecuador':'ec','Hollandia':'nl','Japán':'jp','Svédország':'se','Tunézia':'tn','Belgium':'be','Egyiptom':'eg','Irán':'ir','Új-Zéland':'nz','Spanyolország':'es','Zöld-foki-sz.':'cv','Szaúd-Arábia':'sa','Uruguay':'uy','Franciaország':'fr','Szenegál':'sn','Irak':'iq','Norvégia':'no','Argentína':'ar','Algéria':'dz','Ausztria':'at','Jordánia':'jo','Portugália':'pt','DR Kongó':'cd','Üzbegisztán':'uz','Kolumbia':'co','Anglia':'gb-eng','Horvátország':'hr','Ghána':'gh','Panama':'pa'};
-const FL={'Mexikó':'🇲🇽','Dél-Afrika':'🇿🇦','Dél-Korea':'🇰🇷','Csehország':'🇨🇿','Kanada':'🇨🇦','Bosznia-Hercegovina':'🇧🇦','Katar':'🇶🇦','Svájc':'🇨🇭','Brazília':'🇧🇷','Marokkó':'🇲🇦','Haiti':'🇭🇹','Skócia':'🏴','USA':'🇺🇸','Paraguay':'🇵🇾','Ausztrália':'🇦🇺','Törökország':'🇹🇷','Németország':'🇩🇪','Curaçao':'🇨🇼','Elefántcsontpart':'🇨🇮','Ecuador':'🇪🇨','Hollandia':'🇳🇱','Japán':'🇯🇵','Svédország':'🇸🇪','Tunézia':'🇹🇳','Belgium':'🇧🇪','Egyiptom':'🇪🇬','Irán':'🇮🇷','Új-Zéland':'🇳🇿','Spanyolország':'🇪🇸','Zöld-foki-sz.':'🇨🇻','Szaúd-Arábia':'🇸🇦','Uruguay':'🇺🇾','Franciaország':'🇫🇷','Szenegál':'🇸🇳','Irak':'🇮🇶','Norvégia':'🇳🇴','Argentína':'🇦🇷','Algéria':'🇩🇿','Ausztria':'🇦🇹','Jordánia':'🇯🇴','Portugália':'🇵🇹','DR Kongó':'🇨🇩','Üzbegisztán':'🇺🇿','Kolumbia':'🇨🇴','Anglia':'🏴','Horvátország':'🇭🇷','Ghána':'🇬🇭','Panama':'🇵🇦'};
+const FL={'Mexikó':'🇲🇽','Dél-Afrika':'🇿🇦','Dél-Korea':'🇰🇷','Csehország':'🇨🇿','Kanada':'🇨🇦','Bosznia-Hercegovina':'🇧🇦','Katar':'🇶🇦','Svájc':'🇨🇭','Brazília':'🇧🇷','Marokkó':'🇲🇦','Haiti':'🇭🇹','Skócia':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','USA':'🇺🇸','Paraguay':'🇵🇾','Ausztrália':'🇦🇺','Törökország':'🇹🇷','Németország':'🇩🇪','Curaçao':'🇨🇼','Elefántcsontpart':'🇨🇮','Ecuador':'🇪🇨','Hollandia':'🇳🇱','Japán':'🇯🇵','Svédország':'🇸🇪','Tunézia':'🇹🇳','Belgium':'🇧🇪','Egyiptom':'🇪🇬','Irán':'🇮🇷','Új-Zéland':'🇳🇿','Spanyolország':'🇪🇸','Zöld-foki-sz.':'🇨🇻','Szaúd-Arábia':'🇸🇦','Uruguay':'🇺🇾','Franciaország':'🇫🇷','Szenegál':'🇸🇳','Irak':'🇮🇶','Norvégia':'🇳🇴','Argentína':'🇦🇷','Algéria':'🇩🇿','Ausztria':'🇦🇹','Jordánia':'🇯🇴','Portugália':'🇵🇹','DR Kongó':'🇨🇩','Üzbegisztán':'🇺🇿','Kolumbia':'🇨🇴','Anglia':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Horvátország':'🇭🇷','Ghána':'🇬🇭','Panama':'🇵🇦'};
 const SL={group:'Csoportkör',r32:'32 között',r16:'16 között',qf:'Negyeddöntő',sf:'Elődöntő',bronze:'Bronzmérkőzés',final:'Döntő'};
 function stageLabel(stage){return t('stage_'+stage)||SL[stage]||'';}
 const AVS=['⚽','🏆','🦁','🐯','🦅','🦊','🐺','🌟','⭐','🔥','💪','🎯','👑','🤩','🔮','🎪','🦄','🐉','🚀','💎'];
@@ -224,7 +227,8 @@ const STRINGS={
     third_table_t:'CSOPORT-HARMADIKOK',third_table_s:'a legjobb 8 jut a 32 közé',
     col_team:'Csapat',col_group:'Csop.',col_played:'J',col_gd:'GK',col_pts:'P',col_w:'Gy',col_d:'D',col_l:'V',
     bracket_t:'🏆 Kieséses ágrajz',bracket_round32:'32 közé',bracket_round16:'16 közé',bracket_qf:'Negyeddöntő',bracket_sf:'Elődöntő',bracket_final:'🏆 Döntő',bracket_bronze:'Bronzmérkőzés',
-    bracket_hint:'A dőlt szövegű mezők (pl. "1A" = A csoport győztese, "3. A/B/C/D/F" = a legjobb 3. helyezett ebből az 5 csoportból) a hivatalos FIFA sorsolási séma szerinti helyeket jelzik – ezek a csoportkör végén töltődnek ki valódi csapatnévvel.',
+    bracket_hint:'A dőlt szövegű mezők (pl. "1A" = A csoport győztese, "3. A/B/C/D/F" = a legjobb 3. helyezett ebből az 5 csoportból) a hivatalos FIFA sorsolási séma szerinti helyeket jelzik. A csoportkör lezárásával ezek automatikusan kitöltődnek a valódi csapatnevekkel, a kieséses körök pedig az eredmények rögzítésével szintén automatikusan haladnak előre.',
+    hu_time_lbl:'(magyar idő)',
     winner_of:'Győztes',loser_of:'Vesztes',
     stat_tips:'Tipp',stat_evaluated:'Értékelt',stat_perfect:'⭐ Telitalálat',stat_resultgd:'🎯 R+GK',stat_outcome:'✓ Kimenetel',stat_total:'Összpont',
     stage_group:'Csoportkör',stage_r32:'32 között',stage_r16:'16 között',stage_qf:'Negyeddöntő',stage_sf:'Elődöntő',stage_bronze:'Bronzmérkőzés',stage_final:'Döntő',group_word:'csoport',
@@ -244,7 +248,8 @@ const STRINGS={
     edit_scoring:'⚙️ Szerkesztés',close_btn:'✕ Bezárás',edit_scoring_h:'Pontozás módosítása',save_scoring:'💾 Pontozás mentése',
     manage_members:'Tagok kezelése',remove_btn:'Eltávolítás',no_other_members:'Még nincs más tag.',
     theme_toggle_title:'Téma váltása',lang_toggle_title:'Nyelv váltása',
-    pretips_intro:'Ezeket a tippeket a torna vége előtt kell leadni a bónuszpontokért.',
+    pretips_intro:'Ezeket a tippeket az 1. meccs (Mexikó – Dél-Afrika) kezdetéig kellett leadni a bónuszpontokért.',
+    pretips_locked_msg:'⏱️ A leadási határidő (az 1. meccs kezdete) lejárt, ezek a tippek már nem módosíthatók.',
     winner_card_h3:'🏆 VB Végső Győztes — 25 pont',winner_card_p:'Melyik csapat nyeri a 2026-os Foci VB-t?',
     topscorer_card_h3:'⚽ Gólkirály — 25 pont',topscorer_card_p:'Ki lesz a torna gólkirálya?',
     saved_tips_msg:'✓ Tippjeid mentve:',wins_word:'győz',save_tips_btn:'💾 Tippek mentése',admin_recorded:'Admin által rögzített:',
@@ -267,7 +272,8 @@ const STRINGS={
     third_table_t:'THIRD-PLACED TEAMS',third_table_s:'the best 8 advance to the round of 32',
     col_team:'Team',col_group:'Grp.',col_played:'P',col_gd:'GD',col_pts:'Pts',col_w:'W',col_d:'D',col_l:'L',
     bracket_t:'🏆 Knockout bracket',bracket_round32:'Round of 32',bracket_round16:'Round of 16',bracket_qf:'Quarterfinal',bracket_sf:'Semifinal',bracket_final:'🏆 Final',bracket_bronze:'3rd place match',
-    bracket_hint:'The italic slots (e.g. "1A" = winner of Group A, "3. A/B/C/D/F" = best 3rd-placed team among these 5 groups) show the official FIFA draw positions – these fill in with real team names once the group stage ends.',
+    bracket_hint:'The italic slots (e.g. "1A" = winner of Group A, "3. A/B/C/D/F" = best 3rd-placed team among these 5 groups) show the official FIFA draw positions. Once the group stage ends these fill in automatically with real team names, and the knockout rounds also advance automatically as results are recorded.',
+    hu_time_lbl:'(Hungarian time)',
     winner_of:'Winner of',loser_of:'Loser of',
     stat_tips:'Tips',stat_evaluated:'Scored',stat_perfect:'⭐ Perfect',stat_resultgd:'🎯 Res+GD',stat_outcome:'✓ Outcome',stat_total:'Total pts',
     stage_group:'Group stage',stage_r32:'Round of 32',stage_r16:'Round of 16',stage_qf:'Quarterfinal',stage_sf:'Semifinal',stage_bronze:'3rd place match',stage_final:'Final',group_word:'group',
@@ -287,7 +293,8 @@ const STRINGS={
     edit_scoring:'⚙️ Edit',close_btn:'✕ Close',edit_scoring_h:'Edit scoring rules',save_scoring:'💾 Save scoring',
     manage_members:'Manage members',remove_btn:'Remove',no_other_members:'No other members yet.',
     theme_toggle_title:'Toggle theme',lang_toggle_title:'Switch language',
-    pretips_intro:'These picks must be submitted before the tournament ends to count for bonus points.',
+    pretips_intro:'These picks had to be submitted before kickoff of Match 1 (Mexico – South Africa) to count for bonus points.',
+    pretips_locked_msg:'⏱️ The submission deadline (kickoff of Match 1) has passed — these picks can no longer be changed.',
     winner_card_h3:'🏆 World Cup Final Winner — 25 points',winner_card_p:'Which team will win the 2026 World Cup?',
     topscorer_card_h3:'⚽ Top scorer — 25 points',topscorer_card_p:'Who will be the top scorer of the tournament?',
     saved_tips_msg:'✓ Your picks are saved:',wins_word:'to win',save_tips_btn:'💾 Save picks',admin_recorded:'Recorded by admin:',
@@ -525,6 +532,7 @@ async function init(){
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
   SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu'});
   refreshLiveIfStale();
+  autoFillKnockoutTeams();
 }
 
 async function doLogin(){
@@ -561,6 +569,7 @@ async function saveSpecial(w,t){
 async function saveRes(mid,h,a){
   const nr={...S.results,[mid]:{homeGoals:parseInt(h),awayGoals:parseInt(a)}};
   await sS('wc_r',nr,true);SS({results:nr,editRId:null});
+  autoFillKnockoutTeams();
 }
 async function saveMT(mid,h,a){
   const nm={...S.mt,[mid]:{home:h,away:a}};
@@ -631,6 +640,7 @@ async function applyFinishedMatches(apiMatches){
   const tasks=[sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true)];
   if(applied.length)tasks.push(sS('wc_r',nr,true));
   await Promise.all(tasks);
+  if(applied.length){SS({results:nr});await autoFillKnockoutTeams();}
   return{applied,results:applied.length?nr:S.results,live};
 }
 async function fetchLiveScores(){
@@ -762,7 +772,7 @@ function exportLbImage(){
   });
 }
 function teamSelect(id,current,cls='inp-light'){
-  return `<select class="${cls}" id="${id}"><option value="">— válassz csapatot —</option>${TEAMS.map(t=>`<option value="${t}"${t===current?' selected':''}>${FL[t]||''} ${t}</option>`).join('')}</select>`;
+  return `<select class="${cls}" id="${id}"><option value="">— válassz csapatot —</option>${TEAMS.map(t=>`<option value="${t}"${t===current?' selected':''}>${t}</option>`).join('')}</select>`;
 }
 function topscorerSelect(id,current,cls='inp-light'){
   const inList=TOPSCORERS.includes(current),isOther=!!current&&!inList;
@@ -799,7 +809,7 @@ function render(){
   const root=document.getElementById('root');
   if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
   if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
-  const uid=S.user.id,hw=!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`];
+  const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
   root.innerHTML=rMain(hw);
   if(S.preModal)bindPM();else bindMain(hw);
 }
@@ -892,7 +902,7 @@ function rLiveNow(){
       const tip=S.tips[`${uid}_${m.id}`];
       const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.08);font-size:13px;cursor:pointer">
-        <span style="flex:1;color:var(--text-color)">${FL[home]||''} ${teamName(home)} – ${teamName(away)} ${FL[away]||''}</span>
+        <span style="flex:1;color:var(--text-color)">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</span>
         <span style="font-weight:800;color:var(--text-color);font-size:15px">${sc.h}–${sc.a}</span>
         ${tip?`<span style="color:rgba(var(--ink-rgb),.5);font-size:11px">${t('tip_label')}: ${tip.homeGoals}-${tip.awayGoals}</span>`:''}
         <span style="color:rgba(var(--ink-rgb),.3);font-size:13px">›</span>
@@ -916,7 +926,7 @@ function rNext24h(){
       const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.06);font-size:13px;cursor:pointer">
         <span style="color:rgba(var(--ink-rgb),.4);min-width:74px;font-size:11.5px">${koLbl}</span>
-        <span style="flex:1;color:var(--text-color)">${FL[home]||''} ${teamName(home)} – ${teamName(away)} ${FL[away]||''}</span>
+        <span style="flex:1;color:var(--text-color)">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</span>
         ${tip?`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${tip.homeGoals}-${tip.awayGoals}</span>`:`<span style="color:#e63329;font-size:12px;font-weight:700">${t('no_tip')}</span>`}
         <span style="color:rgba(var(--ink-rgb),.3);font-size:13px">›</span>
       </div>`;
@@ -927,11 +937,11 @@ function rMatches(){
   const gTabs=[...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
   const vis=ALL.filter(m=>sel.length===1?m.group===sel:sel==='sf'?m.stage==='sf'||m.stage==='bronze':m.stage===sel);
-  const uid=S.user.id,hw=!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`];
+  const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
   return `${rLiveNow()}${rNext24h()}${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">${t('pretips_banner_t')}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">${t('pretips_banner_s')}</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
   <div class="note-bar">${t('note_bar')}</div>
   <div class="pill-row">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
-  ${grp?`<div style="font-size:12px;color:rgba(var(--ink-rgb),.3);margin-bottom:10px">${grp.teams.map(tm=>`${FL[tm]||''} ${teamName(tm)}`).join(' · ')}</div>`:''}
+  ${grp?`<div style="font-size:12px;color:rgba(var(--ink-rgb),.3);margin-bottom:10px">${grp.teams.map(tm=>`${fImg(tm,16)} ${teamName(tm)}`).join(' · ')}</div>`:''}
   <div>${vis.map(m=>rCard(m)).join('')}</div>`;
 }
 
@@ -988,7 +998,7 @@ function rStandings(){
     <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`:'';
   const groupTables=GD.map(g=>{
     const std=calcStd(g.id,eff,S.mt);
-    return `<div class="std-card"><div class="std-head"><span class="std-glbl">${g.id}. ${S.lang==='en'?'GROUP':'CSOPORT'}</span><span class="std-t">${g.teams.map(tm=>FL[tm]||'').join(' ')}</span></div>
+    return `<div class="std-card"><div class="std-head"><span class="std-glbl">${g.id}. ${S.lang==='en'?'GROUP':'CSOPORT'}</span><span class="std-t">${g.teams.map(tm=>fImg(tm,18)).join(' ')}</span></div>
     <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_played')}</th><th>${t('col_w')}</th><th>${t('col_d')}</th><th>${t('col_l')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
     <tbody>${std.map((tm,i)=>`<tr class="${i<2?'adv':i===2?'padv':''}"><td><span class="adot ${i<2?'g':i===2?'o':''}"></span></td>
     <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.p}</td><td>${tm.w}</td><td>${tm.d}</td><td>${tm.l}</td>
@@ -1000,6 +1010,110 @@ function rStandings(){
 const R32_SLOTS={73:['2A','2B'],74:['1E','3. A/B/C/D/F'],75:['1F','2C'],76:['1C','2F'],77:['1I','3. C/D/F/G/H'],78:['2E','2I'],79:['1A','3. C/E/F/H/I'],80:['1L','3. E/H/I/J/K'],81:['1D','3. B/E/F/I/J'],82:['1G','3. A/E/H/I/J'],83:['2K','2L'],84:['1H','2J'],85:['1B','3. E/F/G/I/J'],86:['1J','2H'],87:['1K','3. D/E/I/J/L'],88:['2D','2G']};
 const WINNER_SOURCES={89:[74,77],90:[73,75],91:[76,78],92:[79,80],93:[83,84],94:[81,82],95:[86,88],96:[85,87],97:[89,90],98:[93,94],99:[91,92],100:[95,96],101:[97,98],102:[99,100],104:[101,102]};
 const LOSER_SOURCES={103:[101,102]};
+const ANNEX_C={EFGHIJKL:"EJIFHGLK",DFGHIJKL:"HGIDJFLK",DEGHIJKL:"EJIDHGLK",DEFHIJKL:"EJIDHFLK",DEFGIJKL:"EGIDJFLK",DEFGHJKL:"EGJDHFLK",DEFGHIKL:"EGIDHFLK",DEFGHIJL:"EGJDHFLI",DEFGHIJK:"EGJDHFIK",CFGHIJKL:"HGICJFLK",CEGHIJKL:"EJICHGLK",CEFHIJKL:"EJICHFLK",CEFGIJKL:"EGICJFLK",CEFGHJKL:"EGJCHFLK",CEFGHIKL:"EGICHFLK",CEFGHIJL:"EGJCHFLI",CEFGHIJK:"EGJCHFIK",CDGHIJKL:"HGICJDLK",CDFHIJKL:"CJIDHFLK",CDFGIJKL:"CGIDJFLK",CDFGHJKL:"CGJDHFLK",CDFGHIKL:"CGIDHFLK",CDFGHIJL:"CGJDHFLI",CDFGHIJK:"CGJDHFIK",CDEHIJKL:"EJICHDLK",CDEGIJKL:"EGICJDLK",CDEGHJKL:"EGJCHDLK",CDEGHIKL:"EGICHDLK",CDEGHIJL:"EGJCHDLI",CDEGHIJK:"EGJCHDIK",CDEFIJKL:"CJEDIFLK",CDEFHJKL:"CJEDHFLK",CDEFHIKL:"CEIDHFLK",CDEFHIJL:"CJEDHFLI",CDEFHIJK:"CJEDHFIK",CDEFGJKL:"CGEDJFLK",CDEFGIKL:"CGEDIFLK",CDEFGIJL:"CGEDJFLI",CDEFGIJK:"CGEDJFIK",CDEFGHKL:"CGEDHFLK",CDEFGHJL:"CGJDHFLE",CDEFGHJK:"CGJDHFEK",CDEFGHIL:"CGEDHFLI",CDEFGHIK:"CGEDHFIK",CDEFGHIJ:"CGJDHFEI",BFGHIJKL:"HJBFIGLK",BEGHIJKL:"EJIBHGLK",BEFHIJKL:"EJBFIHLK",BEFGIJKL:"EJBFIGLK",BEFGHJKL:"EJBFHGLK",BEFGHIKL:"EGBFIHLK",BEFGHIJL:"EJBFHGLI",BEFGHIJK:"EJBFHGIK",BDGHIJKL:"HJBDIGLK",BDFHIJKL:"HJBDIFLK",BDFGIJKL:"IGBDJFLK",BDFGHJKL:"HGBDJFLK",BDFGHIKL:"HGBDIFLK",BDFGHIJL:"HGBDJFLI",BDFGHIJK:"HGBDJFIK",BDEHIJKL:"EJBDIHLK",BDEGIJKL:"EJBDIGLK",BDEGHJKL:"EJBDHGLK",BDEGHIKL:"EGBDIHLK",BDEGHIJL:"EJBDHGLI",BDEGHIJK:"EJBDHGIK",BDEFIJKL:"EJBDIFLK",BDEFHJKL:"EJBDHFLK",BDEFHIKL:"EIBDHFLK",BDEFHIJL:"EJBDHFLI",BDEFHIJK:"EJBDHFIK",BDEFGJKL:"EGBDJFLK",BDEFGIKL:"EGBDIFLK",BDEFGIJL:"EGBDJFLI",BDEFGIJK:"EGBDJFIK",BDEFGHKL:"EGBDHFLK",BDEFGHJL:"HGBDJFLE",BDEFGHJK:"HGBDJFEK",BDEFGHIL:"EGBDHFLI",BDEFGHIK:"EGBDHFIK",BDEFGHIJ:"HGBDJFEI",BCGHIJKL:"HJBCIGLK",BCFHIJKL:"HJBCIFLK",BCFGIJKL:"IGBCJFLK",BCFGHJKL:"HGBCJFLK",BCFGHIKL:"HGBCIFLK",BCFGHIJL:"HGBCJFLI",BCFGHIJK:"HGBCJFIK",BCEHIJKL:"EJBCIHLK",BCEGIJKL:"EJBCIGLK",BCEGHJKL:"EJBCHGLK",BCEGHIKL:"EGBCIHLK",BCEGHIJL:"EJBCHGLI",BCEGHIJK:"EJBCHGIK",BCEFIJKL:"EJBCIFLK",BCEFHJKL:"EJBCHFLK",BCEFHIKL:"EIBCHFLK",BCEFHIJL:"EJBCHFLI",BCEFHIJK:"EJBCHFIK",BCEFGJKL:"EGBCJFLK",BCEFGIKL:"EGBCIFLK",BCEFGIJL:"EGBCJFLI",BCEFGIJK:"EGBCJFIK",BCEFGHKL:"EGBCHFLK",BCEFGHJL:"HGBCJFLE",BCEFGHJK:"HGBCJFEK",BCEFGHIL:"EGBCHFLI",BCEFGHIK:"EGBCHFIK",BCEFGHIJ:"HGBCJFEI",BCDHIJKL:"HJBCIDLK",BCDGIJKL:"IGBCJDLK",BCDGHJKL:"HGBCJDLK",BCDGHIKL:"HGBCIDLK",BCDGHIJL:"HGBCJDLI",BCDGHIJK:"HGBCJDIK",BCDFIJKL:"CJBDIFLK",BCDFHJKL:"CJBDHFLK",BCDFHIKL:"CIBDHFLK",BCDFHIJL:"CJBDHFLI",BCDFHIJK:"CJBDHFIK",BCDFGJKL:"CGBDJFLK",BCDFGIKL:"CGBDIFLK",BCDFGIJL:"CGBDJFLI",BCDFGIJK:"CGBDJFIK",BCDFGHKL:"HGFCADLK",BCDFGHJL:"CGBDHFLJ",BCDFGHJK:"HGJCAFDK",BCDFGHIL:"HGFCADLI",BCDFGHIK:"HGFCADIK",BCDFGHIJ:"HGJCAFDI",BCDEIJKL:"EJICADLK",BCDEHJKL:"HJECADLK",BCDEHIKL:"HEICADLK",BCDEHIJL:"HJECADLI",BCDEHIJK:"HJECADIK",BCDEGJKL:"EGJCADLK",BCDEGIKL:"EGICADLK",BCDEGIJL:"EGJCADLI",BCDEGIJK:"EGJCADIK",BCDEGHKL:"HGECADLK",BCDEGHJL:"HGJCADLE",BCDEGHJK:"HGJCADEK",BCDEGHIL:"HGECADLI",BCDEGHIK:"HGECADIK",BCDEGHIJ:"HGJCADEI",BCDEFJKL:"CJEDAFLK",BCDEFIKL:"CEIDAFLK",BCDEFIJL:"CJEDAFLI",BCDEFIJK:"CJEDAFIK",BCDEFHKL:"HEFCADLK",BCDEFHJL:"HJFCADLE",BCDEFHJK:"HJECAFDK",BCDEFHIL:"HEFCADLI",BCDEFHIK:"HEFCADIK",BCDEFHIJ:"HJECAFDI",BCDEFGKL:"CGEDAFLK",BCDEFGJL:"CGJDAFLE",BCDEFGJK:"CGJDAFEK",BCDEFGIL:"CGEDAFLI",BCDEFGIK:"CGEDAFIK",BCDEFGIJ:"CGJDAFEI",BCDEFGHL:"HGFCADLE",BCDEFGHK:"HGECAFDK",BCDEFGHJ:"HGJCAFDE",BCDEFGHI:"HGECAFDI",AFGHIJKL:"HJIFAGLK",AEGHIJKL:"EJIAHGLK",AEFHIJKL:"EJIFAHLK",AEFGIJKL:"EJIFAGLK",AEFGHJKL:"EGJFAHLK",AEFGHIKL:"EGIFAHLK",AEFGHIJL:"EGJFAHLI",AEFGHIJK:"EGJFAHIK",ADGHIJKL:"HJIDAGLK",ADFHIJKL:"HJIDAFLK",ADFGIJKL:"IGJDAFLK",ADFGHJKL:"HGJDAFLK",ADFGHIKL:"HGIDAFLK",ADFGHIJL:"HGJDAFLI",ADFGHIJK:"HGJDAFIK",ADEHIJKL:"EJIDAHLK",ADEGIJKL:"EJIDAGLK",ADEGHJKL:"EGJDAHLK",ADEGHIKL:"EGIDAHLK",ADEGHIJL:"EGJDAHLI",ADEGHIJK:"EGJDAHIK",ADEFIJKL:"EJIDAFLK",ADEFHJKL:"HJEDAFLK",ADEFHIKL:"HEIDAFLK",ADEFHIJL:"HJEDAFLI",ADEFHIJK:"HJEDAFIK",ADEFGJKL:"EGJDAFLK",ADEFGIKL:"EGIDAFLK",ADEFGIJL:"EGJDAFLI",ADEFGIJK:"EGJDAFIK",ADEFGHKL:"HGEDAFLK",ADEFGHJL:"HGJDAFLE",ADEFGHJK:"HGJDAFEK",ADEFGHIL:"HGEDAFLI",ADEFGHIK:"HGEDAFIK",ADEFGHIJ:"HGJDAFEI",ACGHIJKL:"HJICAGLK",ACFHIJKL:"HJICAFLK",ACFGIJKL:"IGJCAFLK",ACFGHJKL:"HGJCAFLK",ACFGHIKL:"HGICAFLK",ACFGHIJL:"HGJCAFLI",ACFGHIJK:"HGJCAFIK",ACEHIJKL:"EJICAHLK",ACEGIJKL:"EJICAGLK",ACEGHJKL:"EGJCAHLK",ACEGHIKL:"EGICAHLK",ACEGHIJL:"EGJCAHLI",ACEGHIJK:"EGJCAHIK",ACEFIJKL:"EJICAFLK",ACEFHJKL:"HJECAFLK",ACEFHIKL:"HEICAFLK",ACEFHIJL:"HJECAFLI",ACEFHIJK:"HJECAFIK",ACEFGJKL:"EGJCAFLK",ACEFGIKL:"EGICAFLK",ACEFGIJL:"EGJCAFLI",ACEFGIJK:"EGJCAFIK",ACEFGHKL:"HGECAFLK",ACEFGHJL:"HGJCAFLE",ACEFGHJK:"HGJCAFEK",ACEFGHIL:"HGECAFLI",ACEFGHIK:"HGECAFIK",ACEFGHIJ:"HGJCAFEI",ACDHIJKL:"HJICADLK",ACDGIJKL:"IGJCADLK",ACDGHJKL:"HGJCADLK",ACDGHIKL:"HGICADLK",ACDGHIJL:"HGJCADLI",ACDGHIJK:"HGJCADIK",ACDFIJKL:"CJIDAFLK",ACDFHJKL:"HJFCADLK",ACDFHIKL:"HFICADLK",ACDFHIJL:"HJFCADLI",ACDFHIJK:"HJFCADIK",ACDFGJKL:"CGJDAFLK",ACDFGIKL:"CGIDAFLK",ACDFGIJL:"CGJDAFLI",ACDFGIJK:"CGJDAFIK",ACDFGHKL:"HGFCADLK",ACDFGHJL:"CGJDAFLH",ACDFGHJK:"HGJCAFDK",ACDFGHIL:"HGFCADLI",ACDFGHIK:"HGFCADIK",ACDFGHIJ:"HGJCAFDI",ACDEIJKL:"EJICADLK",ACDEHJKL:"HJECADLK",ACDEHIKL:"HEICADLK",ACDEHIJL:"HJECADLI",ACDEHIJK:"HJECADIK",ACDEGJKL:"EGJCADLK",ACDEGIKL:"EGICADLK",ACDEGIJL:"EGJCADLI",ACDEGIJK:"EGJCADIK",ACDEGHKL:"HGECADLK",ACDEGHJL:"HGJCADLE",ACDEGHJK:"HGJCADEK",ACDEGHIL:"HGECADLI",ACDEGHIK:"HGECADIK",ACDEGHIJ:"HGJCADEI",ACDEFJKL:"CJEDAFLK",ACDEFIKL:"CEIDAFLK",ACDEFIJL:"CJEDAFLI",ACDEFIJK:"CJEDAFIK",ACDEFHKL:"HEFCADLK",ACDEFHJL:"HJFCADLE",ACDEFHJK:"HJECAFDK",ACDEFHIL:"HEFCADLI",ACDEFHIK:"HEFCADIK",ACDEFHIJ:"HJECAFDI",ACDEFGKL:"CGEDAFLK",ACDEFGJL:"CGJDAFLE",ACDEFGJK:"CGJDAFEK",ACDEFGIL:"CGEDAFLI",ACDEFGIK:"CGEDAFIK",ACDEFGIJ:"CGJDAFEI",ACDEFGHL:"HGFCADLE",ACDEFGHK:"HGECAFDK",ACDEFGHJ:"HGJCAFDE",ACDEFGHI:"HGECAFDI",ABGHIJKL:"HJBAIGLK",ABFHIJKL:"HJBAIFLK",ABFGIJKL:"IJBFAGLK",ABFGHJKL:"HJBFAGLK",ABFGHIKL:"HGBAIFLK",ABFGHIJL:"HJBFAGLI",ABFGHIJK:"HJBFAGIK",ABEHIJKL:"EJBAIHLK",ABEGIJKL:"EJBAIGLK",ABEGHJKL:"EJBAHGLK",ABEGHIKL:"EGBAIHLK",ABEGHIJL:"EJBAHGLI",ABEGHIJK:"EJBAHGIK",ABEFIJKL:"EJBAIFLK",ABEFHJKL:"EJBFAHLK",ABEFHIKL:"EIBFAHLK",ABEFHIJL:"EJBFAHLI",ABEFHIJK:"EJBFAHIK",ABEFGJKL:"EJBFAGLK",ABEFGIKL:"EGBAIFLK",ABEFGIJL:"EJBFAGLI",ABEFGIJK:"EJBFAGIK",ABEFGHKL:"EGBFAHLK",ABEFGHJL:"HJBFAGLE",ABEFGHJK:"HJBFAGEK",ABEFGHIL:"EGBFAHLI",ABEFGHIK:"EGBFAHIK",ABEFGHIJ:"HJBFAGEI",ABDHIJKL:"IJBDAHLK",ABDGIJKL:"IJBDAGLK",ABDGHJKL:"HJBDAGLK",ABDGHIKL:"IGBDAHLK",ABDGHIJL:"HJBDAGLI",ABDGHIJK:"HJBDAGIK",ABDFIJKL:"IJBDAFLK",ABDFHJKL:"HJBDAFLK",ABDFHIKL:"HIBDAFLK",ABDFHIJL:"HJBDAFLI",ABDFHIJK:"HJBDAFIK",ABDFGJKL:"FJBDAGLK",ABDFGIKL:"IGBDAFLK",ABDFGIJL:"FJBDAGLI",ABDFGIJK:"FJBDAGIK",ABDFGHKL:"HGBDAFLK",ABDFGHJL:"HGBDAFLJ",ABDFGHJK:"HGBDAFJK",ABDFGHIL:"HGBDAFLI",ABDFGHIK:"HGBDAFIK",ABDFGHIJ:"HGBDAFIJ",ABDEIJKL:"EJBAIDLK",ABDEHJKL:"EJBDAHLK",ABDEHIKL:"EIBDAHLK",ABDEHIJL:"EJBDAHLI",ABDEHIJK:"EJBDAHIK",ABDEGJKL:"EJBDAGLK",ABDEGIKL:"EGBAIDLK",ABDEGIJL:"EJBDAGLI",ABDEGIJK:"EJBDAGIK",ABDEGHKL:"EGBDAHLK",ABDEGHJL:"HJBDAGLE",ABDEGHJK:"HJBDAGEK",ABDEGHIL:"EGBDAHLI",ABDEGHIK:"EGBDAHIK",ABDEGHIJ:"HJBDAGEI",ABDEFJKL:"EJBDAFLK",ABDEFIKL:"EIBDAFLK",ABDEFIJL:"EJBDAFLI",ABDEFIJK:"EJBDAFIK",ABDEFHKL:"HEBDAFLK",ABDEFHJL:"HJBDAFLE",ABDEFHJK:"HJBDAFEK",ABDEFHIL:"HEBDAFLI",ABDEFHIK:"HEBDAFIK",ABDEFHIJ:"HJBDAFEI",ABDEFGKL:"EGBDAFLK",ABDEFGJL:"EGBDAFLJ",ABDEFGJK:"EGBDAFJK",ABDEFGIL:"EGBDAFLI",ABDEFGIK:"EGBDAFIK",ABDEFGIJ:"EGBDAFIJ",ABDEFGHL:"HGBDAFLE",ABDEFGHK:"HGBDAFEK",ABDEFGHJ:"HGBDAFEJ",ABDEFGHI:"HGBDAFEI",ABCHIJKL:"IJBCAHLK",ABCGIJKL:"IJBCAGLK",ABCGHJKL:"HJBCAGLK",ABCGHIKL:"IGBCAHLK",ABCGHIJL:"HJBCAGLI",ABCGHIJK:"HJBCAGIK",ABCFIJKL:"IJBCAFLK",ABCFHJKL:"HJBCAFLK",ABCFHIKL:"HIBCAFLK",ABCFHIJL:"HJBCAFLI",ABCFHIJK:"HJBCAFIK",ABCFGJKL:"CJBFAGLK",ABCFGIKL:"IGBCAFLK",ABCFGIJL:"CJBFAGLI",ABCFGIJK:"CJBFAGIK",ABCFGHKL:"HGBCAFLK",ABCFGHJL:"HGBCAFLJ",ABCFGHJK:"HGBCAFJK",ABCFGHIL:"HGBCAFLI",ABCFGHIK:"HGBCAFIK",ABCFGHIJ:"HGBCAFIJ",ABCEIJKL:"EJBAICLK",ABCEHJKL:"EJBCAHLK",ABCEHIKL:"EIBCAHLK",ABCEHIJL:"EJBCAHLI",ABCEHIJK:"EJBCAHIK",ABCEGJKL:"EJBCAGLK",ABCEGIKL:"EGBAICLK",ABCEGIJL:"EJBCAGLI",ABCEGIJK:"EJBCAGIK",ABCEGHKL:"EGBCAHLK",ABCEGHJL:"HJBCAGLE",ABCEGHJK:"HJBCAGEK",ABCEGHIL:"EGBCAHLI",ABCEGHIK:"EGBCAHIK",ABCEGHIJ:"HJBCAGEI",ABCEFJKL:"EJBCAFLK",ABCEFIKL:"EIBCAFLK",ABCEFIJL:"EJBCAFLI",ABCEFIJK:"EJBCAFIK",ABCEFHKL:"HEBCAFLK",ABCEFHJL:"HJBCAFLE",ABCEFHJK:"HJBCAFEK",ABCEFHIL:"HEBCAFLI",ABCEFHIK:"HEBCAFIK",ABCEFHIJ:"HJBCAFEI",ABCEFGKL:"EGBCAFLK",ABCEFGJL:"EGBCAFLJ",ABCEFGJK:"EGBCAFJK",ABCEFGIL:"EGBCAFLI",ABCEFGIK:"EGBCAFIK",ABCEFGIJ:"EGBCAFIJ",ABCEFGHL:"HGBCAFLE",ABCEFGHK:"HGBCAFEK",ABCEFGHJ:"HGBCAFEJ",ABCEFGHI:"HGBCAFEI",ABCDIJKL:"IJBCADLK",ABCDHJKL:"HJBCADLK",ABCDHIKL:"HIBCADLK",ABCDHIJL:"HJBCADLI",ABCDHIJK:"HJBCADIK",ABCDGJKL:"CJBDAGLK",ABCDGIKL:"IGBCADLK",ABCDGIJL:"CJBDAGLI",ABCDGIJK:"CJBDAGIK",ABCDGHKL:"HGBCADLK",ABCDGHJL:"HGBCADLJ",ABCDGHJK:"HGBCADJK",ABCDGHIL:"HGBCADLI",ABCDGHIK:"HGBCADIK",ABCDGHIJ:"HGBCADIJ",ABCDFJKL:"CJBDAFLK",ABCDFIKL:"CIBDAFLK",ABCDFIJL:"CJBDAFLI",ABCDFIJK:"CJBDAFIK",ABCDFHKL:"HFBCADLK",ABCDFHJL:"CJBDAFLH",ABCDFHJK:"HJBCAFDK",ABCDFHIL:"HFBCADLI",ABCDFHIK:"HFBCADIK",ABCDFHIJ:"HJBCAFDI",ABCDFGKL:"CGBDAFLK",ABCDFGJL:"CGBDAFLJ",ABCDFGJK:"CGBDAFJK",ABCDFGIL:"CGBDAFLI",ABCDFGIK:"CGBDAFIK",ABCDFGIJ:"CGBDAFIJ",ABCDFGHL:"CGBDAFLH",ABCDFGHK:"HGBCAFDK",ABCDFGHJ:"HGBCAFDJ",ABCDFGHI:"HGBCAFDI",ABCDEJKL:"EJBCADLK",ABCDEIKL:"EIBCADLK",ABCDEIJL:"EJBCADLI",ABCDEIJK:"EJBCADIK",ABCDEHKL:"HEBCADLK",ABCDEHJL:"HJBCADLE",ABCDEHJK:"HJBCADEK",ABCDEHIL:"HEBCADLI",ABCDEHIK:"HEBCADIK",ABCDEHIJ:"HJBCADEI",ABCDEGKL:"EGBCADLK",ABCDEGJL:"EGBCADLJ",ABCDEGJK:"EGBCADJK",ABCDEGIL:"EGBCADLI",ABCDEGIK:"EGBCADIK",ABCDEGIJ:"EGBCADIJ",ABCDEGHL:"HGBCADLE",ABCDEGHK:"HGBCADEK",ABCDEGHJ:"HGBCADEJ",ABCDEGHI:"HGBCADEI",ABCDEFKL:"CEBDAFLK",ABCDEFJL:"CJBDAFLE",ABCDEFJK:"CJBDAFEK",ABCDEFIL:"CEBDAFLI",ABCDEFIK:"CEBDAFIK",ABCDEFIJ:"CJBDAFEI",ABCDEFHL:"HFBCADLE",ABCDEFHK:"HEBCAFDK",ABCDEFHJ:"HJBCAFDE",ABCDEFHI:"HEBCAFDI",ABCDEFGL:"CGBDAFLE",ABCDEFGK:"CGBDAFEK",ABCDEFGJ:"CGBDAFEJ",ABCDEFGI:"CGBDAFEI",ABCDEFGH:"HGBCAFDE"};
+const KO_VENUE={73:'Los Angeles, USA',74:'Foxborough (Boston), USA',75:'Guadalupe (Monterrey), Mexikó',76:'Houston, USA',77:'New Jersey, USA',78:'Arlington (Dallas), USA',79:'Mexikóváros, Mexikó',80:'Atlanta, USA',81:'Santa Clara (San Francisco), USA',82:'Seattle, USA',83:'Toronto, Kanada',84:'Los Angeles, USA',85:'Vancouver, Kanada',86:'Miami, USA',87:'Kansas City, USA',88:'Arlington (Dallas), USA',89:'Philadelphia, USA',90:'Houston, USA',91:'New Jersey, USA',92:'Mexikóváros, Mexikó',93:'Arlington (Dallas), USA',94:'Seattle, USA',95:'Atlanta, USA',96:'Vancouver, Kanada',97:'Foxborough (Boston), USA',98:'Los Angeles, USA',99:'Miami, USA',100:'Kansas City, USA',101:'Arlington (Dallas), USA',102:'Atlanta, USA',103:'Miami, USA',104:'New Jersey, USA'};
+function fifaMatchObj(n){
+  if(n>=73&&n<=88)return ALL.find(m=>m.stage==='r32'&&m.mn===n-72);
+  if(n>=89&&n<=96)return ALL.find(m=>m.stage==='r16'&&m.mn===n-88);
+  if(n>=97&&n<=100)return ALL.find(m=>m.stage==='qf'&&m.mn===n-96);
+  if(n>=101&&n<=102)return ALL.find(m=>m.stage==='sf'&&m.mn===n-100);
+  if(n===103)return ALL.find(m=>m.stage==='bronze');
+  if(n===104)return ALL.find(m=>m.stage==='final');
+  return null;
+}
+function teamsOfMatch(m,pending){
+  if(!m)return null;
+  const ov=(pending&&pending[m.id])||S.mt[m.id];
+  if(ov)return ov;
+  if(!m.tbd)return{home:m.home,away:m.away};
+  return null;
+}
+function getWinnerSide(matchId,result){
+  if(!result)return null;
+  if(result.homeGoals===result.awayGoals)return null;
+  return result.homeGoals>result.awayGoals?'home':'away';
+}
+function resolveR32Teams(results){
+  const groupMatches=ALL.filter(m=>m.stage==='group');
+  if(groupMatches.some(m=>!results[m.id]))return null;
+  const standings={};
+  GD.forEach(g=>{standings[g.id]=calcStd(g.id,results,null);});
+  const thirds=GD.map(g=>({grp:g.id,...standings[g.id][2]}));
+  thirds.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+  const best8=thirds.slice(0,8).map(x=>x.grp).sort();
+  const comboKey=best8.join('');
+  const row=ANNEX_C[comboKey];
+  if(!row)return null;
+  const hostOrder=['A','B','D','E','G','I','K','L'];
+  const thirdFor={};
+  hostOrder.forEach((h,i)=>{thirdFor[h]=row[i];});
+  const out={};
+  for(let fifaNum=73;fifaNum<=88;fifaNum++){
+    const[hLbl,aLbl]=R32_SLOTS[fifaNum];
+    const resolveSide=(lbl)=>{
+      const m1=lbl.match(/^([12])([A-L])$/);
+      if(m1)return m1[1]==='1'?standings[m1[2]][0].n:standings[m1[2]][1].n;
+      return null;
+    };
+    let home=resolveSide(hLbl),away=resolveSide(aLbl);
+    if(home===null){const hostLetter=aLbl.match(/^[12]([A-L])$/)[1];home=standings[thirdFor[hostLetter]][2].n;}
+    if(away===null){const hostLetter=hLbl.match(/^[12]([A-L])$/)[1];away=standings[thirdFor[hostLetter]][2].n;}
+    out[fifaNum]={home,away};
+  }
+  return out;
+}
+async function autoFillKnockoutTeams(){
+  const updates={};
+  const r32=resolveR32Teams(S.results);
+  if(r32){
+    for(let fifaNum=73;fifaNum<=88;fifaNum++){
+      const m=fifaMatchObj(fifaNum);
+      if(m&&!S.mt[m.id]&&r32[fifaNum])updates[m.id]=r32[fifaNum];
+    }
+  }
+  for(let fifaNum=89;fifaNum<=104;fifaNum++){
+    const m=fifaMatchObj(fifaNum);
+    if(!m||S.mt[m.id]||updates[m.id])continue;
+    const wsrc=WINNER_SOURCES[fifaNum],lsrc=LOSER_SOURCES[fifaNum];
+    const srcNums=wsrc||lsrc;
+    if(!srcNums)continue;
+    const[ma,mb]=srcNums.map(fifaMatchObj);
+    if(!ma||!mb)continue;
+    const ta=teamsOfMatch(ma,updates),tb=teamsOfMatch(mb,updates);
+    if(!ta||!tb)continue;
+    const ra=S.results[ma.id],rb=S.results[mb.id];
+    if(!ra||!rb)continue;
+    const wa=getWinnerSide(ma.id,ra),wb=getWinnerSide(mb.id,rb);
+    if(!wa||!wb)continue;
+    if(wsrc){
+      updates[m.id]={home:wa==='home'?ta.home:ta.away,away:wb==='home'?tb.home:tb.away};
+    }else{
+      updates[m.id]={home:wa==='home'?ta.away:ta.home,away:wb==='home'?tb.away:tb.home};
+    }
+  }
+  if(Object.keys(updates).length){
+    const nm={...S.mt,...updates};
+    await sS('wc_mt',nm,true);
+    SS({mt:nm});
+  }
+}
+function fifaNumOf(m){
+  if(m.stage==='r32')return 72+m.mn;
+  if(m.stage==='r16')return 88+m.mn;
+  if(m.stage==='qf')return 96+m.mn;
+  if(m.stage==='sf')return 100+m.mn;
+  if(m.stage==='bronze')return 103;
+  if(m.stage==='final')return 104;
+  return null;
+}
+function fmtKoTime(m){
+  const koTime=S.ko[m.id]||m.koDefault;
+  if(!koTime)return '';
+  const d=new Date(koTime);
+  const datePart=d.toLocaleDateString(S.lang==='en'?'en-GB':'hu-HU',{month:'short',day:'numeric',timeZone:'Europe/Budapest'});
+  const timePart=d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'});
+  return `${datePart} ${timePart}`;
+}
 function slotLabel(matchId,side){
   if(R32_SLOTS[matchId])return R32_SLOTS[matchId][side];
   if(WINNER_SOURCES[matchId])return `${t('winner_of')} – M${WINNER_SOURCES[matchId][side]}`;
@@ -1009,14 +1123,17 @@ function slotLabel(matchId,side){
 function bkBox(m){
   const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away,r=S.results[m.id],isTBD=m.tbd&&!ov;
   const hLbl=isTBD?slotLabel(m.id,0):home,aLbl=isTBD?slotLabel(m.id,1):away;
+  const win=r?getWinnerSide(m.id,r):null;
+  const fn=fifaNumOf(m),venue=fn?KO_VENUE[fn]:null,koLbl=fmtKoTime(m);
   return `<div class="bk-match">
-    <div class="bk-team${r&&r.homeGoals>r.awayGoals?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?hLbl:`${FL[home]||''} ${teamName(home)}`}</span>${r?`<span class="bk-sc">${r.homeGoals}</span>`:''}</div>
-    <div class="bk-team${r&&r.awayGoals>r.homeGoals?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?aLbl:`${FL[away]||''} ${teamName(away)}`}</span>${r?`<span class="bk-sc">${r.awayGoals}</span>`:''}</div>
+    <div class="bk-team${win==='home'?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?hLbl:`${fImg(home,18)} ${teamName(home)}`}</span>${r?`<span class="bk-sc">${r.homeGoals}</span>`:''}</div>
+    <div class="bk-team${win==='away'?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?aLbl:`${fImg(away,18)} ${teamName(away)}`}</span>${r?`<span class="bk-sc">${r.awayGoals}</span>`:''}</div>
+    ${venue?`<div class="bk-venue">📍 ${venue}<br>🕐 ${koLbl} ${t('hu_time_lbl')}</div>`:''}
   </div>`;
 }
 function rBracket(){
-  const rounds=[{id:'r32',label:t('bracket_round32'),n:16},{id:'r16',label:t('bracket_round16'),n:8},{id:'qf',label:t('bracket_qf'),n:4},{id:'sf',label:t('bracket_sf'),n:2},{id:'final',label:t('bracket_final'),n:1}];
-  const ROUND_H=920;
+  const rounds=[{id:'r32',label:t('bracket_round32'),n:16},{id:'r16',label:t('bracket_round16'),n:8},{id:'qf',label:t('bracket_qf'),n:4},{id:'sf',label:t('bracket_sf'),n:2}];
+  const ROUND_H=1680;
   const cols=rounds.map(rd=>{
     const ms=ALL.filter(m=>m.stage===rd.id).sort((a,b)=>(a.mn||0)-(b.mn||0));
     const boxes=ms.map((m,i)=>{
@@ -1025,14 +1142,15 @@ function rBracket(){
     }).join('');
     return `<div class="bk-col"><div class="bk-colhead">${rd.label}</div><div style="position:relative;height:${ROUND_H}px">${boxes}</div></div>`;
   }).join('');
-  const bronze=ALL.find(m=>m.stage==='bronze');
+  const final=ALL.find(m=>m.stage==='final'),bronze=ALL.find(m=>m.stage==='bronze');
+  const finalCol=`<div class="bk-col"><div class="bk-colhead">${t('bracket_final')}</div><div style="position:relative;height:${ROUND_H}px">
+    <div style="position:absolute;top:${0.5*ROUND_H}px;left:0;right:0;transform:translateY(-50%)"><div class="bk-final-wrap">${bkBox(final)}</div></div>
+    <div style="position:absolute;top:${0.74*ROUND_H}px;left:0;right:0;transform:translateY(-50%)"><div class="bk-bronze-lbl">🥉 ${t('bracket_bronze')}</div>${bkBox(bronze)}</div>
+  </div></div>`;
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.45);font-size:12.5px;margin-bottom:14px">${t('bracket_hint')}</p>
-    <div style="overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:16px;min-width:880px">${cols}</div></div>
-    <div class="divider"></div>
-    <div class="sect" style="font-size:14px">🥉 ${t('bracket_bronze')}</div>
-    <div style="max-width:230px">${bkBox(bronze)}</div>
+    <div style="overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:16px;min-width:1020px">${cols}${finalCol}</div></div>
   </div>`;
 }
 
@@ -1061,7 +1179,7 @@ function rMyTips(){
     const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
     return `<div class="tip-row">
       <div style="font-size:10.5px;color:rgba(var(--ink-rgb),.35);min-width:42px">${m.group?m.group+(m.md||''):stageLabel(m.stage)?.slice(0,3)||''}<div>${fd(m.date)}</div></div>
-      <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${FL[home]||''} ${teamName(home)} – ${teamName(away)} ${FL[away]||''}</div>
+      <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</div>
       <div style="font-size:13px;white-space:nowrap">${t('your_tip')} <b>${tip.homeGoals}–${tip.awayGoals}</b></div>
       ${r?`<div style="text-align:right;min-width:85px"><div style="font-size:11px;color:${r.live?'#e63329':'rgba(var(--ink-rgb),.35)'}">${r.live?'🔴 '+t('live_lbl'):t('result_lbl')}: ${r.homeGoals}–${r.awayGoals}</div><span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p${r.live?' ('+t('live_lbl')+')':''}</span></div>`:`<div style="font-size:11px;color:rgba(var(--ink-rgb),.2);min-width:85px;text-align:right">${t('expected')}</div>`}
     </div>`;
@@ -1073,6 +1191,11 @@ function isLocked(m){
   const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
   const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
   return Date.now()>=lockMs||!!S.results[m.id];
+}
+function tournamentStarted(){
+  const m1=ALL.find(x=>x.id===1);
+  const ko=S.ko?.[1]||m1?.koDefault;
+  return ko?Date.now()>=new Date(ko).getTime():false;
 }
 function rUserHistory(targetUid,cfg){
   const eff=getEffectiveResults();
@@ -1129,23 +1252,24 @@ function rLb(){
 }
 
 function rPreTips(){
-  const uid=S.user.id,uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
+  const uid=S.user.id,uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`],locked=tournamentStarted();
   return `<div>
   <div class="sect">${t('pretips_section')}</div>
   <p style="color:rgba(var(--ink-rgb),.55);font-size:14px;margin-bottom:18px">${t('pretips_intro')}</p>
-  <div class="pre-card">
+  ${locked?`<div class="err-box" style="margin-bottom:16px">${t('pretips_locked_msg')}</div>`:''}
+  <div class="pre-card" style="${locked?'opacity:.55;pointer-events:none':''}">
     <h3>${t('winner_card_h3')}</h3>
     <p>${t('winner_card_p')}</p>
     ${teamSelect('preW',uw||'')}
   </div>
-  <div class="pre-card">
+  <div class="pre-card" style="${locked?'opacity:.55;pointer-events:none':''}">
     <h3>${t('topscorer_card_h3')}</h3>
     <p>${t('topscorer_card_p')}</p>
     ${topscorerSelect('preT',ut||'')}
   </div>
   ${uw&&ut?`<div class="suc-box">${t('saved_tips_msg')} <b>${teamName(uw)}</b> ${t('wins_word')}, ${t('top_scorer_lbl').toLowerCase()} <b>${ut}</b></div>`:''}
   <div id="preErr" style="display:none" class="err-box"></div>
-  <button class="btn-gold" id="savePreBtn" style="max-width:280px">${t('save_tips_btn')}</button>
+  ${locked?'':`<button class="btn-gold" id="savePreBtn" style="max-width:280px">${t('save_tips_btn')}</button>`}
   ${S.adminSpec?.winner?`<div style="margin-top:18px;padding:14px;background:rgba(0,0,0,.2);border-radius:10px;font-size:13px;color:rgba(var(--ink-rgb),.5)">${t('admin_recorded')} 🏆 <b style="color:#c9a84c">${teamName(S.adminSpec.winner)}</b> · ⚽ <b style="color:#c9a84c">${S.adminSpec.top||'—'}</b></div>`:''}
   </div>`;
 }
@@ -1290,7 +1414,7 @@ function rAdmin(){
     ${S.liveDebug?`<div style="margin-top:10px;font-size:11px;color:rgba(var(--ink-rgb),.35);line-height:1.5">API válasz: <b>${S.liveDebug.total}</b> meccs összesen${S.liveDebug.total?` (${Object.entries(S.liveDebug.byStatus).map(([k,v])=>`${k}: ${v}`).join(', ')})`:''}${S.liveDebug.koSynced?`<br><span style="color:#00b050">✓ ${S.liveDebug.koSynced} meccs kezdési ideje frissítve a valódi adatra</span>`:''}${S.liveDebug.sample.length?`<br>Pl.: ${S.liveDebug.sample.join(' · ')}`:''}</div>`:''}
     ${S.liveFound.length?`<div style="margin-top:12px">
       <div style="font-size:12px;color:#00b050;font-weight:700;margin-bottom:6px">✓ Automatikusan rögzítve:</div>
-      ${S.liveFound.map(f=>`<div style="font-size:13px;color:rgba(var(--ink-rgb),.7);padding:4px 0">${FL[f.home]||''} ${f.home} ${f.h}–${f.a} ${f.away} ${FL[f.away]||''}</div>`).join('')}
+      ${S.liveFound.map(f=>`<div style="font-size:13px;color:rgba(var(--ink-rgb),.7);padding:4px 0">${fImg(f.home,16)} ${f.home} ${f.h}–${f.a} ${f.away} ${fImg(f.away,16)}</div>`).join('')}
     </div>`:''}
   </div>
   <div class="pill-row">${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
@@ -1302,7 +1426,7 @@ function rAdmin(){
     return `<div class="adm-card">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:11px;color:rgba(var(--ink-rgb),.3);min-width:30px">#${m.id}</span>
-        <div style="flex:1;font-size:13px">${FL[home]||''} ${home} – ${away} ${FL[away]||''}</div>
+        <div style="flex:1;font-size:13px">${fImg(home,18)} ${home} – ${away} ${fImg(away,18)}</div>
         <span style="font-size:11px;color:rgba(var(--ink-rgb),.4)">🕐 ${koLbl}</span>
         ${r?`<b style="color:#00b050">${r.homeGoals}–${r.awayGoals}</b>`:''}
         <div style="display:flex;gap:5px">
@@ -1312,7 +1436,7 @@ function rAdmin(){
         </div>
       </div>
       ${iER?`<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        ${FL[home]||''} ${home} <input class="ainp" id="arH" type="number" min="0" max="30" value="${S.editRIn.h}"> – <input class="ainp" id="arA" type="number" min="0" max="30" value="${S.editRIn.a}"> ${away} ${FL[away]||''}
+        ${fImg(home,18)} ${home} <input class="ainp" id="arH" type="number" min="0" max="30" value="${S.editRIn.h}"> – <input class="ainp" id="arA" type="number" min="0" max="30" value="${S.editRIn.a}"> ${away} ${fImg(away,18)}
         <button class="btn-green" id="svRes" data-mid="${m.id}" style="padding:8px 14px;font-size:13px">Mentés</button>
         <button class="btn-sm white" id="cxRes" style="padding:8px 12px">Mégse</button>
       </div>`:''}
@@ -1516,6 +1640,7 @@ setInterval(async()=>{
     const[r,t,sp,lg,mt,ko,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true),sG('wc_ko',true),sG('wc_live',true)]);
     SS({results:r||S.results,tips:t||S.tips,special:sp||S.special,leagues:lg||S.leagues,mt:mt||S.mt,ko:ko||S.ko,live:live?.scores||S.live,liveUpdatedAt:live?.updatedAt||S.liveUpdatedAt});
     refreshLiveIfStale();
+    if(S.user?.isAdmin)autoFillKnockoutTeams();
   }catch(e){}
 },30000);
 
