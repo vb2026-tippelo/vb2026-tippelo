@@ -1,9 +1,5 @@
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '1a897c26b1msh3a5cd4defcc5714p150cd7jsn31d90b539f03';
 const WC_HOST = 'world-cup-2026-live-api.p.rapidapi.com';
-const HEADERS = {
-  'x-rapidapi-key': RAPIDAPI_KEY,
-  'x-rapidapi-host': WC_HOST
-};
 
 const EN_TEAM = {
   'Mexico':'Mexikó','South Africa':'Dél-Afrika','South Korea':'Dél-Korea',
@@ -20,55 +16,41 @@ const EN_TEAM = {
   'Saudi Arabia':'Szaúd-Arábia','Uruguay':'Uruguay','France':'Franciaország',
   'Senegal':'Szenegál','Iraq':'Irak','Norway':'Norvégia','Argentina':'Argentína',
   'Algeria':'Algéria','Austria':'Ausztria','Jordan':'Jordánia','Portugal':'Portugália',
-  'DR Congo':'DR Kongó','Democratic Republic of Congo':'DR Kongó',
+  'DR Congo':'DR Kongó','D.R. Congo':'DR Kongó','Democratic Republic of Congo':'DR Kongó',
   'Uzbekistan':'Üzbegisztán','Colombia':'Kolumbia','England':'Anglia',
   'Croatia':'Horvátország','Ghana':'Ghána','Panama':'Panama'
 };
 
 function mapTeam(en){ return EN_TEAM[en] || en; }
 
-// Status: 2,6-10,37,38 = live; 3,43 = finished; 1 = scheduled
 const LIVE_STATUSES = new Set([2,6,7,8,9,10,37,38]);
 const FINISHED_STATUSES = new Set([3,43]);
 
 exports.handler = async function(event, context) {
   const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
   try {
-    // /wc/draw visszaadja az összes meccset státusszal + eredménnyel
-    const [drawResp, liveResp] = await Promise.all([
-      fetch(`https://${WC_HOST}/wc/draw`, {headers: HEADERS}),
-      fetch(`https://${WC_HOST}/wc/live`, {headers: HEADERS}),
-    ]);
-
-    const drawData = drawResp.ok ? await drawResp.json() : {data:[]};
-    const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
-
-    // Live percek a /wc/live-ból (matchId alapján)
-    const liveMinutes = {};
-    (liveData.data || []).forEach(m => {
-      liveMinutes[m.matchId] = m.minute || '';
+    const resp = await fetch(`https://${WC_HOST}/wc/draw`, {
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': WC_HOST
+      }
     });
+    if(!resp.ok) throw new Error(`API error: ${resp.status}`);
+    const json = await resp.json();
 
-    const matches = (drawData.data || [])
+    const matches = (json.data || [])
       .filter(m => m.scoreHome !== null || LIVE_STATUSES.has(m.status))
       .map(m => ({
         home: mapTeam(m.home),
         away: mapTeam(m.away),
-        homeEn: m.home,
-        awayEn: m.away,
         h: m.scoreHome ?? 0,
         a: m.scoreAway ?? 0,
         status: m.statusText,
-        minute: liveMinutes[m.matchId] || '',
+        minute: m.minute || '',
         live: LIVE_STATUSES.has(m.status),
         finished: FINISHED_STATUSES.has(m.status),
-        matchId: m.matchId,
         kickoff: m.kickoff,
       }));
-
-    const live = matches.filter(m => m.live).length;
-    const finished = matches.filter(m => m.finished).length;
-    console.log(`WC matches: ${matches.length} (live: ${live}, finished: ${finished})`);
 
     return {
       statusCode: 200, headers,
@@ -80,7 +62,6 @@ exports.handler = async function(event, context) {
       })
     };
   } catch(err) {
-    console.error('Error:', err.message);
     return {statusCode:500, headers, body: JSON.stringify({error: err.message})};
   }
 };
