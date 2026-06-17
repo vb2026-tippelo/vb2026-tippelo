@@ -909,9 +909,9 @@ let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
 
 async function init(){
-  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang]=await Promise.all([
+  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds]=await Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
-    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false)
+    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true)
   ]);
   let ul=users||[];
   if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:'admin123',isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
@@ -930,7 +930,7 @@ async function init(){
     await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{}});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   if(cu){
@@ -1095,6 +1095,7 @@ async function applyFinishedMatches(apiMatches){
 
   const tasks=[sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true)];
   if(applied.length)tasks.push(sS('wc_r',nr,true));
+  if(Object.keys(wcIds).length)tasks.push(sS('wc_ids',wcIds,true));
   await Promise.all(tasks);
   SS({wcIds});
   if(applied.length){SS({results:nr});await autoFillKnockoutTeams();}
