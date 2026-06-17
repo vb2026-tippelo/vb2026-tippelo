@@ -1045,8 +1045,6 @@ async function applyFinishedMatches(apiMatches){
   const live={};
   const applied=[];
   apiMatches.forEach(am=>{
-    // SportAPI formátum: am.home már magyar, am.h/am.a a gólok, am.live/am.finished flag
-    // football-data.org formátum: am.home angol, am.homeScore/am.awayScore, am.status string
     const isSportAPI=am.h!=null||am.finished!=null;
     let huHome,huAway,hGoal,aGoal,isLive,isFinished;
     if(isSportAPI){
@@ -1073,6 +1071,26 @@ async function applyFinishedMatches(apiMatches){
       live[lm.id]={h,a,status:am.status,desc:am.desc||am.status};
     }
   });
+
+  // Eltűnés detektálás: ami VOLT élő de most NEM szerepel a feedben → valószínűleg vége
+  const prevLive=S.live||{};
+  const nowLiveIds=new Set(Object.keys(live).map(Number));
+  Object.entries(prevLive).forEach(([mid,sc])=>{
+    const matchId=parseInt(mid);
+    if(nowLiveIds.has(matchId))return; // még mindig élő
+    if(nr[matchId])return; // már van eredmény
+    const m=ALL.find(x=>x.id===matchId);
+    if(!m)return;
+    const koTime=S.ko[m.id]||m.koDefault;
+    if(!koTime)return;
+    // Ha 100+ perce kezdődött és eltűnt a live feedből → befejezettnek vesszük
+    const elapsed=(Date.now()-new Date(koTime).getTime())/60000;
+    if(elapsed>=100){
+      nr[matchId]={homeGoals:sc.h,awayGoals:sc.a};
+      applied.push({mid:matchId,home:m.home,away:m.away,h:sc.h,a:sc.a});
+    }
+  });
+
   const tasks=[sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true)];
   if(applied.length)tasks.push(sS('wc_r',nr,true));
   await Promise.all(tasks);
