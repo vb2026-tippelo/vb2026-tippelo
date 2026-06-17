@@ -187,6 +187,7 @@ table.stdt{width:100%;border-collapse:collapse}
 .stdt tr:last-child td{border-bottom:none}
 .stdt tr.top2 td:nth-child(2){color:var(--c-gold)}
 .adot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+.adot.g{background:#00b050}.adot.o{background:#c9a84c}.adot.r{background:#e8212a}
 
 /* ===== STAT BOXES ===== */
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
@@ -1376,16 +1377,24 @@ function rStandings(){
   }).filter(tm=>tm.p>0).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
   const thirdTable=thirds.length?`<div class="std-card"><div class="std-head"><span class="std-glbl">🥉 ${t('third_table_t')}</span><span class="std-t">${t('third_table_s')}</span></div>
     <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_group')}</th><th>${t('col_played')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
-    <tbody>${thirds.map((tm,i)=>`<tr class="${i<8?'adv':''}"><td><span class="adot ${i<8?'g':''}"></span>${i+1}</td>
-    <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.group}</td><td>${tm.p}</td>
-    <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`:'';
+    <tbody>${thirds.map((tm,i)=>{
+      const bg=i<8?'rgba(0,176,80,.07)':i>=8?'rgba(232,33,42,.07)':'';
+      const sep=i===7?'border-bottom:2px solid rgba(0,176,80,.4)':'';
+      return `<tr style="background:${bg};${sep}"><td><span class="adot ${i<8?'g':'r'}"></span>${i+1}</td>
+      <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.group}</td><td>${tm.p}</td>
+      <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`;
+    }).join('')}</tbody></table></div>`:'';
   const groupTables=GD.map(g=>{
     const std=calcStd(g.id,eff,S.mt);
     return `<div class="std-card"><div class="std-head"><span class="std-glbl">${g.id}. ${S.lang==='en'?'GROUP':'CSOPORT'}</span><span class="std-t">${g.teams.map(tm=>fImg(tm,18)).join(' ')}</span></div>
     <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_played')}</th><th>${t('col_w')}</th><th>${t('col_d')}</th><th>${t('col_l')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
-    <tbody>${std.map((tm,i)=>`<tr class="${i<2?'adv':i===2?'padv':''}"><td><span class="adot ${i<2?'g':i===2?'o':''}"></span>${i+1}</td>
-    <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.p}</td><td>${tm.w}</td><td>${tm.d}</td><td>${tm.l}</td>
-    <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`;
+    <tbody>${std.map((tm,i)=>{
+      const bg=i<2?'rgba(0,176,80,.07)':i===2?'rgba(212,175,55,.07)':'rgba(232,33,42,.07)';
+      const sep=i===1?'border-bottom:2px solid rgba(0,176,80,.4)':i===2?'border-bottom:3px dashed rgba(212,175,55,.35)':'';
+      return `<tr style="background:${bg};${sep}"><td><span class="adot ${i<2?'g':i===2?'o':'r'}"></span>${i+1}</td>
+      <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.p}</td><td>${tm.w}</td><td>${tm.d}</td><td>${tm.l}</td>
+      <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`;
+    }).join('')}</tbody></table></div>`;
   }).join('');
   return thirdTable+groupTables;
 }
