@@ -249,8 +249,14 @@ table.stdt{width:100%;border-collapse:collapse}
 .pred-group-h{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
 .pred-team-grid{display:flex;flex-direction:column;gap:5px}
 .pred-team-btn{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:8px;border:1.5px solid var(--border);background:rgba(var(--ink-rgb),.04);cursor:pointer;font-size:12.5px;color:rgba(var(--ink-rgb),.65);text-align:left;width:100%;transition:all .12s}
-.pred-team-btn.picked{background:rgba(0,176,80,.12);border-color:rgba(0,176,80,.4);color:var(--c-green);font-weight:700}
-.pred-rank-badge{background:var(--c-green);color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pred-team-btn.picked{font-weight:700}
+.pred-team-btn.rank-1,.pred-team-btn.rank-2{background:rgba(0,176,80,.12);border-color:rgba(0,176,80,.4);color:var(--c-green)}
+.pred-team-btn.rank-3{background:rgba(212,175,55,.12);border-color:rgba(212,175,55,.4);color:var(--c-gold)}
+.pred-team-btn.rank-4{background:rgba(232,33,42,.12);border-color:rgba(232,33,42,.4);color:#ff7070}
+.pred-rank-badge{color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pred-rank-badge.r1,.pred-rank-badge.r2{background:var(--c-green)}
+.pred-rank-badge.r3{background:var(--c-gold);color:#07090f}
+.pred-rank-badge.r4{background:var(--c-red)}
 .pred-team-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pred-third-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .pred-third-btn{display:flex;align-items:center;gap:7px;padding:9px 10px;border-radius:9px;border:1.5px solid var(--border);background:rgba(var(--ink-rgb),.04);cursor:pointer;font-size:12.5px;color:rgba(var(--ink-rgb),.65)}
@@ -1449,8 +1455,9 @@ function rPredict(){
     const picked=S.predGroups[g.id]||[];
     const teamBtns=g.teams.map(team=>{
       const rank=picked.indexOf(team),rankShown=rank>=0?rank+1:null;
-      return `<button class="pred-team-btn${rankShown?' picked':''}" data-predteam="${g.id}|${team}">
-        ${rankShown?`<span class="pred-rank-badge">${rankShown}</span>`:''}
+      const rankCls=rankShown?` picked rank-${rankShown}`:'';
+      return `<button class="pred-team-btn${rankCls}" data-predteam="${g.id}|${team}">
+        ${rankShown?`<span class="pred-rank-badge r${rankShown}">${rankShown}</span>`:''}
         ${fImg(team,18)}<span class="pred-team-nm">${teamName(team)}</span>
       </button>`;
     }).join('');
