@@ -2053,12 +2053,14 @@ function bkBox(m){
 }
 function rBracket(){
   const BH=68,MW=162,CW=20,sc='rgba(212,175,55,0.35)',sw=1.5;
-  const halves=[
-    {r32:[74,77,73,75,83,84,81,82],r16:[89,90,93,94],qf:[97,98],sf:101,final:104},
-    {r32:[76,78,79,80,86,88,85,87],r16:[91,92,95,96],qf:[99,100],sf:102,final:103},
-  ];
-  const N=8,HC=BH+14,H=N*HC;
+  const N=8,HC=BH+14,H=N*HC; // egy fél magassága
+  const TH=H*2; // teljes magasság
   function cy(round,i){return (i*2+1)*Math.pow(2,round)*HC/2;}
+
+  const halves=[
+    {r32:[74,77,73,75,83,84,81,82],r16:[89,90,93,94],qf:[97,98],sf:101},
+    {r32:[76,78,79,80,86,88,85,87],r16:[91,92,95,96],qf:[99,100],sf:102},
+  ];
 
   const hdr=(l,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.4px;padding-bottom:5px">${l}</div>`;
   const sp=w=>`<div style="width:${w}px;flex-shrink:0"></div>`;
@@ -2066,7 +2068,7 @@ function rBracket(){
     ${hdr(t('bracket_round32'),MW)}${sp(CW)}${hdr(t('bracket_round16'),MW)}${sp(CW)}${hdr(t('bracket_qf'),MW)}${sp(CW)}${hdr(t('bracket_sf'),MW)}${sp(CW)}${hdr('🥉 '+t('bracket_bronze')+' · 🏆 '+t('bracket_final'),MW)}
   </div>`;
 
-  function col(fns,round){
+  function col(fns,round,yOffset=0){
     return `<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">
       ${fns.map((fn,i)=>wkBox(fn,cy(round,i),BH,MW,false)).join('')}</div>`;
   }
@@ -2084,31 +2086,38 @@ function rBracket(){
     return `<div style="position:relative;width:${CW}px;flex-shrink:0;height:${H}px">
       <svg width="${CW}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
   }
-  function connSF(sfFn,finalFn,isFinal){
-    // SF → döntő/bronz összekötő vonal
-    const sfCy=cy(3,0),finCy=H/2,xm=CW/2;
-    const lns=[
-      `<line x1="0" y1="${sfCy}" x2="${xm}" y2="${sfCy}" stroke="${sc}" stroke-width="${sw}"/>`,
-      `<line x1="${xm}" y1="${sfCy}" x2="${xm}" y2="${finCy}" stroke="${sc}" stroke-width="${sw}"/>`,
-      `<line x1="${xm}" y1="${finCy}" x2="${CW}" y2="${finCy}" stroke="${sc}" stroke-width="${sw}"/>`,
-    ];
-    return `<div style="position:relative;width:${CW}px;flex-shrink:0;height:${H}px">
-      <svg width="${CW}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
-  }
 
-  const rows=halves.map(half=>{
-    const isFinal=half.final===104;
-    const finalCol=`<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">
-      ${wkBox(half.final,H/2,BH,MW,isFinal)}
-    </div>`;
-    return `<div style="display:flex;margin-bottom:16px">
-      ${col(half.r32,0)}${conn(half.r32,half.r16,0)}
-      ${col(half.r16,1)}${conn(half.r16,half.qf,1)}
-      ${col(half.qf,2)}${conn(half.qf,[half.sf],2)}
-      ${col([half.sf],3)}${connSF(half.sf,half.final,isFinal)}
-      ${finalCol}
-    </div>`;
-  }).join('');
+  // SF-ek Y-pozíciói az összesített (TH) koordinátában
+  const topSFy = cy(3,0);           // felső SF: H/2
+  const botSFy = H + cy(3,0);       // alsó SF: H + H/2
+  const finalY = TH/2 - BH/2 - 10; // Döntő: két ág határán (fent)
+  const bronzeY = TH/2 + 10;        // Bronz: közvetlenül alatta
+
+  // 5. oszlop: összekötők + Döntő + Bronz
+  const rightColW = CW + MW;
+  const connLines=[
+    // Felső SF → Döntő
+    `<line x1="0" y1="${topSFy}" x2="${CW/2}" y2="${topSFy}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${topSFy}" x2="${CW/2}" y2="${finalY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${finalY+BH/2}" x2="${CW}" y2="${finalY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+    // Alsó SF → Bronz
+    `<line x1="0" y1="${botSFy}" x2="${CW/2}" y2="${botSFy}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${botSFy}" x2="${CW/2}" y2="${bronzeY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${bronzeY+BH/2}" x2="${CW}" y2="${bronzeY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+  ];
+  const rightCol=`<div style="position:relative;width:${rightColW}px;flex-shrink:0;height:${TH}px">
+    <svg width="${CW}" height="${TH}" style="position:absolute;top:0;left:0;overflow:visible">${connLines.join('')}</svg>
+    <div style="position:absolute;left:${CW}px;top:${finalY}px;width:${MW}px">${wkBox(104,BH/2,BH,MW,true)}</div>
+    <div style="position:absolute;left:${CW}px;top:${bronzeY}px;width:${MW}px">${wkBox(103,BH/2,BH,MW,false)}</div>
+  </div>`;
+
+  // Bal oldal: két sor egymás alatt
+  const leftCols=halves.map(half=>`<div style="display:flex">
+    ${col(half.r32,0)}${conn(half.r32,half.r16,0)}
+    ${col(half.r16,1)}${conn(half.r16,half.qf,1)}
+    ${col(half.qf,2)}${conn(half.qf,[half.sf],2)}
+    ${col([half.sf],3)}
+  </div>`).join('');
 
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
@@ -2116,7 +2125,10 @@ function rBracket(){
     <div class="bk-desktop" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <div style="min-width:${5*MW+4*CW}px">
         ${hdrRow}
-        ${rows}
+        <div style="display:flex">
+          <div style="display:flex;flex-direction:column">${leftCols}</div>
+          ${rightCol}
+        </div>
       </div>
     </div>
   </div>
@@ -2160,12 +2172,12 @@ function rBracketMobile(){
 
 function rPredBracket(r32g,cache){
   const BH=68,MW=162,CW=20,sc='rgba(212,175,55,0.35)',sw=1.5;
-  const halves=[
-    {r32:[74,77,73,75,83,84,81,82],r16:[89,90,93,94],qf:[97,98],sf:101,final:104},
-    {r32:[76,78,79,80,86,88,85,87],r16:[91,92,95,96],qf:[99,100],sf:102,final:103},
-  ];
-  const N=8,HC=BH+14,H=N*HC;
+  const N=8,HC=BH+14,H=N*HC,TH=H*2;
   function cy(round,i){return (i*2+1)*Math.pow(2,round)*HC/2;}
+  const halves=[
+    {r32:[74,77,73,75,83,84,81,82],r16:[89,90,93,94],qf:[97,98],sf:101},
+    {r32:[76,78,79,80,86,88,85,87],r16:[91,92,95,96],qf:[99,100],sf:102},
+  ];
 
   function mkBox(fn,yCy,isFinal){
     const teams=predTeamsForFifaNum(fn,r32g,cache);
@@ -2210,21 +2222,29 @@ function rPredBracket(r32g,cache){
     return `<div style="position:relative;width:${CW}px;flex-shrink:0;height:${H}px">
       <svg width="${CW}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
   }
-  function connSF(){
-    const sfCy=cy(3,0),finCy=H/2,xm=CW/2;
-    return `<div style="position:relative;width:${CW}px;flex-shrink:0;height:${H}px"><svg width="${CW}" height="${H}" style="overflow:visible">
-      <line x1="0" y1="${sfCy}" x2="${xm}" y2="${sfCy}" stroke="${sc}" stroke-width="${sw}"/>
-      <line x1="${xm}" y1="${sfCy}" x2="${xm}" y2="${finCy}" stroke="${sc}" stroke-width="${sw}"/>
-      <line x1="${xm}" y1="${finCy}" x2="${CW}" y2="${finCy}" stroke="${sc}" stroke-width="${sw}"/>
-    </svg></div>`;
-  }
 
-  const rows=halves.map(half=>`<div style="display:flex;margin-bottom:16px">
+  const topSFy=cy(3,0),botSFy=H+cy(3,0);
+  const finalY=TH/2-BH/2-10,bronzeY=TH/2+10;
+  const rightColW=CW+MW;
+  const connLines=[
+    `<line x1="0" y1="${topSFy}" x2="${CW/2}" y2="${topSFy}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${topSFy}" x2="${CW/2}" y2="${finalY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${finalY+BH/2}" x2="${CW}" y2="${finalY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="0" y1="${botSFy}" x2="${CW/2}" y2="${botSFy}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${botSFy}" x2="${CW/2}" y2="${bronzeY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+    `<line x1="${CW/2}" y1="${bronzeY+BH/2}" x2="${CW}" y2="${bronzeY+BH/2}" stroke="${sc}" stroke-width="${sw}"/>`,
+  ];
+  const rightCol=`<div style="position:relative;width:${rightColW}px;flex-shrink:0;height:${TH}px">
+    <svg width="${CW}" height="${TH}" style="position:absolute;top:0;left:0;overflow:visible">${connLines.join('')}</svg>
+    <div style="position:absolute;left:${CW}px;top:${finalY}px;width:${MW}px">${mkBox(104,BH/2,true)}</div>
+    <div style="position:absolute;left:${CW}px;top:${bronzeY}px;width:${MW}px">${mkBox(103,BH/2,false)}</div>
+  </div>`;
+
+  const leftCols=halves.map(half=>`<div style="display:flex">
     ${col(half.r32,0)}${conn(half.r32,half.r16,0)}
     ${col(half.r16,1)}${conn(half.r16,half.qf,1)}
     ${col(half.qf,2)}${conn(half.qf,[half.sf],2)}
-    ${col([half.sf],3)}${connSF()}
-    <div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">${mkBox(half.final,H/2,half.final===104)}</div>
+    ${col([half.sf],3)}
   </div>`).join('');
 
   const sel=S.bkRound||'r32';
@@ -2251,7 +2271,12 @@ function rPredBracket(r32g,cache){
   </div><div class="bk-mob-grid">${cur.fns.map(fn=>mobCard(fn)).join('')}</div></div>`;
 
   return `<div class="bk-desktop" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-    <div style="min-width:${5*MW+4*CW}px">${hdrRow}${rows}</div>
+    <div style="min-width:${5*MW+4*CW}px">${hdrRow}
+      <div style="display:flex">
+        <div style="display:flex;flex-direction:column">${leftCols}</div>
+        ${rightCol}
+      </div>
+    </div>
   </div>${mob}`;
 }
 function rPredict(){
