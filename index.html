@@ -1323,7 +1323,7 @@ function rCard(m){
       <div class="team-b away"><span class="tname">${teamName(away)}</span>${fImg(away,40)}</div>
     </div>
     ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
-    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">🏠 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">✕ ${mOdds.d||'–'}</span><span class="mc-odds-pill">✈️ ${mOdds.a}</span>${mOdds.btts?`<span class="mc-odds-pill mc-odds-btts">⚽⚽ ${mOdds.btts}</span>`:''}<span style="font-size:9.5px;color:rgba(var(--ink-rgb),.25);margin-left:4px">${mOdds.bk}</span></div>`:''}
+    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span>${mOdds.btts?`<span class="mc-odds-pill mc-odds-btts">GG ${mOdds.btts}</span>`:''}</div>`:''}
     ${res&&tip?`<div class="mc-res"><span style="color:#999">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
