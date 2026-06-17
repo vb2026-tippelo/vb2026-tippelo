@@ -153,7 +153,8 @@ input[type=number]{-moz-appearance:textfield}
 .tname{font-size:14px;font-weight:700;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .score-b{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:120px;flex-shrink:0}
 .sinputs{display:flex;align-items:center;gap:8px}
-.sbox{width:52px;height:52px;text-align:center;font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--text-color);border:1.5px solid rgba(var(--ink-rgb),.2);border-radius:10px;background:rgba(var(--ink-rgb),.08);transition:all .15s;padding:0;-moz-appearance:textfield;appearance:textfield}
+.sbox{width:52px;height:52px;text-align:center;font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.08);transition:all .15s;padding:0;-moz-appearance:textfield;appearance:textfield}
+.sbox:focus{border-color:var(--c-gold);background:rgba(212,175,55,.07);color:var(--c-gold)}
 .sbox:focus{border-color:var(--c-gold);background:rgba(212,175,55,.07);color:var(--c-gold)}
 .sbox:disabled{opacity:.5}
 .sbox.filled{border-color:rgba(212,175,55,.4)}
@@ -282,6 +283,9 @@ body.light-theme .wk-hdr{background:rgba(0,0,0,.04)}
 .pred-grp-tag{margin-left:auto;font-family:'Rajdhani',sans-serif;font-size:10px;color:rgba(var(--ink-rgb),.3);font-weight:700}
 .pred-third-count{font-size:12.5px;color:rgba(var(--ink-rgb),.4);font-weight:700;margin-bottom:6px}
 .pred-champion{margin-top:16px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.3);border-radius:13px;padding:16px;text-align:center;font-size:14px;color:rgba(var(--ink-rgb),.85)}
+.pred-bk-list-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.pred-bk-mn{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;color:rgba(var(--ink-rgb),.3);min-width:28px}
+.pred-ko-final{font-size:14px;padding:10px 12px;font-weight:800}
 .pred-bk-match{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;overflow:hidden;font-size:12px}
 .pred-bk-match.pending{padding:12px 8px;color:rgba(var(--ink-rgb),.25);font-size:11px;font-style:italic;text-align:center}
 .pred-bk-team{display:flex;align-items:center;gap:6px;padding:7px 9px;border:none;border-bottom:1px solid var(--border);background:transparent;cursor:pointer;font-size:12px;color:rgba(var(--ink-rgb),.6);width:100%;text-align:left;transition:all .12s}
@@ -1775,94 +1779,37 @@ function rPredict(){
 }
 
 function rPredBracket(r32g,cache){
-  const MH=68,MW=148,CW=16,H=704;
-  // Bal oldal (→ SF M101)
-  const L={
-    r32:[{fn:74,cy:34},{fn:77,cy:102},{fn:73,cy:204},{fn:75,cy:272},
-         {fn:83,cy:374},{fn:84,cy:442},{fn:81,cy:544},{fn:82,cy:612}],
-    r16:[{fn:89,cy:68},{fn:90,cy:238},{fn:93,cy:408},{fn:94,cy:578}],
-    qf: [{fn:97,cy:153},{fn:98,cy:493}],
-    sf: [{fn:101,cy:323}]
-  };
-  // Jobb oldal (→ SF M102)
-  const R={
-    r32:[{fn:76,cy:34},{fn:78,cy:102},{fn:79,cy:204},{fn:80,cy:272},
-         {fn:86,cy:374},{fn:88,cy:442},{fn:85,cy:544},{fn:87,cy:612}],
-    r16:[{fn:91,cy:68},{fn:92,cy:238},{fn:95,cy:408},{fn:96,cy:578}],
-    qf: [{fn:99,cy:153},{fn:100,cy:493}],
-    sf: [{fn:102,cy:323}]
-  };
-  const FC={fn:104,cy:323},BC={fn:103,cy:530};
+  const rounds=[
+    {label:t('bracket_round32'),fns:[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
+    {label:t('bracket_round16'),fns:[89,90,91,92,93,94,95,96]},
+    {label:t('bracket_qf'),fns:[97,98,99,100]},
+    {label:t('bracket_sf'),fns:[101,102]},
+    {label:'🏆 '+t('bracket_final'),fns:[104]},
+    {label:'🥉 '+t('bracket_bronze'),fns:[103]},
+  ];
 
-  function mkBox(fn,cy){
+  function mkRow(fn){
     const teams=predTeamsForFifaNum(fn,r32g,cache);
     const pick=S.predKO[fn];
-    const top=Math.round(cy-MH/2);
     const isFinal=fn===104;
-    const inner=teams
-      ?`<button class="pbk-btn${pick==='home'?' win':''}${isFinal?' pbk-final-btn':''}" data-predko="${fn}|home">${fImg(teams.home,13)}<span class="pbk-tnm">${teamName(teams.home)}</span></button><button class="pbk-btn${pick==='away'?' win':''}${isFinal?' pbk-final-btn':''}" data-predko="${fn}|away">${fImg(teams.away,13)}<span class="pbk-tnm">${teamName(teams.away)}</span></button>`
-      :`<div class="pbk-btn tbd">—</div><div class="pbk-btn tbd">—</div>`;
-    return `<div style="position:absolute;top:${top}px;left:1px;right:1px"><div class="pbk-box${isFinal?' pbk-final-box':''}">${inner}</div></div>`;
-  }
-
-  function col(arr,w){
-    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px">${arr.map(m=>mkBox(m.fn,m.cy)).join('')}</div>`;
-  }
-
-  function conn(fromArr,toArr,side){
-    const w=CW,xF=side==='right'?w:0,xT=side==='right'?0:w,xM=w/2;
-    const s='rgba(201,168,76,0.35)',sw=1.5;
-    const lns=[];
-    for(let i=0;i<toArr.length;i++){
-      const to=toArr[i],f1=fromArr[i*2],f2=fromArr[i*2+1];
-      if(!f1)continue;
-      if(f2){
-        lns.push(
-          `<line x1="${xF}" y1="${f1.cy}" x2="${xM}" y2="${f1.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xF}" y1="${f2.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xM}" y1="${f1.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xM}" y1="${to.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`
-        );
-      }else{
-        lns.push(`<line x1="${xF}" y1="${f1.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`);
-      }
+    if(!teams){
+      return `<div class="pred-ko-row pending" style="opacity:.4;font-size:11px;padding:6px 0">M${fn} – ${t('pred_pending')}</div>`;
     }
-    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px"><svg width="${w}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
+    return `<div class="pred-bk-list-row">
+      <span class="pred-bk-mn">M${fn}</span>
+      <button class="pred-ko-btn${pick==='home'?' picked':''}${isFinal?' pred-ko-final':''}" data-predko="${fn}|home">${fImg(teams.home,16)} ${teamName(teams.home)}</button>
+      <span class="pred-ko-vs">–</span>
+      <button class="pred-ko-btn${pick==='away'?' picked':''}${isFinal?' pred-ko-final':''}" data-predko="${fn}|away">${fImg(teams.away,16)} ${teamName(teams.away)}</button>
+    </div>`;
   }
 
-  const cW=MW+28;
-  const ctr=`<div style="position:relative;width:${cW}px;flex-shrink:0;height:${H}px">
-    <div style="position:absolute;top:${Math.round(FC.cy-MH/2-14)}px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px">🏆 ${t('bracket_final')}</div>
-    ${mkBox(104,FC.cy)}
-    <div style="position:absolute;top:${Math.round(BC.cy-MH/2-14)}px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px">🥉 ${t('bracket_bronze')}</div>
-    ${mkBox(103,BC.cy)}
-  </div>`;
+  const html=rounds.map(rd=>`
+    <div class="pred-round-block">
+      <div class="pred-round-h">${rd.label}</div>
+      ${rd.fns.map(fn=>mkRow(fn)).join('')}
+    </div>`).join('');
 
-  const h=(txt,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-size:9px;font-weight:800;color:rgba(var(--ink-rgb),.45);text-transform:uppercase;letter-spacing:.4px;padding-bottom:5px">${txt}</div>`;
-  const sp=(w)=>`<div style="width:${w}px;flex-shrink:0"></div>`;
-  const hdrRow=`<div style="display:flex;border-bottom:1px solid rgba(var(--ink-rgb),.06);margin-bottom:4px">
-    ${h(t('bracket_round32'),MW)}${sp(CW)}${h(t('bracket_round16'),MW)}${sp(CW)}${h(t('bracket_qf'),MW)}${sp(CW)}${h(t('bracket_sf'),MW)}${sp(CW)}
-    ${h('🏆',cW)}
-    ${sp(CW)}${h(t('bracket_sf'),MW)}${sp(CW)}${h(t('bracket_qf'),MW)}${sp(CW)}${h(t('bracket_round16'),MW)}${sp(CW)}${h(t('bracket_round32'),MW)}
-  </div>`;
-
-  const totalW=8*MW+8*CW+cW+2*CW;
-  return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
-    <div style="min-width:${totalW}px">
-      ${hdrRow}
-      <div style="display:flex">
-        ${col(L.r32,MW)}${conn(L.r32,L.r16,'left')}
-        ${col(L.r16,MW)}${conn(L.r16,L.qf,'left')}
-        ${col(L.qf,MW)}${conn(L.qf,L.sf,'left')}
-        ${col(L.sf,MW)}${conn([L.sf[0]],[FC],'left')}
-        ${ctr}
-        ${conn([R.sf[0]],[FC],'right')}${col(R.sf,MW)}
-        ${conn(R.qf,R.sf,'right')}${col(R.qf,MW)}
-        ${conn(R.r16,R.qf,'right')}${col(R.r16,MW)}
-        ${conn(R.r32,R.r16,'right')}${col(R.r32,MW)}
-      </div>
-    </div>
-  </div>`;
+  return `<div class="pred-rounds">${html}</div>`;
 }
 
 
