@@ -197,11 +197,99 @@ const GD=[
 const CC={'Mexikó':'mx','Dél-Afrika':'za','Dél-Korea':'kr','Csehország':'cz','Kanada':'ca','Bosznia-Hercegovina':'ba','Katar':'qa','Svájc':'ch','Brazília':'br','Marokkó':'ma','Haiti':'ht','Skócia':'gb-sct','USA':'us','Paraguay':'py','Ausztrália':'au','Törökország':'tr','Németország':'de','Curaçao':'cw','Elefántcsontpart':'ci','Ecuador':'ec','Hollandia':'nl','Japán':'jp','Svédország':'se','Tunézia':'tn','Belgium':'be','Egyiptom':'eg','Irán':'ir','Új-Zéland':'nz','Spanyolország':'es','Zöld-foki-sz.':'cv','Szaúd-Arábia':'sa','Uruguay':'uy','Franciaország':'fr','Szenegál':'sn','Irak':'iq','Norvégia':'no','Argentína':'ar','Algéria':'dz','Ausztria':'at','Jordánia':'jo','Portugália':'pt','DR Kongó':'cd','Üzbegisztán':'uz','Kolumbia':'co','Anglia':'gb-eng','Horvátország':'hr','Ghána':'gh','Panama':'pa'};
 const FL={'Mexikó':'🇲🇽','Dél-Afrika':'🇿🇦','Dél-Korea':'🇰🇷','Csehország':'🇨🇿','Kanada':'🇨🇦','Bosznia-Hercegovina':'🇧🇦','Katar':'🇶🇦','Svájc':'🇨🇭','Brazília':'🇧🇷','Marokkó':'🇲🇦','Haiti':'🇭🇹','Skócia':'🏴','USA':'🇺🇸','Paraguay':'🇵🇾','Ausztrália':'🇦🇺','Törökország':'🇹🇷','Németország':'🇩🇪','Curaçao':'🇨🇼','Elefántcsontpart':'🇨🇮','Ecuador':'🇪🇨','Hollandia':'🇳🇱','Japán':'🇯🇵','Svédország':'🇸🇪','Tunézia':'🇹🇳','Belgium':'🇧🇪','Egyiptom':'🇪🇬','Irán':'🇮🇷','Új-Zéland':'🇳🇿','Spanyolország':'🇪🇸','Zöld-foki-sz.':'🇨🇻','Szaúd-Arábia':'🇸🇦','Uruguay':'🇺🇾','Franciaország':'🇫🇷','Szenegál':'🇸🇳','Irak':'🇮🇶','Norvégia':'🇳🇴','Argentína':'🇦🇷','Algéria':'🇩🇿','Ausztria':'🇦🇹','Jordánia':'🇯🇴','Portugália':'🇵🇹','DR Kongó':'🇨🇩','Üzbegisztán':'🇺🇿','Kolumbia':'🇨🇴','Anglia':'🏴','Horvátország':'🇭🇷','Ghána':'🇬🇭','Panama':'🇵🇦'};
 const SL={group:'Csoportkör',r32:'32 között',r16:'16 között',qf:'Negyeddöntő',sf:'Elődöntő',bronze:'Bronzmérkőzés',final:'Döntő'};
+function stageLabel(stage){return t('stage_'+stage)||SL[stage]||'';}
 const AVS=['⚽','🏆','🦁','🐯','🦅','🦊','🐺','🌟','⭐','🔥','💪','🎯','👑','🤩','🔮','🎪','🦄','🐉','🚀','💎'];
 const KO=['r32','r16','qf','sf','bronze','final'];
 const DS={perfect:8,resultGD:5,result:3,oneGoal:1,winner:25,topScorer:25,ko:2};
 const numOr=(v,d)=>{const n=parseInt(v);return Number.isFinite(n)?n:d;};
 const TEAMS=GD.flatMap(g=>g.teams);
+const TEAM_EN={'Mexikó':'Mexico','Dél-Afrika':'South Africa','Dél-Korea':'South Korea','Csehország':'Czechia','Kanada':'Canada','Bosznia-Hercegovina':'Bosnia and Herzegovina','Katar':'Qatar','Svájc':'Switzerland','Brazília':'Brazil','Marokkó':'Morocco','Haiti':'Haiti','Skócia':'Scotland','USA':'USA','Paraguay':'Paraguay','Ausztrália':'Australia','Törökország':'Türkiye','Németország':'Germany','Curaçao':'Curaçao','Elefántcsontpart':'Ivory Coast','Ecuador':'Ecuador','Hollandia':'Netherlands','Japán':'Japan','Svédország':'Sweden','Tunézia':'Tunisia','Belgium':'Belgium','Egyiptom':'Egypt','Irán':'Iran','Új-Zéland':'New Zealand','Spanyolország':'Spain','Zöld-foki-sz.':'Cape Verde','Szaúd-Arábia':'Saudi Arabia','Uruguay':'Uruguay','Franciaország':'France','Szenegál':'Senegal','Irak':'Iraq','Norvégia':'Norway','Argentína':'Argentina','Algéria':'Algeria','Ausztria':'Austria','Jordánia':'Jordan','Portugália':'Portugal','DR Kongó':'DR Congo','Üzbegisztán':'Uzbekistan','Kolumbia':'Colombia','Anglia':'England','Horvátország':'Croatia','Ghána':'Ghana','Panama':'Panama'};
+function teamName(hu){return S.lang==='en'?(TEAM_EN[hu]||hu):hu;}
+const STRINGS={
+  hu:{
+    tagline:'Tippelj a focivb összes meccsére!',
+    tab_matches:'⚽ Meccsek',tab_standings:'🏟️ Állás',tab_bracket:'🏆 Ágrajz',tab_mytips:'📝 Tippjeim',tab_lb:'🏅 Tabella',tab_leagues:'🤝 Ligák',tab_pretips:'⭐ Előzetes',tab_profile:'👤 Profil',tab_admin:'⚙️ Admin',
+    logout:'Kilépés',
+    login:'Bejelentkezés',register:'Regisztráció',username:'Felhasználónév',displayname:'Megjelenítési név',password:'Jelszó',
+    username_ph:'pl. kovacs.peter',displayname_ph:'pl. Kovács Péter',password_ph:'min. 4 karakter',
+    btn_login:'⚡ Belépés',btn_register:'🚀 Regisztráció',loading_btn:'⏳',
+    no_account:'Még nincs fiókod?',has_account:'Már van fiókod?',signup_link:'Regisztrálj!',login_link:'Belépés',
+    live_now:'Most zajlik',next24h:'Következő 24 óra',missing_tips:'hiányzó tipp!',all_tipped:'minden tipp leadva',no_tip:'nincs tipp',tip_label:'tipp',
+    note_bar:'Az eredményeket a rendszer automatikusan rögzíti, amint a football-data.org "lezajlott" (FINISHED) állapotúnak jelez egy csoportkörbeli meccset. A kieséses kör meccseit, és ha az automatikus felismerés bármiért kimaradna, az admin rögzíti kézzel.',
+    pretips_banner_t:'Töltsd ki az előzetes tippeket!',pretips_banner_s:'Végső győztes (+25p) és gólkirály (+25p) – kötelező a részvételhez!',
+    teams_tbd:'Csapatok később kerülnek meghatározásra',
+    save_tip:'💾 Tipp mentése',saved:'✓ Mentve!',your_tip:'Tippem:',no_tip_match:'Nem adtál le tippet erre a meccsre',
+    live_badge:'🔴 ÉLŐ',
+    no_results_yet:'Még nincsenek eredmények.',
+    third_table_t:'CSOPORT-HARMADIKOK',third_table_s:'a legjobb 8 jut a 32 közé',
+    col_team:'Csapat',col_group:'Csop.',col_played:'J',col_gd:'GK',col_pts:'P',col_w:'Gy',col_d:'D',col_l:'V',
+    bracket_t:'🏆 Kieséses ágrajz',bracket_round32:'32 közé',bracket_round16:'16 közé',bracket_qf:'Negyeddöntő',bracket_sf:'Elődöntő',bracket_final:'🏆 Döntő',bracket_bronze:'Bronzmérkőzés',
+    bracket_hint:'A dőlt szövegű mezők (pl. "1A" = A csoport győztese, "3. A/B/C/D/F" = a legjobb 3. helyezett ebből az 5 csoportból) a hivatalos FIFA sorsolási séma szerinti helyeket jelzik – ezek a csoportkör végén töltődnek ki valódi csapatnévvel.',
+    winner_of:'Győztes',loser_of:'Vesztes',
+    stat_tips:'Tipp',stat_evaluated:'Értékelt',stat_perfect:'⭐ Telitalálat',stat_resultgd:'🎯 R+GK',stat_outcome:'✓ Kimenetel',stat_total:'Összpont',
+    stage_group:'Csoportkör',stage_r32:'32 között',stage_r16:'16 között',stage_qf:'Negyeddöntő',stage_sf:'Elődöntő',stage_bronze:'Bronzmérkőzés',stage_final:'Döntő',group_word:'csoport',
+    no_tips_yet:'Még nem adtál le tippet.',
+    pretips_section:'⭐ Előzetes tippek',final_winner:'🏆 Győztes:',top_scorer_lbl:'⚽ Gólkirály:',
+    result_lbl:'Ered.',live_lbl:'élő',expected:'várható',
+    scoring_hint:'Pontozás:',perfect_full:'Telitalálat',resultgd_full:'Ered.+Gólkül.',outcome_full:'Kimenetel',onegoal_full:'1 csapat gólja',ko_full:'Kieső kör',winner_full:'Végső győztes',topscorer_full:'Gólkirály',
+    scoring_note:'Mindig csak a legmagasabb kategória számít. A 🔴 élő jelzésű eredmények még nem véglegesek.',ko_multiplier:'Kieső szorzó',
+    league_lbl:'Liga:',global_lbl:'🌍 Globális',global_word:'Globális',lb_title:'🏅',lb_share:'📷 Tabella megosztása képként',no_players:'Még nincs regisztrált játékos.',you_tag:'(te)',
+    hidden_tip:'🔒 tipp leadva, rejtve a meccs zárásáig',
+    stats_title:'Statisztikák',my_leagues:'🤝 Ligáim',of_participants:'résztvevő közül',rank_suffix:'hely',no_league_member:'Még nem vagy tagja egyéni ligának.',
+    edit_profile:'✏️ Szerkesztés',save_btn:'💾 Mentés',cancel_btn:'Mégse',avatar_lbl:'Avatar:',
+    create_league:'+ Liga létrehozása',join_code:'🔑 Csatlakozás kóddal',no_leagues:'Még nem tartozol ligához.',
+    members_lbl:'tag',you_created:'te hozted létre',send_code:'Küld el ezt a kódot a barátaidnak!',leave_league:'Kilépés a ligából',
+    edit_scoring:'⚙️ Szerkesztés',close_btn:'✕ Bezárás',edit_scoring_h:'Pontozás módosítása',save_scoring:'💾 Pontozás mentése',
+    manage_members:'Tagok kezelése',remove_btn:'Eltávolítás',no_other_members:'Még nincs más tag.',
+    theme_toggle_title:'Téma váltása',lang_toggle_title:'Nyelv váltása',
+    pretips_intro:'Ezeket a tippeket a torna vége előtt kell leadni a bónuszpontokért.',
+    winner_card_h3:'🏆 VB Végső Győztes — 25 pont',winner_card_p:'Melyik csapat nyeri a 2026-os Foci VB-t?',
+    topscorer_card_h3:'⚽ Gólkirály — 25 pont',topscorer_card_p:'Ki lesz a torna gólkirálya?',
+    saved_tips_msg:'✓ Tippjeid mentve:',wins_word:'győz',save_tips_btn:'💾 Tippek mentése',admin_recorded:'Admin által rögzített:',
+  },
+  en:{
+    tagline:'Predict every match of the World Cup!',
+    tab_matches:'⚽ Matches',tab_standings:'🏟️ Standings',tab_bracket:'🏆 Bracket',tab_mytips:'📝 My Tips',tab_lb:'🏅 Leaderboard',tab_leagues:'🤝 Leagues',tab_pretips:'⭐ Pre-tournament',tab_profile:'👤 Profile',tab_admin:'⚙️ Admin',
+    logout:'Log out',
+    login:'Login',register:'Sign up',username:'Username',displayname:'Display name',password:'Password',
+    username_ph:'e.g. john.smith',displayname_ph:'e.g. John Smith',password_ph:'min. 4 characters',
+    btn_login:'⚡ Log in',btn_register:'🚀 Sign up',loading_btn:'⏳',
+    no_account:"Don't have an account?",has_account:'Already have an account?',signup_link:'Sign up!',login_link:'Log in',
+    live_now:'Live now',next24h:'Next 24 hours',missing_tips:'missing tip(s)!',all_tipped:'all tips submitted',no_tip:'no tip',tip_label:'tip',
+    note_bar:'Results are recorded automatically as soon as football-data.org marks a group-stage match as "FINISHED". Knockout-stage matches, and any case where automatic detection fails, are entered manually by the admin.',
+    pretips_banner_t:'Fill in your pre-tournament picks!',pretips_banner_s:'Final winner (+25pts) and top scorer (+25pts) – required to take part!',
+    teams_tbd:'Teams will be determined later',
+    save_tip:'💾 Save tip',saved:'✓ Saved!',your_tip:'Your tip:',no_tip_match:"You didn't submit a tip for this match",
+    live_badge:'🔴 LIVE',
+    no_results_yet:'No results yet.',
+    third_table_t:'THIRD-PLACED TEAMS',third_table_s:'the best 8 advance to the round of 32',
+    col_team:'Team',col_group:'Grp.',col_played:'P',col_gd:'GD',col_pts:'Pts',col_w:'W',col_d:'D',col_l:'L',
+    bracket_t:'🏆 Knockout bracket',bracket_round32:'Round of 32',bracket_round16:'Round of 16',bracket_qf:'Quarterfinal',bracket_sf:'Semifinal',bracket_final:'🏆 Final',bracket_bronze:'3rd place match',
+    bracket_hint:'The italic slots (e.g. "1A" = winner of Group A, "3. A/B/C/D/F" = best 3rd-placed team among these 5 groups) show the official FIFA draw positions – these fill in with real team names once the group stage ends.',
+    winner_of:'Winner of',loser_of:'Loser of',
+    stat_tips:'Tips',stat_evaluated:'Scored',stat_perfect:'⭐ Perfect',stat_resultgd:'🎯 Res+GD',stat_outcome:'✓ Outcome',stat_total:'Total pts',
+    stage_group:'Group stage',stage_r32:'Round of 32',stage_r16:'Round of 16',stage_qf:'Quarterfinal',stage_sf:'Semifinal',stage_bronze:'3rd place match',stage_final:'Final',group_word:'group',
+    no_tips_yet:"You haven't submitted any tips yet.",
+    pretips_section:'⭐ Pre-tournament picks',final_winner:'🏆 Winner:',top_scorer_lbl:'⚽ Top scorer:',
+    result_lbl:'Result',live_lbl:'live',expected:'pending',
+    scoring_hint:'Scoring:',perfect_full:'Perfect score',resultgd_full:'Result+GD',outcome_full:'Outcome',onegoal_full:"One team's goals",ko_full:'Knockout stage',winner_full:'Final winner',topscorer_full:'Top scorer',
+    scoring_note:'Only the highest matching category counts. Results marked 🔴 live are not yet final.',ko_multiplier:'Knockout multiplier',
+    league_lbl:'League:',global_lbl:'🌍 Global',global_word:'Global',lb_title:'🏅',lb_share:'📷 Share leaderboard as image',no_players:'No registered players yet.',you_tag:'(you)',
+    hidden_tip:"🔒 tip submitted, hidden until the match locks",
+    stats_title:'Statistics',my_leagues:'🤝 My leagues',of_participants:'out of',rank_suffix:'',no_league_member:"You're not part of any private league yet.",
+    edit_profile:'✏️ Edit',save_btn:'💾 Save',cancel_btn:'Cancel',avatar_lbl:'Avatar:',
+    create_league:'+ Create league',join_code:'🔑 Join with code',no_leagues:"You're not part of a league yet.",
+    members_lbl:'members',you_created:'you created this',send_code:'Send this code to your friends!',leave_league:'Leave league',
+    edit_scoring:'⚙️ Edit',close_btn:'✕ Close',edit_scoring_h:'Edit scoring rules',save_scoring:'💾 Save scoring',
+    manage_members:'Manage members',remove_btn:'Remove',no_other_members:'No other members yet.',
+    theme_toggle_title:'Toggle theme',lang_toggle_title:'Switch language',
+    pretips_intro:'These picks must be submitted before the tournament ends to count for bonus points.',
+    winner_card_h3:'🏆 World Cup Final Winner — 25 points',winner_card_p:'Which team will win the 2026 World Cup?',
+    topscorer_card_h3:'⚽ Top scorer — 25 points',topscorer_card_p:'Who will be the top scorer of the tournament?',
+    saved_tips_msg:'✓ Your picks are saved:',wins_word:'to win',save_tips_btn:'💾 Save picks',admin_recorded:'Recorded by admin:',
+  }
+};
+function t(key){return STRINGS[S.lang||'hu']?.[key]??STRINGS.hu[key]??key;}
 function trophyIcon(size,extraStyle){
   return `<svg viewBox="0 0 100 122" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;${extraStyle||''}" xmlns="http://www.w3.org/2000/svg">
     <defs><linearGradient id="tgGrad" x1="10%" y1="0%" x2="90%" y2="100%">
@@ -330,7 +418,7 @@ function tipCategory(tip,res,stage){
   const gr=(h,a)=>h>a?'1':h===a?'X':'2';
   const tR=gr(th,ta),rR=gr(rh,ra),tGD=th-ta,rGD=rh-ra;
   if(th===rh&&ta===ra)return'p8';
-  if(tR===rR&&tGD===rGD)return'p5';
+  if(rR!=='X'&&tR===rR&&tGD===rGD)return'p5'; // döntetlennél a GK mindig 0, így nem számít önálló találatnak
   if(tR===rR)return'p3';
   if(th===rh||ta===ra)return'p1';
   return'p0';
@@ -403,15 +491,15 @@ let S={
   editLgId:null,editLgSco:null,
   preModal:false,savedMsgs:{},
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark'
+  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
 
 async function init(){
-  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme]=await Promise.all([
+  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang]=await Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
-    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false)
+    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false)
   ]);
   let ul=users||[];
   if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:'admin123',isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
@@ -430,7 +518,7 @@ async function init(){
     await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark'});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu'});
   refreshLiveIfStale();
 }
 
@@ -670,6 +758,16 @@ async function toggleTheme(){
   SS({theme:nt});
   await sS('wc_theme',nt,false);
 }
+function langSwitcher(){
+  return `<select id="langSel" style="background:rgba(var(--ink-rgb),.1);color:var(--text-color);border:1px solid rgba(var(--ink-rgb),.15);border-radius:8px;padding:7px 6px;font-size:13px;cursor:pointer" title="${t('lang_toggle_title')}">
+    <option value="hu" ${S.lang==='hu'?'selected':''}>🇭🇺 HU</option>
+    <option value="en" ${S.lang==='en'?'selected':''}>🇬🇧 EN</option>
+  </select>`;
+}
+async function setLang(l){
+  SS({lang:l});
+  await sS('wc_lang',l,false);
+}
 function render(){
   document.body.classList.toggle('light-theme',S.theme==='light');
   const root=document.getElementById('root');
@@ -683,29 +781,33 @@ function render(){
 function rAuth(){
   const L=S.authMode==='login';
   return `<div class="auth-page"><div style="width:100%;max-width:420px;position:relative">
-  <button id="themeToggleAuth" class="btn-sm white" style="position:absolute;top:0;right:0;padding:8px 10px;font-size:15px" title="Téma váltása">${S.theme==='light'?'🌙':'☀️'}</button>
+  <div style="position:absolute;top:0;right:0;display:flex;gap:8px">
+    ${langSwitcher()}
+    <button id="themeToggleAuth" class="btn-sm white" style="padding:8px 10px;font-size:15px" title="${t('theme_toggle_title')}">${S.theme==='light'?'🌙':'☀️'}</button>
+  </div>
   <div class="auth-hero"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(56)}</div>
     <div class="auth-title">VB 2026 Tippelő</div>
-    <div class="auth-sub">Tippelj a focivb összes meccsére!</div>
+    <div class="auth-sub">${t('tagline')}</div>
   </div>
   <div class="auth-card">
-    <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">${L?'Bejelentkezés':'Regisztráció'}</h2>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">${L?t('login'):t('register')}</h2>
     ${S.authErr?`<div class="err-box">${S.authErr}</div>`:''}
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div><label class="lbl">Felhasználónév</label><input class="inp" id="au" type="text" value="${S.authU}" placeholder="pl. kovacs.peter"></div>
-      ${!L?`<div><label class="lbl">Megjelenítési név</label><input class="inp" id="adn" type="text" value="${S.authDN}" placeholder="pl. Kovács Péter"></div>`:''}
-      <div><label class="lbl">Jelszó</label><input class="inp" id="ap" type="password" value="${S.authP}" placeholder="min. 4 karakter"></div>
+      <div><label class="lbl">${t('username')}</label><input class="inp" id="au" type="text" value="${S.authU}" placeholder="${t('username_ph')}"></div>
+      ${!L?`<div><label class="lbl">${t('displayname')}</label><input class="inp" id="adn" type="text" value="${S.authDN}" placeholder="${t('displayname_ph')}"></div>`:''}
+      <div><label class="lbl">${t('password')}</label><input class="inp" id="ap" type="password" value="${S.authP}" placeholder="${t('password_ph')}"></div>
     </div>
-    <button class="btn-gold" id="aBtn" style="margin-top:18px">${S.authLoad?'⏳':(L?'⚡ Belépés':'🚀 Regisztráció')}</button>
+    <button class="btn-gold" id="aBtn" style="margin-top:18px">${S.authLoad?t('loading_btn'):(L?t('btn_login'):t('btn_register'))}</button>
     <p style="text-align:center;margin-top:14px;color:rgba(var(--ink-rgb),.4);font-size:13px">
-      ${L?'Még nincs fiókod?':'Már van fiókod?'}
-      <span id="sw" style="color:#c9a84c;cursor:pointer;font-weight:700;margin-left:4px">${L?'Regisztrálj!':'Belépés'}</span>
+      ${L?t('no_account'):t('has_account')}
+      <span id="sw" style="color:#c9a84c;cursor:pointer;font-weight:700;margin-left:4px">${L?t('signup_link'):t('login_link')}</span>
     </p>
   </div>
   </div></div>`;
 }
 function bindAuth(){
   document.getElementById('themeToggleAuth')?.addEventListener('click',toggleTheme);
+  document.getElementById('langSel')?.addEventListener('change',e=>setLang(e.target.value));
   document.getElementById('sw')?.addEventListener('click',()=>{
     SS({authMode:S.authMode==='login'?'register':'login',authErr:'',
       authU:document.getElementById('au')?.value||'',authP:document.getElementById('ap')?.value||'',authDN:document.getElementById('adn')?.value||''});
@@ -719,20 +821,21 @@ function bindAuth(){
 }
 
 function rMain(hw){
-  const tabs=[{id:'matches',l:'⚽ Meccsek'},{id:'standings',l:'🏟️ Állás'},{id:'bracket',l:'🏆 Ágrajz'},{id:'my-tips',l:'📝 Tippjeim'},{id:'leaderboard',l:'🏅 Tabella'},{id:'leagues',l:'🤝 Ligák'},{id:'pre-tips',l:'⭐ Előzetes'},{id:'profile',l:'👤 Profil'},...(S.user.isAdmin?[{id:'admin',l:'⚙️ Admin'}]:[])];
+  const tabs=[{id:'matches',l:t('tab_matches')},{id:'standings',l:t('tab_standings')},{id:'bracket',l:t('tab_bracket')},{id:'my-tips',l:t('tab_mytips')},{id:'leaderboard',l:t('tab_lb')},{id:'leagues',l:t('tab_leagues')},{id:'pre-tips',l:t('tab_pretips')},{id:'profile',l:t('tab_profile')},...(S.user.isAdmin?[{id:'admin',l:t('tab_admin')}]:[])];
   const views={matches:rMatches,standings:rStandings,bracket:rBracket,'my-tips':rMyTips,leaderboard:rLb,'pre-tips':rPreTips,leagues:rLeagues,profile:rProfile,admin:rAdmin};
   const vc=(views[S.view]||rMatches)();
   return `<div style="background:var(--bg-page-grad);min-height:100vh">
   <div class="header"><div class="h-inner">
     <div class="logo"><span class="logo-t">${trophyIcon(28)}</span><span class="logo-txt"><b>VB 2026</b> Tippelő</span></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button id="themeToggle" class="btn-sm white" style="padding:8px 10px;font-size:15px" title="Téma váltása">${S.theme==='light'?'🌙':'☀️'}</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      ${langSwitcher()}
+      <button id="themeToggle" class="btn-sm white" style="padding:8px 10px;font-size:15px" title="${t('theme_toggle_title')}">${S.theme==='light'?'🌙':'☀️'}</button>
       <span style="font-size:20px">${S.user.av||'⚽'}</span>
       <span style="font-size:13px;color:rgba(var(--ink-rgb),.65)">${S.user.dn}</span>
-      <button id="lout" class="btn-sm white">Kilépés</button>
+      <button id="lout" class="btn-sm white">${t('logout')}</button>
     </div>
   </div></div>
-  <div class="nav"><div class="nav-in">${tabs.map(t=>`<button class="ntab${S.view===t.id?' on':''}" data-v="${t.id}">${t.l}${t.id==='pre-tips'&&hw?'<span class="nbadge">!</span>':''}</button>`).join('')}</div></div>
+  <div class="nav"><div class="nav-in">${tabs.map(tb=>`<button class="ntab${S.view===tb.id?' on':''}" data-v="${tb.id}">${tb.l}${tb.id==='pre-tips'&&hw?'<span class="nbadge">!</span>':''}</button>`).join('')}</div></div>
   <div class="content">${vc}</div>
   ${S.preModal?rPM():''}
   </div>`;
@@ -757,15 +860,15 @@ function rLiveNow(){
   if(!liveMatches.length)return '';
   const uid=S.user.id;
   return `<div style="background:linear-gradient(135deg,rgba(230,51,41,.18),rgba(230,51,41,.06));border:1px solid rgba(230,51,41,.4);border-radius:14px;padding:16px;margin-bottom:18px">
-    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>Most zajlik</div>
+    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}</div>
     ${liveMatches.map(({m,sc})=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
-      const t=S.tips[`${uid}_${m.id}`];
+      const tip=S.tips[`${uid}_${m.id}`];
       const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.08);font-size:13px;cursor:pointer">
-        <span style="flex:1;color:var(--text-color)">${FL[home]||''} ${home} – ${away} ${FL[away]||''}</span>
+        <span style="flex:1;color:var(--text-color)">${FL[home]||''} ${teamName(home)} – ${teamName(away)} ${FL[away]||''}</span>
         <span style="font-weight:800;color:var(--text-color);font-size:15px">${sc.h}–${sc.a}</span>
-        ${t?`<span style="color:rgba(var(--ink-rgb),.5);font-size:11px">tipp: ${t.homeGoals}-${t.awayGoals}</span>`:''}
+        ${tip?`<span style="color:rgba(var(--ink-rgb),.5);font-size:11px">${t('tip_label')}: ${tip.homeGoals}-${tip.awayGoals}</span>`:''}
         <span style="color:rgba(var(--ink-rgb),.3);font-size:13px">›</span>
       </div>`;
     }).join('')}
@@ -777,18 +880,18 @@ function rNext24h(){
   const missing=ms.filter(m=>!S.tips[`${uid}_${m.id}`]);
   return `<div style="background:rgba(var(--ink-rgb),.05);border:1px solid rgba(var(--ink-rgb),.1);border-radius:14px;padding:16px;margin-bottom:18px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-      <div style="font-size:15px;font-weight:800;color:#c9a84c">⏰ Következő 24 óra</div>
-      ${missing.length?`<span style="background:#e63329;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px">${missing.length} hiányzó tipp!</span>`:`<span style="color:#00b050;font-size:12px;font-weight:700">✓ minden tipp leadva</span>`}
+      <div style="font-size:15px;font-weight:800;color:#c9a84c">⏰ ${t('next24h')}</div>
+      ${missing.length?`<span style="background:#e63329;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px">${missing.length} ${t('missing_tips')}</span>`:`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t('all_tipped')}</span>`}
     </div>
     ${ms.map(m=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
-      const t=S.tips[`${uid}_${m.id}`];
-      const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString('hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
+      const tip=S.tips[`${uid}_${m.id}`];
+      const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString(S.lang==='en'?'en-GB':'hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
       const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.06);font-size:13px;cursor:pointer">
         <span style="color:rgba(var(--ink-rgb),.4);min-width:74px;font-size:11.5px">${koLbl}</span>
-        <span style="flex:1;color:var(--text-color)">${FL[home]||''} ${home} – ${away} ${FL[away]||''}</span>
-        ${t?`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t.homeGoals}-${t.awayGoals}</span>`:`<span style="color:#e63329;font-size:12px;font-weight:700">nincs tipp</span>`}
+        <span style="flex:1;color:var(--text-color)">${FL[home]||''} ${teamName(home)} – ${teamName(away)} ${FL[away]||''}</span>
+        ${tip?`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${tip.homeGoals}-${tip.awayGoals}</span>`:`<span style="color:#e63329;font-size:12px;font-weight:700">${t('no_tip')}</span>`}
         <span style="color:rgba(var(--ink-rgb),.3);font-size:13px">›</span>
       </div>`;
     }).join('')}
@@ -799,10 +902,10 @@ function rMatches(){
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
   const vis=ALL.filter(m=>sel.length===1?m.group===sel:sel==='sf'?m.stage==='sf'||m.stage==='bronze':m.stage===sel);
   const uid=S.user.id,hw=!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`];
-  return `${rLiveNow()}${rNext24h()}${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">Töltsd ki az előzetes tippeket!</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">Végső győztes (+25p) és gólkirály (+25p) – kötelező a részvételhez!</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
-  <div class="note-bar">Az eredményeket a rendszer automatikusan rögzíti, amint a football-data.org "lezajlott" (FINISHED) állapotúnak jelez egy csoportkörbeli meccset. A kieséses kör meccseit, és ha az automatikus felismerés bármiért kimaradna, az admin rögzíti kézzel.</div>
-  <div class="pill-row">${gTabs.map(t=>`<button class="pill ${sel===t.id?'on':'off'}" data-g="${t.id}">${sel===t.id&&t.id.length===1?t.id+'. csoport':t.id.length===1?t.id+'':t.l}</button>`).join('')}</div>
-  ${grp?`<div style="font-size:12px;color:rgba(var(--ink-rgb),.3);margin-bottom:10px">${grp.teams.map(t=>`${FL[t]||''} ${t}`).join(' · ')}</div>`:''}
+  return `${rLiveNow()}${rNext24h()}${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">${t('pretips_banner_t')}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">${t('pretips_banner_s')}</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
+  <div class="note-bar">${t('note_bar')}</div>
+  <div class="pill-row">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
+  ${grp?`<div style="font-size:12px;color:rgba(var(--ink-rgb),.3);margin-bottom:10px">${grp.teams.map(tm=>`${FL[tm]||''} ${teamName(tm)}`).join(' · ')}</div>`:''}
   <div>${vis.map(m=>rCard(m)).join('')}</div>`;
 }
 
@@ -812,23 +915,23 @@ function rCard(m){
   const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
   const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
   const isKO=KO.includes(m.stage),isPast=Date.now()>=lockMs,locked=isPast||!!res,isTBD=m.tbd&&!ov;
-  const koLbl=koDate?koDate.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'}):'';
+  const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit'}):'';
   const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
-  const grpLbl=m.group?`${m.group} csoport`:(SL[m.stage]||'');
+  const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
   const saved=S.savedMsgs[m.id];
   const th=tip?.homeGoals??'',ta=tip?.awayGoals??'';
-  const catLbl={p8:'⭐ Telitalálat',p5:'🎯 Ered.+Gólkül.',p3:'✓ Kimenetel',p1:'~ 1 gól',p0:'✗'};
+  const catLbl={p8:`⭐ ${t('perfect_full')}`,p5:`🎯 ${t('resultgd_full')}`,p3:`✓ ${t('outcome_full')}`,p1:`~ ${t('onegoal_full')}`,p0:'✗'};
 
   const live=!res?S.live[m.id]:null;
   const hl=S.highlightMatch===m.id;
 
-  if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">Csapatok később kerülnek meghatározásra</div></div>`;
+  if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
-    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?'<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">🔴 ÉLŐ</span>':''}<span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
+    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
     <div class="mc-main">
-      <div class="team-b home">${fImg(home,40)}<span class="tname">${home}</span></div>
+      <div class="team-b home">${fImg(home,40)}<span class="tname">${teamName(home)}</span></div>
       <div class="score-b">
         ${res?`<div class="actual-s"><span>${res.homeGoals}</span><span style="color:#ccc;margin:0 4px">–</span><span>${res.awayGoals}</span></div>`:live?`<div class="actual-s" style="color:#e63329"><span>${live.h}</span><span style="color:#ccc;margin:0 4px">–</span><span>${live.a}</span></div>`:''}
         <div class="sinputs">
@@ -836,34 +939,34 @@ function rCard(m){
           <span class="sdash">–</span>
           <input type="number" class="sbox${(ta!=='')?(' filled'):''}" id="sa_${m.id}" min="0" max="20" value="${ta}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
         </div>
-        <div class="mc-saved" id="sv_${m.id}">${saved?'✓ Mentve!':''}</div>
+        <div class="mc-saved" id="sv_${m.id}">${saved?t('saved'):''}</div>
       </div>
-      <div class="team-b away"><span class="tname">${away}</span>${fImg(away,40)}</div>
+      <div class="team-b away"><span class="tname">${teamName(away)}</span>${fImg(away,40)}</div>
     </div>
-    ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">💾 Tipp mentése</button></div>`:''}
-    ${res&&tip?`<div class="mc-res"><span style="color:#999">Tippem: ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">Nem adtál le tippet erre a meccsre</div>`:''}
+    ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
+    ${res&&tip?`<div class="mc-res"><span style="color:#999">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
 
 function rStandings(){
   const eff=getEffectiveResults();
-  if(!Object.keys(eff).length) return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏟️</div><p>Még nincsenek eredmények.</p></div>`;
+  if(!Object.keys(eff).length) return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏟️</div><p>${t('no_results_yet')}</p></div>`;
   const thirds=GD.map(g=>{
     const std=calcStd(g.id,eff,S.mt);
     return{...std[2],group:g.id};
-  }).filter(t=>t.p>0).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
-  const thirdTable=thirds.length?`<div class="std-card"><div class="std-head"><span class="std-glbl">🥉 CSOPORT-HARMADIKOK</span><span class="std-t">a legjobb 8 jut a 32 közé</span></div>
-    <table class="stdt"><thead><tr><th>#</th><th>Csapat</th><th>Csop.</th><th>J</th><th>GK</th><th>P</th></tr></thead>
-    <tbody>${thirds.map((t,i)=>`<tr class="${i<8?'adv':''}"><td><span class="adot ${i<8?'g':''}"></span></td>
-    <td>${fImg(t.n,26)} ${t.n}</td><td>${t.group}</td><td>${t.p}</td>
-    <td style="font-size:12px">${t.gf}:${t.ga} (${t.gd>=0?'+':''}${t.gd})</td><td><b>${t.pts}</b></td></tr>`).join('')}</tbody></table></div>`:'';
+  }).filter(tm=>tm.p>0).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+  const thirdTable=thirds.length?`<div class="std-card"><div class="std-head"><span class="std-glbl">🥉 ${t('third_table_t')}</span><span class="std-t">${t('third_table_s')}</span></div>
+    <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_group')}</th><th>${t('col_played')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
+    <tbody>${thirds.map((tm,i)=>`<tr class="${i<8?'adv':''}"><td><span class="adot ${i<8?'g':''}"></span></td>
+    <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.group}</td><td>${tm.p}</td>
+    <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`:'';
   const groupTables=GD.map(g=>{
     const std=calcStd(g.id,eff,S.mt);
-    return `<div class="std-card"><div class="std-head"><span class="std-glbl">${g.id}. CSOPORT</span><span class="std-t">${g.teams.map(t=>FL[t]||'').join(' ')}</span></div>
-    <table class="stdt"><thead><tr><th>#</th><th>Csapat</th><th>J</th><th>Gy</th><th>D</th><th>V</th><th>GK</th><th>P</th></tr></thead>
-    <tbody>${std.map((t,i)=>`<tr class="${i<2?'adv':i===2?'padv':''}"><td><span class="adot ${i<2?'g':i===2?'o':''}"></span></td>
-    <td>${fImg(t.n,26)} ${t.n}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
-    <td style="font-size:12px">${t.gf}:${t.ga} (${t.gd>=0?'+':''}${t.gd})</td><td><b>${t.pts}</b></td></tr>`).join('')}</tbody></table></div>`;
+    return `<div class="std-card"><div class="std-head"><span class="std-glbl">${g.id}. ${S.lang==='en'?'GROUP':'CSOPORT'}</span><span class="std-t">${g.teams.map(tm=>FL[tm]||'').join(' ')}</span></div>
+    <table class="stdt"><thead><tr><th>#</th><th>${t('col_team')}</th><th>${t('col_played')}</th><th>${t('col_w')}</th><th>${t('col_d')}</th><th>${t('col_l')}</th><th>${t('col_gd')}</th><th>${t('col_pts')}</th></tr></thead>
+    <tbody>${std.map((tm,i)=>`<tr class="${i<2?'adv':i===2?'padv':''}"><td><span class="adot ${i<2?'g':i===2?'o':''}"></span></td>
+    <td>${fImg(tm.n,26)} ${teamName(tm.n)}</td><td>${tm.p}</td><td>${tm.w}</td><td>${tm.d}</td><td>${tm.l}</td>
+    <td style="font-size:12px">${tm.gf}:${tm.ga} (${tm.gd>=0?'+':''}${tm.gd})</td><td><b>${tm.pts}</b></td></tr>`).join('')}</tbody></table></div>`;
   }).join('');
   return thirdTable+groupTables;
 }
@@ -873,20 +976,20 @@ const WINNER_SOURCES={89:[74,77],90:[73,75],91:[76,78],92:[79,80],93:[83,84],94:
 const LOSER_SOURCES={103:[101,102]};
 function slotLabel(matchId,side){
   if(R32_SLOTS[matchId])return R32_SLOTS[matchId][side];
-  if(WINNER_SOURCES[matchId])return `Győztes – M${WINNER_SOURCES[matchId][side]}`;
-  if(LOSER_SOURCES[matchId])return `Vesztes – M${LOSER_SOURCES[matchId][side]}`;
+  if(WINNER_SOURCES[matchId])return `${t('winner_of')} – M${WINNER_SOURCES[matchId][side]}`;
+  if(LOSER_SOURCES[matchId])return `${t('loser_of')} – M${LOSER_SOURCES[matchId][side]}`;
   return 'TBD';
 }
 function bkBox(m){
   const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away,r=S.results[m.id],isTBD=m.tbd&&!ov;
   const hLbl=isTBD?slotLabel(m.id,0):home,aLbl=isTBD?slotLabel(m.id,1):away;
   return `<div class="bk-match">
-    <div class="bk-team${r&&r.homeGoals>r.awayGoals?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?hLbl:`${FL[home]||''} ${home}`}</span>${r?`<span class="bk-sc">${r.homeGoals}</span>`:''}</div>
-    <div class="bk-team${r&&r.awayGoals>r.homeGoals?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?aLbl:`${FL[away]||''} ${away}`}</span>${r?`<span class="bk-sc">${r.awayGoals}</span>`:''}</div>
+    <div class="bk-team${r&&r.homeGoals>r.awayGoals?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?hLbl:`${FL[home]||''} ${teamName(home)}`}</span>${r?`<span class="bk-sc">${r.homeGoals}</span>`:''}</div>
+    <div class="bk-team${r&&r.awayGoals>r.homeGoals?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?aLbl:`${FL[away]||''} ${teamName(away)}`}</span>${r?`<span class="bk-sc">${r.awayGoals}</span>`:''}</div>
   </div>`;
 }
 function rBracket(){
-  const rounds=[{id:'r32',label:'32 közé',n:16},{id:'r16',label:'16 közé',n:8},{id:'qf',label:'Negyeddöntő',n:4},{id:'sf',label:'Elődöntő',n:2},{id:'final',label:'🏆 Döntő',n:1}];
+  const rounds=[{id:'r32',label:t('bracket_round32'),n:16},{id:'r16',label:t('bracket_round16'),n:8},{id:'qf',label:t('bracket_qf'),n:4},{id:'sf',label:t('bracket_sf'),n:2},{id:'final',label:t('bracket_final'),n:1}];
   const ROUND_H=920;
   const cols=rounds.map(rd=>{
     const ms=ALL.filter(m=>m.stage===rd.id).sort((a,b)=>(a.mn||0)-(b.mn||0));
@@ -898,11 +1001,11 @@ function rBracket(){
   }).join('');
   const bronze=ALL.find(m=>m.stage==='bronze');
   return `<div>
-    <div class="sect">🏆 Kieséses ágrajz</div>
-    <p style="color:rgba(var(--ink-rgb),.45);font-size:12.5px;margin-bottom:14px">A dőlt szövegű mezők (pl. "1A" = A csoport győztese, "3. A/B/C/D/F" = a legjobb 3. helyezett ebből az 5 csoportból) a hivatalos FIFA sorsolási séma szerinti helyeket jelzik – ezek a csoportkör végén töltődnek ki valódi csapatnévvel.</p>
+    <div class="sect">${t('bracket_t')}</div>
+    <p style="color:rgba(var(--ink-rgb),.45);font-size:12.5px;margin-bottom:14px">${t('bracket_hint')}</p>
     <div style="overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:16px;min-width:880px">${cols}</div></div>
     <div class="divider"></div>
-    <div class="sect" style="font-size:14px">🥉 Bronzmérkőzés</div>
+    <div class="sect" style="font-size:14px">🥉 ${t('bracket_bronze')}</div>
     <div style="max-width:230px">${bkBox(bronze)}</div>
   </div>`;
 }
@@ -911,33 +1014,33 @@ function rMyTips(){
   const uid=S.user.id,cfg=DS,eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
   let tp=0,fin=0,pf=0,rgd=0,r3=0;
-  tipped.forEach(m=>{const t=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!r)return;fin++;const p=calcPts(t,r,m.stage,cfg)||0;tp+=p;const cat=ptsCat(t,r,m.stage,cfg);if(cat==='p8')pf++;else if(cat==='p5')rgd++;else if(cat==='p3')r3++;});
+  tipped.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!r)return;fin++;const p=calcPts(tip,r,m.stage,cfg)||0;tp+=p;const cat=ptsCat(tip,r,m.stage,cfg);if(cat==='p8')pf++;else if(cat==='p5')rgd++;else if(cat==='p3')r3++;});
   const uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
   const wPts=S.adminSpec?.winner&&uw===S.adminSpec.winner?cfg.winner:0;
   const tPts=S.adminSpec?.top&&ut&&ut.toLowerCase().trim()===S.adminSpec.top?.toLowerCase().trim()?cfg.topScorer:0;
   const totPts=tp+wPts+tPts;
-  if(!tipped.length&&!uw&&!ut) return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">📝</div><p>Még nem adtál le tippet.</p></div>`;
+  if(!tipped.length&&!uw&&!ut) return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">📝</div><p>${t('no_tips_yet')}</p></div>`;
   return `<div class="stat-row">
-    ${[{l:'Tipp',v:tipped.length,c:'#4a9eff'},{l:'Értékelt',v:fin,c:'#a78bfa'},{l:'⭐ Telitalálat',v:pf,c:'#c9a84c'},{l:'🎯 R+GK',v:rgd,c:'#60d0ff'},{l:'✓ Kimenetel',v:r3,c:'#00b050'},{l:'Összpont',v:totPts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
+    ${[{l:t('stat_tips'),v:tipped.length,c:'#4a9eff'},{l:t('stat_evaluated'),v:fin,c:'#a78bfa'},{l:t('stat_perfect'),v:pf,c:'#c9a84c'},{l:t('stat_resultgd'),v:rgd,c:'#60d0ff'},{l:t('stat_outcome'),v:r3,c:'#00b050'},{l:t('stat_total'),v:totPts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
   </div>
   ${uw||ut?`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-    <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:8px">⭐ Előzetes tippek</div>
-    <div style="font-size:13px;color:rgba(var(--ink-rgb),.7)">🏆 Győztes: <b>${uw||'—'}</b>${wPts?` <span style="color:#00b050;font-weight:700">+${wPts}p ✓</span>`:S.adminSpec?.winner?` <span style="color:#e63329">✗</span>`:''}</div>
-    <div style="font-size:13px;color:rgba(var(--ink-rgb),.7);margin-top:5px">⚽ Gólkirály: <b>${ut||'—'}</b>${tPts?` <span style="color:#00b050;font-weight:700">+${tPts}p ✓</span>`:S.adminSpec?.top?` <span style="color:#e63329">✗</span>`:''}</div>
+    <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:8px">${t('pretips_section')}</div>
+    <div style="font-size:13px;color:rgba(var(--ink-rgb),.7)">${t('final_winner')} <b>${uw?teamName(uw):'—'}</b>${wPts?` <span style="color:#00b050;font-weight:700">+${wPts}p ✓</span>`:S.adminSpec?.winner?` <span style="color:#e63329">✗</span>`:''}</div>
+    <div style="font-size:13px;color:rgba(var(--ink-rgb),.7);margin-top:5px">${t('top_scorer_lbl')} <b>${ut||'—'}</b>${tPts?` <span style="color:#00b050;font-weight:700">+${tPts}p ✓</span>`:S.adminSpec?.top?` <span style="color:#e63329">✗</span>`:''}</div>
   </div>`:''}
   <div>${tipped.map(m=>{
-    const t=S.tips[`${uid}_${m.id}`],r=eff[m.id],p=r?calcPts(t,r,m.stage,cfg):null;
+    const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
-    const cat=r?ptsCat(t,r,m.stage,cfg):null;
+    const cat=r?ptsCat(tip,r,m.stage,cfg):null;
     const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
     return `<div class="tip-row">
-      <div style="font-size:10.5px;color:rgba(var(--ink-rgb),.35);min-width:42px">${m.group?m.group+(m.md||''):SL[m.stage]?.slice(0,3)||''}<div>${fd(m.date)}</div></div>
-      <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${FL[home]||''} ${home} – ${away} ${FL[away]||''}</div>
-      <div style="font-size:13px;white-space:nowrap">Tipp: <b>${t.homeGoals}–${t.awayGoals}</b></div>
-      ${r?`<div style="text-align:right;min-width:85px"><div style="font-size:11px;color:${r.live?'#e63329':'rgba(var(--ink-rgb),.35)'}">${r.live?'🔴 élő':'Ered.'}: ${r.homeGoals}–${r.awayGoals}</div><span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p${r.live?' (élő)':''}</span></div>`:`<div style="font-size:11px;color:rgba(var(--ink-rgb),.2);min-width:85px;text-align:right">várható</div>`}
+      <div style="font-size:10.5px;color:rgba(var(--ink-rgb),.35);min-width:42px">${m.group?m.group+(m.md||''):stageLabel(m.stage)?.slice(0,3)||''}<div>${fd(m.date)}</div></div>
+      <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${FL[home]||''} ${teamName(home)} – ${teamName(away)} ${FL[away]||''}</div>
+      <div style="font-size:13px;white-space:nowrap">${t('your_tip')} <b>${tip.homeGoals}–${tip.awayGoals}</b></div>
+      ${r?`<div style="text-align:right;min-width:85px"><div style="font-size:11px;color:${r.live?'#e63329':'rgba(var(--ink-rgb),.35)'}">${r.live?'🔴 '+t('live_lbl'):t('result_lbl')}: ${r.homeGoals}–${r.awayGoals}</div><span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p${r.live?' ('+t('live_lbl')+')':''}</span></div>`:`<div style="font-size:11px;color:rgba(var(--ink-rgb),.2);min-width:85px;text-align:right">${t('expected')}</div>`}
     </div>`;
   }).join('')}</div>
-  <div class="scoring-hint"><b>Pontozás:</b> ⭐ Telitalálat: 8p · 🎯 Ered.+Gólkül.: 5p · ✓ Kimenetel: 3p · ~ 1 csapat gólja: 1p · 🔄 Kieső kör: ×2 · 🏆 Végső győztes: 25p · ⚽ Gólkirály: 25p<br><i>Mindig csak a legmagasabb kategória számít. A 🔴 élő jelzésű eredmények még nem véglegesek.</i></div>`;
+  <div class="scoring-hint"><b>${t('scoring_hint')}</b> ⭐ ${t('perfect_full')}: 8p · 🎯 ${t('resultgd_full')}: 5p · ✓ ${t('outcome_full')}: 3p · ~ ${t('onegoal_full')}: 1p · 🔄 ${t('ko_full')}: ×2 · 🏆 ${t('winner_full')}: 25p · ⚽ ${t('topscorer_full')}: 25p<br><i>${t('scoring_note')}</i></div>`;
 }
 
 function isLocked(m){
@@ -948,16 +1051,16 @@ function isLocked(m){
 function rUserHistory(targetUid,cfg){
   const eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${targetUid}_${m.id}`]);
-  if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:#888">Még nem adott le tippet.</div>`;
+  if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:#888">${t('no_tips_yet')}</div>`;
   const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
   return `<div style="padding:8px 4px 2px">${tipped.map(m=>{
-    const t=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(t,r,m.stage,cfg):null,cat=r?ptsCat(t,r,m.stage,cfg):null;
+    const tip=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null,cat=r?ptsCat(tip,r,m.stage,cfg):null;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
     const hidden=targetUid!==S.user.id&&!isLocked(m);
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0f2f8;font-size:12px">
-      <span style="color:#999;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${home} – ${away}</span>
-      ${hidden?`<span style="color:#bbb;font-style:italic">🔒 tipp leadva, rejtve a meccs zárásáig</span>`:`<span style="color:#555">Tipp: ${t.homeGoals}-${t.awayGoals}</span>
-      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'#1a1a2e'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · ${catS[cat]||''} ${p}p</span>`:`<span style="margin-left:auto;color:#bbb">várható</span>`}`}
+      <span style="color:#999;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
+      ${hidden?`<span style="color:#bbb;font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:#555">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
+      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'#1a1a2e'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · ${catS[cat]||''} ${p}p</span>`:`<span style="margin-left:auto;color:#bbb">${t('expected')}</span>`}`}
     </div>`;
   }).join('')}</div>`;
 }
@@ -968,16 +1071,16 @@ function rLb(){
   const board=S.users.filter(u=>!u.isAdmin&&(!fIds||fIds.includes(u.id))).map(u=>{
     const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);return{...u,...r};
   }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
-  const lgN=S.selLg?S.leagues.find(l=>l.id===S.selLg)?.name:'Globális';
+  const lgN=S.selLg?S.leagues.find(l=>l.id===S.selLg)?.name:t('global_word');
   return `<div>
   <div class="lg-sel-row">
-    <span style="font-size:12.5px;color:rgba(var(--ink-rgb),.5)">Liga:</span>
-    <button class="pill${!S.selLg?' on':' off'}" id="lgAll">🌍 Globális</button>
+    <span style="font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('league_lbl')}</span>
+    <button class="pill${!S.selLg?' on':' off'}" id="lgAll">${t('global_lbl')}</button>
     ${myLgs.map(l=>`<button class="pill${S.selLg===l.id?' on':' off'}" data-lbid="${l.id}">${l.name}</button>`).join('')}
   </div>
-  <div class="sect">🏅 ${lgN} – Tabella</div>
-  ${board.length?`<button class="btn-sm gold" id="shareLbBtn" style="margin-bottom:14px">📷 Tabella megosztása képként</button>`:''}
-  ${!board.length?`<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏅</div><p>Még nincs regisztrált játékos.</p></div>`:''}
+  <div class="sect">${t('lb_title')} ${lgN} – ${t('tab_lb').replace('🏅 ','')}</div>
+  ${board.length?`<button class="btn-sm gold" id="shareLbBtn" style="margin-bottom:14px">${t('lb_share')}</button>`:''}
+  ${!board.length?`<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏅</div><p>${t('no_players')}</p></div>`:''}
   ${board.map((u,i)=>{
     const exp=S.expandLb===u.id;
     return `<div class="lb-card${u.id===uid?' me':''}" style="flex-direction:column;align-items:stretch;cursor:pointer" data-explb="${u.id}">
@@ -985,8 +1088,8 @@ function rLb(){
       <div class="lb-rank" style="color:${i===0?'#c9a84c':i===1?'silver':i===2?'#cd7f32':'#ccc'};font-size:${i<3?22:16}px">${i<3?medals[i]:`${i+1}.`}</div>
       <span style="font-size:20px">${u.av||'⚽'}</span>
       <div style="flex:1">
-        <div class="lb-nm">${u.dn}${u.id===uid?' <span style="font-size:11px;color:#c9a84c;font-weight:600">(te)</span>':''}</div>
-        <div class="lb-sub">⭐${u.pf} · 🎯${u.rgd} · ✓${u.res3} · ${u.tipped} tipp</div>
+        <div class="lb-nm">${u.dn}${u.id===uid?` <span style="font-size:11px;color:#c9a84c;font-weight:600">${t('you_tag')}</span>`:''}</div>
+        <div class="lb-sub">⭐${u.pf} · 🎯${u.rgd} · ✓${u.res3} · ${u.tipped} ${t('tip_label')}</div>
       </div>
       <div class="lb-pts">${u.pts}<span style="font-size:13px;font-weight:400;color:#999">p</span></div>
       <span style="color:#bbb;font-size:11px">${exp?'▲':'▼'}</span>
@@ -994,74 +1097,74 @@ function rLb(){
     ${exp?rUserHistory(u.id,cfg):''}
   </div>`;
   }).join('')}
-  <div class="scoring-hint"><b>${lgN} pontozás:</b> ⭐${cfg.perfect}p · 🎯${cfg.resultGD}p · ✓${cfg.result}p · ~${cfg.oneGoal}p · ×${cfg.ko} KO · 🏆${cfg.winner}p · ⚽${cfg.topScorer}p</div>
+  <div class="scoring-hint"><b>${lgN} ${t('scoring_hint')}</b> ⭐${cfg.perfect}p · 🎯${cfg.resultGD}p · ✓${cfg.result}p · ~${cfg.oneGoal}p · ×${cfg.ko} KO · 🏆${cfg.winner}p · ⚽${cfg.topScorer}p</div>
   </div>`;
 }
 
 function rPreTips(){
   const uid=S.user.id,uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
   return `<div>
-  <div class="sect">⭐ Előzetes tippek</div>
-  <p style="color:rgba(var(--ink-rgb),.55);font-size:14px;margin-bottom:18px">Ezeket a tippeket a torna vége előtt kell leadni a bónuszpontokért.</p>
+  <div class="sect">${t('pretips_section')}</div>
+  <p style="color:rgba(var(--ink-rgb),.55);font-size:14px;margin-bottom:18px">${t('pretips_intro')}</p>
   <div class="pre-card">
-    <h3>🏆 VB Végső Győztes — 25 pont</h3>
-    <p>Melyik csapat nyeri a 2026-os Foci VB-t?</p>
+    <h3>${t('winner_card_h3')}</h3>
+    <p>${t('winner_card_p')}</p>
     ${teamSelect('preW',uw||'')}
   </div>
   <div class="pre-card">
-    <h3>⚽ Gólkirály — 25 pont</h3>
-    <p>Ki lesz a torna gólkirálya?</p>
+    <h3>${t('topscorer_card_h3')}</h3>
+    <p>${t('topscorer_card_p')}</p>
     ${topscorerSelect('preT',ut||'')}
   </div>
-  ${uw&&ut?`<div class="suc-box">✓ Tippjeid mentve: <b>${uw}</b> győz, gólkirály: <b>${ut}</b></div>`:''}
+  ${uw&&ut?`<div class="suc-box">${t('saved_tips_msg')} <b>${teamName(uw)}</b> ${t('wins_word')}, ${t('top_scorer_lbl').toLowerCase()} <b>${ut}</b></div>`:''}
   <div id="preErr" style="display:none" class="err-box"></div>
-  <button class="btn-gold" id="savePreBtn" style="max-width:280px">💾 Tippek mentése</button>
-  ${S.adminSpec?.winner?`<div style="margin-top:18px;padding:14px;background:rgba(0,0,0,.2);border-radius:10px;font-size:13px;color:rgba(var(--ink-rgb),.5)">Admin által rögzített: 🏆 <b style="color:#c9a84c">${S.adminSpec.winner}</b> · ⚽ <b style="color:#c9a84c">${S.adminSpec.top||'—'}</b></div>`:''}
+  <button class="btn-gold" id="savePreBtn" style="max-width:280px">${t('save_tips_btn')}</button>
+  ${S.adminSpec?.winner?`<div style="margin-top:18px;padding:14px;background:rgba(0,0,0,.2);border-radius:10px;font-size:13px;color:rgba(var(--ink-rgb),.5)">${t('admin_recorded')} 🏆 <b style="color:#c9a84c">${teamName(S.adminSpec.winner)}</b> · ⚽ <b style="color:#c9a84c">${S.adminSpec.top||'—'}</b></div>`:''}
   </div>`;
 }
 
 function rLeagues(){
   const uid=S.user.id,myLgs=S.leagues.filter(l=>l.members?.includes(uid));
   return `<div>
-  <div class="sect">🤝 Ligák</div>
+  <div class="sect">${t('tab_leagues')}</div>
   <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
-    <button class="btn-green" id="createLgBtn">+ Liga létrehozása</button>
-    <button class="btn-sm gold" style="padding:11px 16px" id="joinLgBtn">🔑 Csatlakozás kóddal</button>
+    <button class="btn-green" id="createLgBtn">${t('create_league')}</button>
+    <button class="btn-sm gold" style="padding:11px 16px" id="joinLgBtn">${t('join_code')}</button>
   </div>
-  ${!myLgs.length?`<div class="empty" style="padding:32px"><div style="font-size:44px;margin-bottom:12px">🤝</div><p>Még nem tartozol ligához.</p></div>`:''}
+  ${!myLgs.length?`<div class="empty" style="padding:32px"><div style="font-size:44px;margin-bottom:12px">🤝</div><p>${t('no_leagues')}</p></div>`:''}
   ${myLgs.map(l=>{
     const isOwner=l.ownerId===uid,isEditing=S.editLgId===l.id,sco=S.editLgSco||l.scoring||DS;
     return `<div class="lg-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div>
         <div style="font-size:18px;font-weight:800">${l.name}</div>
-        <div style="font-size:13px;color:rgba(var(--ink-rgb),.5);margin-top:3px">${l.members?.length||1} tag${isOwner?' · te hozted létre':''}</div>
+        <div style="font-size:13px;color:rgba(var(--ink-rgb),.5);margin-top:3px">${l.members?.length||1} ${t('members_lbl')}${isOwner?' · '+t('you_created'):''}</div>
         <div class="lg-code">${l.code}</div>
-        <div style="font-size:12px;color:rgba(var(--ink-rgb),.4)">Küld el ezt a kódot a barátaidnak!</div>
+        <div style="font-size:12px;color:rgba(var(--ink-rgb),.4)">${t('send_code')}</div>
       </div>
       <div style="font-size:12px;color:rgba(var(--ink-rgb),.55);text-align:right;line-height:1.8">
         ⭐ ${numOr(l.scoring?.perfect,8)}p · 🎯 ${numOr(l.scoring?.resultGD,5)}p<br>✓ ${numOr(l.scoring?.result,3)}p · ~ ${numOr(l.scoring?.oneGoal,1)}p<br>🏆 ${numOr(l.scoring?.winner,25)}p · ×${numOr(l.scoring?.ko,2)}
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      ${isOwner?`<button class="btn-sm gold" data-editlg="${l.id}">${isEditing?'✕ Bezárás':'⚙️ Szerkesztés'}</button>`:''}
-      ${!isOwner?`<button class="btn-sm red" data-leave="${l.id}">Kilépés a ligából</button>`:''}
+      ${isOwner?`<button class="btn-sm gold" data-editlg="${l.id}">${isEditing?t('close_btn'):t('edit_scoring')}</button>`:''}
+      ${!isOwner?`<button class="btn-sm red" data-leave="${l.id}">${t('leave_league')}</button>`:''}
     </div>
     ${isEditing?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(var(--ink-rgb),.1)">
-      <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">Pontozás módosítása</div>
+      <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">${t('edit_scoring_h')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        ${[{id:'elgSp',l:'⭐ Telitalálat',v:numOr(sco.perfect,8)},{id:'elgSrgd',l:'🎯 Ered.+Gólkül.',v:numOr(sco.resultGD,5)},{id:'elgSr',l:'✓ Kimenetel',v:numOr(sco.result,3)},{id:'elgSog',l:'~ 1 csapat gólja',v:numOr(sco.oneGoal,1)},{id:'elgSw',l:'🏆 Végső győztes',v:numOr(sco.winner,25)},{id:'elgSt',l:'⚽ Gólkirály',v:numOr(sco.topScorer,25)},{id:'elgSko',l:'🔄 Kieső szorzó',v:numOr(sco.ko,2)}].map(f=>`<div><label style="font-size:11.5px;color:rgba(var(--ink-rgb),.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
+        ${[{id:'elgSp',l:'⭐ '+t('perfect_full'),v:numOr(sco.perfect,8)},{id:'elgSrgd',l:'🎯 '+t('resultgd_full'),v:numOr(sco.resultGD,5)},{id:'elgSr',l:'✓ '+t('outcome_full'),v:numOr(sco.result,3)},{id:'elgSog',l:'~ '+t('onegoal_full'),v:numOr(sco.oneGoal,1)},{id:'elgSw',l:'🏆 '+t('winner_full'),v:numOr(sco.winner,25)},{id:'elgSt',l:'⚽ '+t('topscorer_full'),v:numOr(sco.topScorer,25)},{id:'elgSko',l:'🔄 '+t('ko_multiplier'),v:numOr(sco.ko,2)}].map(f=>`<div><label style="font-size:11.5px;color:rgba(var(--ink-rgb),.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
       </div>
-      <button class="btn-green" data-savelgsco="${l.id}">💾 Pontozás mentése</button>
+      <button class="btn-green" data-savelgsco="${l.id}">${t('save_scoring')}</button>
       <div class="divider"></div>
-      <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">Tagok kezelése (${l.members.length})</div>
+      <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">${t('manage_members')} (${l.members.length})</div>
       ${l.members.filter(mid=>mid!==l.ownerId).map(mid=>{
         const u=S.users.find(x=>x.id===mid);
         return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(var(--ink-rgb),.05)">
           <span style="font-size:13px">${u?.av||'⚽'} ${u?.dn||mid}</span>
-          <button class="btn-sm red" data-removemem="${l.id}|${mid}" style="padding:5px 10px;font-size:12px">Eltávolítás</button>
+          <button class="btn-sm red" data-removemem="${l.id}|${mid}" style="padding:5px 10px;font-size:12px">${t('remove_btn')}</button>
         </div>`;
-      }).join('')||'<p style="font-size:12.5px;color:rgba(var(--ink-rgb),.4)">Még nincs más tag.</p>'}
+      }).join('')||`<p style="font-size:12.5px;color:rgba(var(--ink-rgb),.4)">${t('no_other_members')}</p>`}
     </div>`:''}
   </div>`;
   }).join('')}
@@ -1115,20 +1218,20 @@ function rProfile(){
       ${S.profEdit?`<input class="inp" id="profDN" value="${S.profDN}" style="font-size:18px;font-weight:700;margin-bottom:10px">`:`<div style="font-size:22px;font-weight:900">${u.dn}</div>`}
       <div style="color:rgba(var(--ink-rgb),.4);font-size:13px;margin-top:3px">@${u.un}</div>
       <div style="display:flex;gap:8px;margin-top:10px">
-        ${S.profEdit?`<button class="btn-green" id="saveProf" style="padding:9px 18px">💾 Mentés</button><button class="btn-sm white" id="cancelProf" style="padding:9px 12px">Mégse</button>`:`<button class="btn-sm gold" id="editProf" style="padding:9px 14px">✏️ Szerkesztés</button>`}
+        ${S.profEdit?`<button class="btn-green" id="saveProf" style="padding:9px 18px">${t('save_btn')}</button><button class="btn-sm white" id="cancelProf" style="padding:9px 12px">${t('cancel_btn')}</button>`:`<button class="btn-sm gold" id="editProf" style="padding:9px 14px">${t('edit_profile')}</button>`}
       </div>
     </div>
   </div>
-  ${S.profEdit?`<div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:16px;margin-bottom:16px"><div style="font-size:13px;color:rgba(var(--ink-rgb),.5);margin-bottom:10px">Avatar:</div><div style="display:flex;flex-wrap:wrap;gap:8px">${AVS.map(av=>`<div class="av-opt${S.profAv===av?' sel':''}" data-av="${av}">${av}</div>`).join('')}</div></div>`:''}
-  <div class="sect">Statisztikák</div>
+  ${S.profEdit?`<div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:16px;margin-bottom:16px"><div style="font-size:13px;color:rgba(var(--ink-rgb),.5);margin-bottom:10px">${t('avatar_lbl')}</div><div style="display:flex;flex-wrap:wrap;gap:8px">${AVS.map(av=>`<div class="av-opt${S.profAv===av?' sel':''}" data-av="${av}">${av}</div>`).join('')}</div></div>`:''}
+  <div class="sect">${t('stats_title')}</div>
   <div class="stat-row">
-    ${[{l:'Tipp',v:r.tipped,c:'#4a9eff'},{l:'Értékelt',v:r.fin,c:'#a78bfa'},{l:'⭐ Telitalálat',v:r.pf,c:'#c9a84c'},{l:'🎯 R+GK',v:r.rgd,c:'#60d0ff'},{l:'✓ Kim.',v:r.res3,c:'#00b050'},{l:'Összpont',v:r.pts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
+    ${[{l:t('stat_tips'),v:r.tipped,c:'#4a9eff'},{l:t('stat_evaluated'),v:r.fin,c:'#a78bfa'},{l:t('stat_perfect'),v:r.pf,c:'#c9a84c'},{l:t('stat_resultgd'),v:r.rgd,c:'#60d0ff'},{l:t('stat_outcome'),v:r.res3,c:'#00b050'},{l:t('stat_total'),v:r.pts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
   </div>
-  <div class="sect">🤝 Ligáim</div>
-  <div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="__global__"><span style="font-size:18px">🌍</span><div style="flex:1"><div class="lb-nm">Globális</div><div class="lb-sub">${globalRank.total} résztvevő közül</div></div><div class="lb-pts">${globalRank.rank}.<span style="font-size:13px;font-weight:400;color:#999"> hely</span></div><span style="color:#bbb;font-size:13px">›</span></div>
-  ${!myLgs.length?`<p style="font-size:13px;color:rgba(var(--ink-rgb),.4)">Még nem vagy tagja egyéni ligának.</p>`:myLgs.map(l=>{
+  <div class="sect">${t('my_leagues')}</div>
+  <div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="__global__"><span style="font-size:18px">🌍</span><div style="flex:1"><div class="lb-nm">${t('global_word')}</div><div class="lb-sub">${globalRank.total} ${t('of_participants')}</div></div><div class="lb-pts">${globalRank.rank}.<span style="font-size:13px;font-weight:400;color:#999"> ${t('rank_suffix')}</span></div><span style="color:#bbb;font-size:13px">›</span></div>
+  ${!myLgs.length?`<p style="font-size:13px;color:rgba(var(--ink-rgb),.4)">${t('no_league_member')}</p>`:myLgs.map(l=>{
     const lr=rankInScope(uid,l.members,l.scoring||DS,eff);
-    return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1"><div class="lb-nm">${l.name}</div><div class="lb-sub">${lr.total} résztvevő közül</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
+    return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1"><div class="lb-nm">${l.name}</div><div class="lb-sub">${lr.total} ${t('of_participants')}</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
   }).join('')}
   </div>`;
 }
