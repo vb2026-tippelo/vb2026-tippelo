@@ -671,10 +671,12 @@ async function fetchTodayOdds(){
       if(Array.isArray(bd))bttsData=bd;
     }catch(e){}
     const odds={};
+    console.log('H2H meccsek az API-ban:',data.length,'db | Pl:',data[0]?.home_team,'vs',data[0]?.away_team);
+    console.log('Mai meccsek:',todayMs.map(m=>m.home+'v'+m.away));
     for(const ev of data){
       const hCode=ODDS_TEAM[ev.home_team];
       const aCode=ODDS_TEAM[ev.away_team];
-      if(!hCode||!aCode)continue;
+      if(!hCode||!aCode){console.log('Ismeretlen csapat:',ev.home_team,'vs',ev.away_team);continue;}
       const match=todayMs.find(m=>(m.home===hCode&&m.away===aCode)||(m.home===aCode&&m.away===hCode));
       if(!match)continue;
       const bk=ev.bookmakers?.[0];if(!bk)continue;
