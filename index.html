@@ -903,7 +903,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32'
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},lineups:{},expandLineup:null
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1043,6 +1043,7 @@ async function removeMember(lgId,memberId){
 async function applyFinishedMatches(apiMatches){
   const nr={...S.results};
   const live={};
+  const wcIds={...S.wcIds||{}};
   const applied=[];
   apiMatches.forEach(am=>{
     const isSportAPI=am.h!=null||am.finished!=null;
@@ -1068,8 +1069,9 @@ async function applyFinishedMatches(apiMatches){
       nr[lm.id]={homeGoals:h,awayGoals:a};
       applied.push({mid:lm.id,home:lm.home,away:lm.away,h,a});
     } else if(isLive){
-      live[lm.id]={h,a,status:am.status,desc:am.desc||am.status};
+      live[lm.id]={h,a,status:am.status,desc:am.desc||am.status,minute:am.minute||''};
     }
+    if(am.matchId) wcIds[lm.id]=am.matchId;
   });
 
   // Eltűnés detektálás: ami VOLT élő de most NEM szerepel a feedben → valószínűleg vége
@@ -1094,6 +1096,7 @@ async function applyFinishedMatches(apiMatches){
   const tasks=[sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true)];
   if(applied.length)tasks.push(sS('wc_r',nr,true));
   await Promise.all(tasks);
+  SS({wcIds});
   if(applied.length){SS({results:nr});await autoFillKnockoutTeams();}
   return{applied,results:applied.length?nr:S.results,live};
 }
@@ -1561,6 +1564,44 @@ function rCard(m){
       </div>`;
     })()}
     ${res&&tip?`<div class="mc-res"><span style="color:rgba(var(--ink-rgb),.45)">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:rgba(var(--ink-rgb),.4);font-size:12px">${t('no_tip_match')}</div>`:''}
+    ${(()=>{
+      const wcId=S.wcIds?.[m.id];
+      if(!wcId)return '';
+      const isExp=S.expandLineup===m.id;
+      const lu=S.lineups?.[m.id];
+      const expHtml=isExp&&lu?`<div style="padding:8px 14px 12px;border-top:1px solid rgba(var(--ink-rgb),.06)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          ${['home','away'].map(side=>{
+            const starters=lu.startingXI?.[side]||[];
+            const subs=lu.substitutes?.[side]||[];
+            const coach=lu.coaches?.[side];
+            const formation=lu.formation?.[side]||'';
+            const teamName=side==='home'?home:away;
+            return `<div>
+              <div style="font-size:11px;font-weight:700;color:var(--c-gold);margin-bottom:6px">${teamName} ${formation?`<span style="font-weight:400;color:rgba(var(--ink-rgb),.4)">${formation}</span>`:''}</div>
+              ${starters.map(p=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;padding:2px 0;border-bottom:1px solid rgba(var(--ink-rgb),.04)">
+                <span style="color:rgba(var(--ink-rgb),.3);min-width:16px;font-size:10px">${p.number||''}</span>
+                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name||''}</span>
+                ${p.rating?`<span style="font-size:10px;color:${p.rating>=7.5?'#00b050':p.rating>=6?'#c9a84c':'#e63329'};font-weight:700">${p.rating}</span>`:''}
+                ${p.motm?'<span style="font-size:10px">⭐</span>':''}
+              </div>`).join('')}
+              ${subs.length?`<div style="font-size:10px;color:rgba(var(--ink-rgb),.3);margin-top:5px;margin-bottom:3px">Cserék</div>
+              ${subs.map(p=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;padding:1px 0;color:rgba(var(--ink-rgb),.55)">
+                <span style="color:rgba(var(--ink-rgb),.25);min-width:16px;font-size:10px">${p.number||''}</span>
+                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name||''}</span>
+              </div>`).join('')}`:''}
+              ${coach?`<div style="font-size:10px;color:rgba(var(--ink-rgb),.4);margin-top:5px">👔 ${coach.name}</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`:isExp&&!lu?`<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`:'';
+      return `<div>
+        <div style="padding:4px 14px 8px">
+          <button data-explineup="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.1);border-radius:6px;padding:3px 8px;font-size:11px;color:rgba(var(--ink-rgb),.4);cursor:pointer">${isExp?'▲ Bezár':'👕 Felállás'}</button>
+        </div>
+        ${expHtml}
+      </div>`;
+    })()}
   </div>`;
 }
 
@@ -2997,6 +3038,21 @@ function bindMain(hw){
     togglePredThird(e.currentTarget.dataset.predthird);
   }));
   document.querySelectorAll('[data-bkr]').forEach(b=>b.addEventListener('click',e=>SS({bkRound:e.currentTarget.dataset.bkr})));
+  document.querySelectorAll('[data-explineup]').forEach(b=>b.addEventListener('click',async e=>{
+    e.stopPropagation();
+    const mid=parseInt(e.currentTarget.dataset.explineup);
+    const wcId=e.currentTarget.dataset.wcid;
+    if(S.expandLineup===mid){SS({expandLineup:null});return;}
+    SS({expandLineup:mid});
+    if(!S.lineups?.[mid]&&wcId){
+      try{
+        const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
+        const r=await fetch(`${base}/.netlify/functions/lineups?matchId=${wcId}`);
+        const d=await r.json();
+        if(d.data)SS({lineups:{...S.lineups,[mid]:d.data}});
+      }catch(e2){}
+    }
+  }));
   document.querySelectorAll('[data-predko]').forEach(b=>b.addEventListener('click',e=>{
     const[fn,side]=e.currentTarget.dataset.predko.split('|');
     savePredKO(parseInt(fn),side);
