@@ -1535,9 +1535,28 @@ async function togglePredThird(gid){
   await savePredict();
 }
 async function savePredKO(fifaNum,side){
+  // Downstream meccsek meghatározása WINNER_SOURCES alapján
+  const down=new Set();
+  const q=[fifaNum];
+  while(q.length){
+    const cur=q.shift();
+    for(const[t,srcs] of Object.entries(WINNER_SOURCES)){
+      if(srcs.includes(cur)){
+        const tn=parseInt(t);
+        if(!down.has(tn)){down.add(tn);q.push(tn);}
+      }
+    }
+  }
+  // Bronz is reset ha az elődöntők érintve vannak
+  if(down.has(101)||down.has(102))down.add(103);
+  // Toggle: ha ugyanaz kattintva újra → töröl
+  const isSame=S.predKO[fifaNum]===side;
   const nko={};
-  Object.entries(S.predKO).forEach(([k,v])=>{if(parseInt(k)<fifaNum)nko[k]=v;});
-  nko[fifaNum]=side;
+  Object.entries(S.predKO).forEach(([k,v])=>{
+    const kn=parseInt(k);
+    if(kn!==fifaNum&&!down.has(kn))nko[k]=v;
+  });
+  if(!isSame)nko[fifaNum]=side;
   SS({predKO:nko});
   await savePredict();
 }
