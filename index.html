@@ -287,6 +287,8 @@ body.light-theme .wk-hdr{background:rgba(0,0,0,.04)}
 .pred-grp-tag{margin-left:auto;font-family:'Rajdhani',sans-serif;font-size:10px;color:rgba(var(--ink-rgb),.3);font-weight:700}
 .pred-third-count{font-size:12.5px;color:rgba(var(--ink-rgb),.4);font-weight:700;margin-bottom:6px}
 .pred-champion{margin-top:16px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.3);border-radius:13px;padding:16px;text-align:center;font-size:14px;color:rgba(var(--ink-rgb),.85)}
+.mc-venue-info{font-size:10.5px;color:rgba(var(--ink-rgb),.35)}
+.mc-wx{font-size:11px;background:rgba(var(--ink-rgb),.08);border:1px solid rgba(var(--ink-rgb),.1);border-radius:6px;padding:1px 6px;color:rgba(var(--ink-rgb),.7);white-space:nowrap}
 .pred-bk-list-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
 .pred-bk-mn{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;color:rgba(var(--ink-rgb),.3);min-width:28px}
 .pred-ko-final{font-size:14px;padding:10px 12px;font-weight:800}
@@ -320,22 +322,32 @@ body.light-theme .wk-hdr{background:rgba(0,0,0,.04)}
   .logo-txt{font-size:15px}
   .logo-t{font-size:22px}
   .h-inner>div:last-child{gap:4px}
-  #langSel{padding:6px 4px;font-size:11.5px}
   #themeToggle{padding:7px 8px;font-size:13px}
-  #lout{padding:8px 10px;font-size:12px}
   .u-dname{display:none}
-  .ntab{padding:11px 10px;font-size:12px}
-  .mc-main{padding:10px 10px 8px;gap:4px}
-  .flag-img{height:20px}
-  .score-b{min-width:96px}
-  .sbox{width:42px;height:42px;font-size:20px}
-  .tname{font-size:12.5px}
+  .ntab{padding:10px 8px;font-size:11.5px}
+  /* Match kártya mobilon */
+  .mc-top{flex-wrap:wrap;gap:2px;padding:6px 10px 0}
+  .mc-date{font-size:11px}
+  .mc-meta{font-size:10px;flex-wrap:wrap;gap:3px}
+  .mc-grp{font-size:10px}
+  .mc-main{padding:8px 8px 6px;gap:3px}
+  .flag-img{height:22px}
+  .score-b{min-width:90px}
+  .sbox{width:40px;height:40px;font-size:19px}
+  .tname{font-size:12px}
+  .sdash{font-size:16px}
+  /* Odds mobilon kisebb */
+  .mc-odds{padding:3px 10px 7px;gap:4px}
+  .mc-odds-pill{font-size:12px;padding:2px 8px}
+  /* Egyéb */
   .modal-c{padding:18px;border-radius:16px}
   .av-big{width:60px;height:60px;font-size:32px}
   .lb-pts{font-size:20px;min-width:40px}
-  .stdt th,.stdt td{padding:7px 5px;font-size:11.5px}
+  .stdt th,.stdt td{padding:6px 4px;font-size:11px}
   .stdt th:nth-child(2){min-width:80px}
   .pred-group-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .mc-venue-info{display:block;width:100%;font-size:10px;margin-top:1px}
+  .mc-wx{font-size:10px}
   .pred-team-btn{font-size:11.5px;padding:6px 7px;gap:5px}
   .pred-group-card{padding:9px 9px}
   .pred-group-h{font-size:10px}
@@ -343,15 +355,18 @@ body.light-theme .wk-hdr{background:rgba(0,0,0,.04)}
   .pred-third-btn{font-size:11.5px;padding:7px 8px}
   .stat-row{grid-template-columns:repeat(3,1fr)}
   .sv2{font-size:22px}
+  .pill{padding:6px 10px;font-size:12px}
+  .pill-row{gap:4px}
 }
 @media (max-width:400px){
   .logo-sub{display:none}
   .logo-txt{font-size:13px}
-  .score-b{min-width:88px}
-  .sbox{width:38px;height:38px;font-size:18px}
-  #langSel{padding:5px 3px;font-size:10.5px}
+  .score-b{min-width:82px}
+  .sbox{width:36px;height:36px;font-size:17px}
   .pred-group-grid{grid-template-columns:1fr}
   .pred-third-grid{grid-template-columns:1fr}
+  .tname{font-size:11.5px}
+  .ntab{padding:9px 7px;font-size:11px}
 }
 </style>
 </head>
@@ -1348,7 +1363,7 @@ function rCard(m){
   if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
-    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span style="font-size:10.5px;color:rgba(var(--ink-rgb),.35)">📍 ${venue}${localTime?` · ⏰ ${localTime} helyi`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.35)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''} ${wx?`<span style="font-size:11px;background:rgba(var(--ink-rgb),.08);border:1px solid rgba(var(--ink-rgb),.1);border-radius:6px;padding:1px 6px;color:rgba(var(--ink-rgb),.7)">${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
+    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span class="mc-venue-info">📍 ${venue}${localTime?` · ⏰ ${localTime}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.35)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''} ${wx?`<span class="mc-wx">${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
     <div class="mc-main">
       <div class="team-b home">${fImg(home,40)}<span class="tname">${teamName(home)}</span></div>
       <div class="score-b">
