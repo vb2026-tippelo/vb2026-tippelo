@@ -528,25 +528,7 @@ const STRINGS={
 };
 function t(key){return STRINGS[S.lang||'hu']?.[key]??STRINGS.hu[key]??key;}
 function trophyIcon(size,extraStyle){
-  return `<svg viewBox="0 0 100 122" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;${extraStyle||''}" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="tgGrad" x1="10%" y1="0%" x2="90%" y2="100%">
-      <stop offset="0%" stop-color="#fbe7ad"/><stop offset="45%" stop-color="#d9b54f"/><stop offset="100%" stop-color="#9c7a2e"/>
-    </linearGradient></defs>
-    <ellipse cx="50" cy="116" rx="22" ry="4.5" fill="#00000022"/>
-    <rect x="28" y="106" width="44" height="9" rx="2.5" fill="url(#tgGrad)"/>
-    <rect x="36" y="95" width="28" height="13" rx="3" fill="url(#tgGrad)"/>
-    <rect x="45" y="80" width="10" height="17" fill="url(#tgGrad)"/>
-    <path d="M22 22 C22 18 25 16 30 16 L70 16 C75 16 78 18 78 22 C78 46 67 64 56 71 L44 71 C33 64 22 46 22 22 Z" fill="url(#tgGrad)"/>
-    <path d="M22 26 C8 27 6 42 16 50 C20 53 24 52 26 49" stroke="url(#tgGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
-    <path d="M78 26 C92 27 94 42 84 50 C80 53 76 52 74 49" stroke="url(#tgGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
-    <g stroke="#7a5c1f" stroke-width="1.3" opacity=".55" fill="none">
-      <circle cx="50" cy="40" r="15"/>
-      <ellipse cx="50" cy="40" rx="15" ry="5.5"/>
-      <path d="M35 40 Q50 27 65 40"/>
-      <path d="M35 40 Q50 53 65 40"/>
-      <line x1="50" y1="25" x2="50" y2="55"/>
-    </g>
-  </svg>`;
+  return `<img src="/trophy.png" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;object-fit:contain;${extraStyle||''}" alt="trophy">`;
 }
 const TOPSCORERS=['Kylian Mbappé','Ousmane Dembélé','Michael Olise','Lionel Messi','Lautaro Martínez','Julián Álvarez','Cristiano Ronaldo','Rafael Leão','Harry Kane','Bukayo Saka','Phil Foden','Cole Palmer','Lamine Yamal','Mikel Oyarzabal','Álvaro Morata','Nico Williams','Vinícius Júnior','Rodrygo','Endrick','Raphinha','Florian Wirtz','Kai Havertz','Jamal Musiala','Memphis Depay','Cody Gakpo','Xavi Simons','Romelu Lukaku','Kevin De Bruyne','Jeremy Doku','Erling Haaland','Luka Modrić','Darwin Núñez','Federico Valverde','James Rodríguez','Luis Díaz','Achraf Hakimi','Youssef En-Nesyri','Sadio Mané','Sébastien Haller','Breel Embolo','Granit Xhaka','Takefusa Kubo','Son Heung-min','Christian Pulisic','Folarin Balogun','Santiago Giménez','Hirving Lozano','Jonathan David','Alphonso Davies','Mohamed Salah','Mehdi Taremi','Chris Wood','Salem Al-Dawsari','Riyad Mahrez','Marcel Sabitzer','Mohammed Kudus','Edin Džeko','Patrik Schick','Alexander Isak','Enner Valencia','Moisés Caicedo','Eldor Shomurodov'];
 const ENG_ALIASES={'Mexikó':['mexico'],'Dél-Afrika':['south africa'],'Dél-Korea':['korea republic','south korea','korea'],'Csehország':['czech republic','czechia'],'Kanada':['canada'],'Bosznia-Hercegovina':['bosnia'],'Katar':['qatar'],'Svájc':['switzerland'],'Brazília':['brazil'],'Marokkó':['morocco'],'Haiti':['haiti'],'Skócia':['scotland'],'USA':['united states','usa'],'Paraguay':['paraguay'],'Ausztrália':['australia'],'Törökország':['turkey','türkiye','turkiye'],'Németország':['germany'],'Curaçao':['curacao','curaçao'],'Elefántcsontpart':['ivory coast',"côte d'ivoire",'cote d ivoire'],'Ecuador':['ecuador'],'Hollandia':['netherlands'],'Japán':['japan'],'Svédország':['sweden'],'Tunézia':['tunisia'],'Belgium':['belgium'],'Egyiptom':['egypt'],'Irán':['iran'],'Új-Zéland':['new zealand'],'Spanyolország':['spain'],'Zöld-foki-sz.':['cape verde','cabo verde'],'Szaúd-Arábia':['saudi arabia'],'Uruguay':['uruguay'],'Franciaország':['france'],'Szenegál':['senegal'],'Irak':['iraq'],'Norvégia':['norway'],'Argentína':['argentina'],'Algéria':['algeria'],'Ausztria':['austria'],'Jordánia':['jordan'],'Portugália':['portugal'],'DR Kongó':['dr congo','congo dr','democratic republic of the congo','congo-kinshasa'],'Üzbegisztán':['uzbekistan'],'Kolumbia':['colombia'],'Anglia':['england'],'Horvátország':['croatia'],'Ghána':['ghana'],'Panama':['panama']};
