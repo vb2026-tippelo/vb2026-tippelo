@@ -871,7 +871,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1461,21 +1461,41 @@ function rCard(m){
       const aW=tips.filter(t=>t.homeGoals<t.awayGoals).length;
       const tot=tips.length;
       const pct=n=>Math.round(n/tot*100);
-      // Leggyakoribb eredmény
       const scoreMap={};
       tips.forEach(t=>{const k=`${t.homeGoals}-${t.awayGoals}`;scoreMap[k]=(scoreMap[k]||0)+1;});
       const topScore=Object.entries(scoreMap).sort((a,b)=>b[1]-a[1])[0];
-      return `<div style="padding:0 14px 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:10px;color:rgba(var(--ink-rgb),.35);font-weight:600">👥 ${tot} tipp:</span>
-        <div style="display:flex;gap:2px;flex:1;min-width:100px;height:6px;border-radius:3px;overflow:hidden">
-          ${hW?`<div style="width:${pct(hW)}%;background:#4a9eff" title="1: ${pct(hW)}%"></div>`:''}
-          ${dr?`<div style="width:${pct(dr)}%;background:#c9a84c" title="X: ${pct(dr)}%"></div>`:''}
-          ${aW?`<div style="width:${pct(aW)}%;background:#e8212a" title="2: ${pct(aW)}%"></div>`:''}
+      const isExp=S.expandTips===m.id;
+      const expHtml=isExp?`<div style="padding:6px 14px 10px;border-top:1px solid rgba(var(--ink-rgb),.06)">
+        ${allU.sort((a,b)=>a.dn.localeCompare(b.dn,'hu')).map(u=>{
+          const tip=S.tips[`${u.id}_${m.id}`];
+          const r=getEffectiveResults()[m.id];
+          const pts=tip&&r?calcPts(tip,r,m.stage,DS):null;
+          const cat=tip&&r?ptsCat(tip,r,m.stage,DS):null;
+          const catC={p8:'#c9a84c',p5:'#4a9eff',p3:'#00b050',p1:'#a78bfa',p0:'#e8212a'};
+          return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(var(--ink-rgb),.04);font-size:12px">
+            <span style="font-size:14px">${u.av||'⚽'}</span>
+            <span style="flex:1;color:rgba(var(--ink-rgb),.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.dn}</span>
+            ${tip?`<span style="font-weight:700;color:var(--text-color)">${tip.homeGoals}–${tip.awayGoals}</span>
+            ${pts!=null?`<span style="font-size:11px;font-weight:700;color:${catC[cat]||'#888'};min-width:28px;text-align:right">${pts}p</span>`:''}`:
+            `<span style="color:rgba(var(--ink-rgb),.25);font-size:11px">nincs tipp</span>`}
+          </div>`;
+        }).join('')}
+      </div>`:'';
+      return `<div>
+        <div style="padding:0 14px 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:10px;color:rgba(var(--ink-rgb),.35);font-weight:600">👥 ${tot} tipp:</span>
+          <div style="display:flex;gap:2px;flex:1;min-width:100px;height:6px;border-radius:3px;overflow:hidden">
+            ${hW?`<div style="width:${pct(hW)}%;background:#4a9eff"></div>`:''}
+            ${dr?`<div style="width:${pct(dr)}%;background:#c9a84c"></div>`:''}
+            ${aW?`<div style="width:${pct(aW)}%;background:#e8212a"></div>`:''}
+          </div>
+          <span style="font-size:10px;color:#4a9eff">${pct(hW)}%</span>
+          <span style="font-size:10px;color:#c9a84c">${pct(dr)}%</span>
+          <span style="font-size:10px;color:#e8212a">${pct(aW)}%</span>
+          ${topScore&&topScore[1]>1?`<span style="font-size:10px;color:rgba(var(--ink-rgb),.4)">· legtöbb: <b>${topScore[0]}</b></span>`:''}
+          <button data-exptips="${m.id}" style="margin-left:auto;background:none;border:none;font-size:11px;color:rgba(var(--ink-rgb),.4);cursor:pointer;padding:2px 6px;border-radius:6px;border:1px solid rgba(var(--ink-rgb),.1)">${isExp?'▲ Bezár':'▼ Mindenki tippje'}</button>
         </div>
-        <span style="font-size:10px;color:#4a9eff">${pct(hW)}%</span>
-        <span style="font-size:10px;color:#c9a84c">${pct(dr)}%</span>
-        <span style="font-size:10px;color:#e8212a">${pct(aW)}%</span>
-        ${topScore&&topScore[1]>1?`<span style="font-size:10px;color:rgba(var(--ink-rgb),.4);margin-left:2px">· legtöbb: <b>${topScore[0]}</b> (${topScore[1]}x)</span>`:''}
+        ${expHtml}
       </div>`;
     })()}
     ${res&&tip?`<div class="mc-res"><span style="color:rgba(var(--ink-rgb),.45)">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:rgba(var(--ink-rgb),.4);font-size:12px">${t('no_tip_match')}</div>`:''}
@@ -2851,6 +2871,11 @@ function bindMain(hw){
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
   document.getElementById('notifToggleBtn')?.addEventListener('click',togglePushNotif);
   document.getElementById('h2hSel')?.addEventListener('change',e=>SS({h2hOpp:e.target.value||null}));
+  document.querySelectorAll('[data-exptips]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    const mid=parseInt(e.currentTarget.dataset.exptips);
+    SS({expandTips:S.expandTips===mid?null:mid});
+  }));
   document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',e=>SS({legalModal:e.currentTarget.dataset.legal})));
   document.getElementById('legalCl')?.addEventListener('click',()=>SS({legalModal:null}));
   document.getElementById('legalOv')?.addEventListener('click',e=>{if(e.target.id==='legalOv')SS({legalModal:null});});
