@@ -178,6 +178,7 @@ const SL={group:'Csoportkör',r32:'32 között',r16:'16 között',qf:'Negyeddön
 const AVS=['⚽','🏆','🦁','🐯','🦅','🦊','🐺','🌟','⭐','🔥','💪','🎯','👑','🤩','🔮','🎪','🦄','🐉','🚀','💎'];
 const KO=['r32','r16','qf','sf','bronze','final'];
 const DS={perfect:8,resultGD:5,result:3,oneGoal:1,winner:25,topScorer:25,ko:2};
+const numOr=(v,d)=>{const n=parseInt(v);return Number.isFinite(n)?n:d;};
 const TEAMS=GD.flatMap(g=>g.teams);
 function trophyIcon(size,extraStyle){
   return `<svg viewBox="0 0 100 122" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;${extraStyle||''}" xmlns="http://www.w3.org/2000/svg">
@@ -300,27 +301,25 @@ function genM(){
 }
 const ALL=genM();
 
-function calcPts(tip,res,stage,cfg=DS){
+function tipCategory(tip,res,stage){
   if(!tip||!res||res.homeGoals==null)return null;
   const th=parseInt(tip.homeGoals),ta=parseInt(tip.awayGoals),rh=parseInt(res.homeGoals),ra=parseInt(res.awayGoals);
   if(isNaN(th)||isNaN(ta)||isNaN(rh)||isNaN(ra))return null;
   const gr=(h,a)=>h>a?'1':h===a?'X':'2';
   const tR=gr(th,ta),rR=gr(rh,ra),tGD=th-ta,rGD=rh-ra;
-  let base=0;
-  if(th===rh&&ta===ra)base=cfg.perfect;
-  else if(tR===rR&&tGD===rGD)base=cfg.resultGD;
-  else if(tR===rR)base=cfg.result;
-  else if(th===rh||ta===ra)base=cfg.oneGoal;
-  return KO.includes(stage)?base*(cfg.ko||2):base;
+  if(th===rh&&ta===ra)return'p8';
+  if(tR===rR&&tGD===rGD)return'p5';
+  if(tR===rR)return'p3';
+  if(th===rh||ta===ra)return'p1';
+  return'p0';
+}
+function calcPts(tip,res,stage,cfg=DS){
+  const cat=tipCategory(tip,res,stage);if(cat===null)return null;
+  const base={p8:cfg.perfect,p5:cfg.resultGD,p3:cfg.result,p1:cfg.oneGoal,p0:0}[cat]||0;
+  return KO.includes(stage)?base*(cfg.ko??2):base;
 }
 function ptsCat(tip,res,stage,cfg=DS){
-  const p=calcPts(tip,res,stage,cfg);if(p===null)return null;
-  const m=KO.includes(stage)?(cfg.ko||2):1,b=p/m;
-  if(b>=cfg.perfect)return 'p8';
-  if(b>=cfg.resultGD)return 'p5';
-  if(b>=cfg.result)return 'p3';
-  if(b>=cfg.oneGoal)return 'p1';
-  return 'p0';
+  return tipCategory(tip,res,stage);
 }
 function calcUser(uid,tips,results,mt,special,adminSpec,cfg=DS){
   let pts=0,tipped=0,fin=0,pf=0,rgd=0,res3=0,og=0;
@@ -555,7 +554,7 @@ async function syncKickoffTimes(apiMatches){
 }
 async function refreshLiveIfStale(){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
-  if(Date.now()-last<5*60*1000)return;
+  if(Date.now()-last<60*1000)return;
   try{
     const resp=await fetch('/.netlify/functions/livescores');
     const data=await resp.json();
@@ -719,6 +718,28 @@ function next24h(){
     return kt>=now&&kt<=in24h;
   }).sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault));
 }
+function rLiveNow(){
+  const liveMatches=Object.entries(S.live||{}).map(([mid,sc])=>{
+    const m=ALL.find(x=>x.id===parseInt(mid));
+    return m?{m,sc}:null;
+  }).filter(Boolean);
+  if(!liveMatches.length)return '';
+  const uid=S.user.id;
+  return `<div style="background:linear-gradient(135deg,rgba(230,51,41,.18),rgba(230,51,41,.06));border:1px solid rgba(230,51,41,.4);border-radius:14px;padding:16px;margin-bottom:18px">
+    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>Most zajlik</div>
+    ${liveMatches.map(({m,sc})=>{
+      const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+      const t=S.tips[`${uid}_${m.id}`];
+      const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
+      return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;cursor:pointer">
+        <span style="flex:1;color:#fff">${FL[home]||''} ${home} – ${away} ${FL[away]||''}</span>
+        <span style="font-weight:800;color:#fff;font-size:15px">${sc.h}–${sc.a}</span>
+        ${t?`<span style="color:rgba(255,255,255,.5);font-size:11px">tipp: ${t.homeGoals}-${t.awayGoals}</span>`:''}
+        <span style="color:rgba(255,255,255,.3);font-size:13px">›</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
 function rNext24h(){
   const uid=S.user.id,ms=next24h();
   if(!ms.length)return '';
@@ -747,7 +768,7 @@ function rMatches(){
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
   const vis=ALL.filter(m=>sel.length===1?m.group===sel:sel==='sf'?m.stage==='sf'||m.stage==='bronze':m.stage===sel);
   const uid=S.user.id,hw=!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`];
-  return `${rNext24h()}${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">Töltsd ki az előzetes tippeket!</div><div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:2px">Végső győztes (+25p) és gólkirály (+25p) – kötelező a részvételhez!</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
+  return `${rLiveNow()}${rNext24h()}${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">Töltsd ki az előzetes tippeket!</div><div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:2px">Végső győztes (+25p) és gólkirály (+25p) – kötelező a részvételhez!</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
   <div class="note-bar">Az eredményeket a rendszer automatikusan rögzíti, amint a football-data.org "lezajlott" (FINISHED) állapotúnak jelez egy csoportkörbeli meccset. A kieséses kör meccseit, és ha az automatikus felismerés bármiért kimaradna, az admin rögzíti kézzel.</div>
   <div class="pill-row">${gTabs.map(t=>`<button class="pill ${sel===t.id?'on':'off'}" data-g="${t.id}">${sel===t.id&&t.id.length===1?t.id+'. csoport':t.id.length===1?t.id+'':t.l}</button>`).join('')}</div>
   ${grp?`<div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:10px">${grp.teams.map(t=>`${FL[t]||''} ${t}`).join(' · ')}</div>`:''}
@@ -888,6 +909,11 @@ function rMyTips(){
   <div class="scoring-hint"><b>Pontozás:</b> ⭐ Telitalálat: 8p · 🎯 Ered.+Gólkül.: 5p · ✓ Kimenetel: 3p · ~ 1 csapat gólja: 1p · 🔄 Kieső kör: ×2 · 🏆 Végső győztes: 25p · ⚽ Gólkirály: 25p<br><i>Mindig csak a legmagasabb kategória számít. A 🔴 élő jelzésű eredmények még nem véglegesek.</i></div>`;
 }
 
+function isLocked(m){
+  const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
+  const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
+  return Date.now()>=lockMs||!!S.results[m.id];
+}
 function rUserHistory(targetUid,cfg){
   const eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${targetUid}_${m.id}`]);
@@ -896,10 +922,11 @@ function rUserHistory(targetUid,cfg){
   return `<div style="padding:8px 4px 2px">${tipped.map(m=>{
     const t=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(t,r,m.stage,cfg):null,cat=r?ptsCat(t,r,m.stage,cfg):null;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+    const hidden=targetUid!==S.user.id&&!isLocked(m);
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0f2f8;font-size:12px">
       <span style="color:#999;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${home} – ${away}</span>
-      <span style="color:#555">Tipp: ${t.homeGoals}-${t.awayGoals}</span>
-      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'#1a1a2e'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · ${catS[cat]||''} ${p}p</span>`:`<span style="margin-left:auto;color:#bbb">várható</span>`}
+      ${hidden?`<span style="color:#bbb;font-style:italic">🔒 tipp leadva, rejtve a meccs zárásáig</span>`:`<span style="color:#555">Tipp: ${t.homeGoals}-${t.awayGoals}</span>
+      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'#1a1a2e'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · ${catS[cat]||''} ${p}p</span>`:`<span style="margin-left:auto;color:#bbb">várható</span>`}`}
     </div>`;
   }).join('')}</div>`;
 }
@@ -982,7 +1009,7 @@ function rLeagues(){
         <div style="font-size:12px;color:rgba(255,255,255,.4)">Küld el ezt a kódot a barátaidnak!</div>
       </div>
       <div style="font-size:12px;color:rgba(255,255,255,.55);text-align:right;line-height:1.8">
-        ⭐ ${l.scoring?.perfect||8}p · 🎯 ${l.scoring?.resultGD||5}p<br>✓ ${l.scoring?.result||3}p · ~ ${l.scoring?.oneGoal||1}p<br>🏆 ${l.scoring?.winner||25}p · ×${l.scoring?.ko||2}
+        ⭐ ${numOr(l.scoring?.perfect,8)}p · 🎯 ${numOr(l.scoring?.resultGD,5)}p<br>✓ ${numOr(l.scoring?.result,3)}p · ~ ${numOr(l.scoring?.oneGoal,1)}p<br>🏆 ${numOr(l.scoring?.winner,25)}p · ×${numOr(l.scoring?.ko,2)}
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -992,7 +1019,7 @@ function rLeagues(){
     ${isEditing?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)">
       <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">Pontozás módosítása</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        ${[{id:'elgSp',l:'⭐ Telitalálat',v:sco.perfect||8},{id:'elgSrgd',l:'🎯 Ered.+Gólkül.',v:sco.resultGD||5},{id:'elgSr',l:'✓ Kimenetel',v:sco.result||3},{id:'elgSog',l:'~ 1 csapat gólja',v:sco.oneGoal||1},{id:'elgSw',l:'🏆 Végső győztes',v:sco.winner||25},{id:'elgSt',l:'⚽ Gólkirály',v:sco.topScorer||25},{id:'elgSko',l:'🔄 Kieső szorzó',v:sco.ko||2}].map(f=>`<div><label style="font-size:11.5px;color:rgba(255,255,255,.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
+        ${[{id:'elgSp',l:'⭐ Telitalálat',v:numOr(sco.perfect,8)},{id:'elgSrgd',l:'🎯 Ered.+Gólkül.',v:numOr(sco.resultGD,5)},{id:'elgSr',l:'✓ Kimenetel',v:numOr(sco.result,3)},{id:'elgSog',l:'~ 1 csapat gólja',v:numOr(sco.oneGoal,1)},{id:'elgSw',l:'🏆 Végső győztes',v:numOr(sco.winner,25)},{id:'elgSt',l:'⚽ Gólkirály',v:numOr(sco.topScorer,25)},{id:'elgSko',l:'🔄 Kieső szorzó',v:numOr(sco.ko,2)}].map(f=>`<div><label style="font-size:11.5px;color:rgba(255,255,255,.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
       </div>
       <button class="btn-green" data-savelgsco="${l.id}">💾 Pontozás mentése</button>
       <div class="divider"></div>
@@ -1030,7 +1057,7 @@ function rLgModal(){
     <input class="inp" id="lgNIn" type="text" placeholder="pl. Osztálytalálkozó 2026" value="${S.lgName}" style="margin-bottom:18px">
     <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">Saját pontozás (opcionális)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
-      ${[{id:'lgSp',l:'⭐ Telitalálat',v:sc.perfect||8},{id:'lgSrgd',l:'🎯 Ered.+Gólkül.',v:sc.resultGD||5},{id:'lgSr',l:'✓ Kimenetel',v:sc.result||3},{id:'lgSog',l:'~ 1 csapat gólja',v:sc.oneGoal||1},{id:'lgSw',l:'🏆 Végső győztes',v:sc.winner||25},{id:'lgSt',l:'⚽ Gólkirály',v:sc.topScorer||25},{id:'lgSko',l:'🔄 Kieső szorzó',v:sc.ko||2}].map(f=>`<div><label style="font-size:11.5px;color:rgba(255,255,255,.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
+      ${[{id:'lgSp',l:'⭐ Telitalálat',v:numOr(sc.perfect,8)},{id:'lgSrgd',l:'🎯 Ered.+Gólkül.',v:numOr(sc.resultGD,5)},{id:'lgSr',l:'✓ Kimenetel',v:numOr(sc.result,3)},{id:'lgSog',l:'~ 1 csapat gólja',v:numOr(sc.oneGoal,1)},{id:'lgSw',l:'🏆 Végső győztes',v:numOr(sc.winner,25)},{id:'lgSt',l:'⚽ Gólkirály',v:numOr(sc.topScorer,25)},{id:'lgSko',l:'🔄 Kieső szorzó',v:numOr(sc.ko,2)}].map(f=>`<div><label style="font-size:11.5px;color:rgba(255,255,255,.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn-gold" id="createOkBtn" style="flex:1">🚀 Létrehozás</button>
@@ -1241,7 +1268,7 @@ function bindMain(hw){
   document.getElementById('lgMCl')?.addEventListener('click',()=>SS({lgModal:null,lgErr:''}));
   document.getElementById('mOv')?.addEventListener('click',e=>{if(e.target.id==='mOv')SS({lgModal:null,lgErr:''}); });
   document.getElementById('createOkBtn')?.addEventListener('click',()=>{
-    const sco={perfect:+document.getElementById('lgSp')?.value||8,resultGD:+document.getElementById('lgSrgd')?.value||5,result:+document.getElementById('lgSr')?.value||3,oneGoal:+document.getElementById('lgSog')?.value||1,winner:+document.getElementById('lgSw')?.value||25,topScorer:+document.getElementById('lgSt')?.value||25,ko:+document.getElementById('lgSko')?.value||2};
+    const sco={perfect:numOr(document.getElementById('lgSp')?.value,8),resultGD:numOr(document.getElementById('lgSrgd')?.value,5),result:numOr(document.getElementById('lgSr')?.value,3),oneGoal:numOr(document.getElementById('lgSog')?.value,1),winner:numOr(document.getElementById('lgSw')?.value,25),topScorer:numOr(document.getElementById('lgSt')?.value,25),ko:numOr(document.getElementById('lgSko')?.value,2)};
     SS({lgName:document.getElementById('lgNIn')?.value||'',lgSco:sco});createLeague();
   });
   document.getElementById('joinOkBtn')?.addEventListener('click',()=>{SS({lgCode:document.getElementById('lgCIn')?.value||''});joinLeague();});
@@ -1258,7 +1285,7 @@ function bindMain(hw){
   }));
   document.querySelectorAll('[data-savelgsco]').forEach(b=>b.addEventListener('click',e=>{
     const lid=e.currentTarget.dataset.savelgsco;
-    const sco={perfect:+document.getElementById('elgSp')?.value||8,resultGD:+document.getElementById('elgSrgd')?.value||5,result:+document.getElementById('elgSr')?.value||3,oneGoal:+document.getElementById('elgSog')?.value||1,winner:+document.getElementById('elgSw')?.value||25,topScorer:+document.getElementById('elgSt')?.value||25,ko:+document.getElementById('elgSko')?.value||2};
+    const sco={perfect:numOr(document.getElementById('elgSp')?.value,8),resultGD:numOr(document.getElementById('elgSrgd')?.value,5),result:numOr(document.getElementById('elgSr')?.value,3),oneGoal:numOr(document.getElementById('elgSog')?.value,1),winner:numOr(document.getElementById('elgSw')?.value,25),topScorer:numOr(document.getElementById('elgSt')?.value,25),ko:numOr(document.getElementById('elgSko')?.value,2)};
     updateLgScoring(lid,sco);
   }));
   document.querySelectorAll('[data-removemem]').forEach(b=>b.addEventListener('click',e=>{
