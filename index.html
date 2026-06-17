@@ -215,7 +215,7 @@ const STRINGS={
     btn_login:'⚡ Belépés',btn_register:'🚀 Regisztráció',loading_btn:'⏳',
     no_account:'Még nincs fiókod?',has_account:'Már van fiókod?',signup_link:'Regisztrálj!',login_link:'Belépés',
     live_now:'Most zajlik',next24h:'Következő 24 óra',missing_tips:'hiányzó tipp!',all_tipped:'minden tipp leadva',no_tip:'nincs tipp',tip_label:'tipp',
-    note_bar:'Az eredményeket a rendszer automatikusan rögzíti, amint a football-data.org "lezajlott" (FINISHED) állapotúnak jelez egy csoportkörbeli meccset. A kieséses kör meccseit, és ha az automatikus felismerés bármiért kimaradna, az admin rögzíti kézzel.',
+    note_bar:'Az eredményeket a rendszer automatikusan rögzíti, amint a football-data.org "lezajlott" (FINISHED) állapotúnak jelez egy csoportkörbeli meccset. A kieséses kör meccseit, és ha az automatikus felismerés bármiért kimaradna, az admin rögzíti kézzel. ⚠️ Ha a tipp.ly oldalon is tippelsz, a rendszer onnan időnként automatikusan szinkronizálja a tippjeidet, és azok felülírják az itt megadott tippeket – a tipp.ly a mérvadó.',
     pretips_banner_t:'Töltsd ki az előzetes tippeket!',pretips_banner_s:'Végső győztes (+25p) és gólkirály (+25p) – kötelező a részvételhez!',
     teams_tbd:'Csapatok később kerülnek meghatározásra',
     save_tip:'💾 Tipp mentése',saved:'✓ Mentve!',your_tip:'Tippem:',no_tip_match:'Nem adtál le tippet erre a meccsre',
@@ -237,6 +237,8 @@ const STRINGS={
     hidden_tip:'🔒 tipp leadva, rejtve a meccs zárásáig',
     stats_title:'Statisztikák',my_leagues:'🤝 Ligáim',of_participants:'résztvevő közül',rank_suffix:'hely',no_league_member:'Még nem vagy tagja egyéni ligának.',
     edit_profile:'✏️ Szerkesztés',save_btn:'💾 Mentés',cancel_btn:'Mégse',avatar_lbl:'Avatar:',
+    change_password:'🔒 Jelszó módosítása',current_password:'Jelenlegi jelszó',new_password:'Új jelszó',confirm_new_password:'Új jelszó megerősítése',
+    pw_err_wrong_current:'A jelenlegi jelszó nem megfelelő',pw_err_too_short:'Az új jelszó legalább 4 karakter legyen',pw_err_mismatch:'A két új jelszó nem egyezik',pw_success:'✓ Jelszó sikeresen módosítva!',
     create_league:'+ Liga létrehozása',join_code:'🔑 Csatlakozás kóddal',no_leagues:'Még nem tartozol ligához.',
     members_lbl:'tag',you_created:'te hozted létre',send_code:'Küld el ezt a kódot a barátaidnak!',leave_league:'Kilépés a ligából',
     edit_scoring:'⚙️ Szerkesztés',close_btn:'✕ Bezárás',edit_scoring_h:'Pontozás módosítása',save_scoring:'💾 Pontozás mentése',
@@ -256,7 +258,7 @@ const STRINGS={
     btn_login:'⚡ Log in',btn_register:'🚀 Sign up',loading_btn:'⏳',
     no_account:"Don't have an account?",has_account:'Already have an account?',signup_link:'Sign up!',login_link:'Log in',
     live_now:'Live now',next24h:'Next 24 hours',missing_tips:'missing tip(s)!',all_tipped:'all tips submitted',no_tip:'no tip',tip_label:'tip',
-    note_bar:'Results are recorded automatically as soon as football-data.org marks a group-stage match as "FINISHED". Knockout-stage matches, and any case where automatic detection fails, are entered manually by the admin.',
+    note_bar:'Results are recorded automatically as soon as football-data.org marks a group-stage match as "FINISHED". Knockout-stage matches, and any case where automatic detection fails, are entered manually by the admin. ⚠️ If you also place tips on tipp.ly, the system periodically syncs your tips from there automatically, and those will overwrite the tips entered here – tipp.ly is the authoritative source.',
     pretips_banner_t:'Fill in your pre-tournament picks!',pretips_banner_s:'Final winner (+25pts) and top scorer (+25pts) – required to take part!',
     teams_tbd:'Teams will be determined later',
     save_tip:'💾 Save tip',saved:'✓ Saved!',your_tip:'Your tip:',no_tip_match:"You didn't submit a tip for this match",
@@ -278,6 +280,8 @@ const STRINGS={
     hidden_tip:"🔒 tip submitted, hidden until the match locks",
     stats_title:'Statistics',my_leagues:'🤝 My leagues',of_participants:'out of',rank_suffix:'',no_league_member:"You're not part of any private league yet.",
     edit_profile:'✏️ Edit',save_btn:'💾 Save',cancel_btn:'Cancel',avatar_lbl:'Avatar:',
+    change_password:'🔒 Change password',current_password:'Current password',new_password:'New password',confirm_new_password:'Confirm new password',
+    pw_err_wrong_current:'Current password is incorrect',pw_err_too_short:'New password must be at least 4 characters',pw_err_mismatch:'The two new passwords do not match',pw_success:'✓ Password changed successfully!',
     create_league:'+ Create league',join_code:'🔑 Join with code',no_leagues:"You're not part of a league yet.",
     members_lbl:'members',you_created:'you created this',send_code:'Send this code to your friends!',leave_league:'Leave league',
     edit_scoring:'⚙️ Edit',close_btn:'✕ Close',edit_scoring_h:'Edit scoring rules',save_scoring:'💾 Save scoring',
@@ -487,6 +491,7 @@ let S={
   aStage:'group',editRId:null,editRIn:{h:'',a:''},editTId:null,editTIn:{h:'',a:''},editKoId:null,editKoIn:'',
   authMode:'login',authErr:'',authLoad:false,authU:'',authP:'',authDN:'',
   profEdit:false,profDN:'',profAv:'⚽',
+  pwEdit:false,pwErr:'',pwMsg:'',
   selLg:null,lgModal:null,lgName:'',lgCode:'',lgErr:'',lgSco:{...DS},
   editLgId:null,editLgSco:null,
   preModal:false,savedMsgs:{},
@@ -687,6 +692,18 @@ async function saveProf(){
   const up={...user,dn:profDN||user.dn,av:profAv};
   const ul=users.map(u=>u.id===user.id?up:u);
   await sS('wc_u',ul,true);SS({user:up,users:ul,profEdit:false});
+}
+async function savePassword(){
+  const cur=document.getElementById('pwCur')?.value||'';
+  const nw=document.getElementById('pwNewIn')?.value||'';
+  const conf=document.getElementById('pwConfIn')?.value||'';
+  if(cur!==S.user.pw){SS({pwErr:t('pw_err_wrong_current'),pwMsg:''});return;}
+  if(nw.length<4){SS({pwErr:t('pw_err_too_short'),pwMsg:''});return;}
+  if(nw!==conf){SS({pwErr:t('pw_err_mismatch'),pwMsg:''});return;}
+  const up={...S.user,pw:nw};
+  const ul=S.users.map(u=>u.id===S.user.id?up:u);
+  await sS('wc_u',ul,true);
+  SS({user:up,users:ul,pwEdit:false,pwErr:'',pwMsg:t('pw_success')});
 }
 
 const fd=d=>{const p=d.split('-');return `jún. ${parseInt(p[2])}., ${['vas','hét','kedd','szer','csüt','pén','szo'][new Date(d).getDay()]}`;};
@@ -1241,6 +1258,21 @@ function rProfile(){
     const lr=rankInScope(uid,l.members,l.scoring||DS,eff);
     return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1"><div class="lb-nm">${l.name}</div><div class="lb-sub">${lr.total} ${t('of_participants')}</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
   }).join('')}
+  <div class="sect">${t('password')}</div>
+  ${S.pwMsg?`<div class="suc-box" style="margin-bottom:12px">${S.pwMsg}</div>`:''}
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:16px;margin-bottom:16px">
+    ${!S.pwEdit?`<button class="btn-sm gold" id="togglePwEdit" style="padding:9px 14px">${t('change_password')}</button>`:`
+    ${S.pwErr?`<div class="err-box" style="margin-bottom:12px">${S.pwErr}</div>`:''}
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:320px">
+      <div><label class="lbl">${t('current_password')}</label><input class="inp" id="pwCur" type="password"></div>
+      <div><label class="lbl">${t('new_password')}</label><input class="inp" id="pwNewIn" type="password"></div>
+      <div><label class="lbl">${t('confirm_new_password')}</label><input class="inp" id="pwConfIn" type="password"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-green" id="savePwBtn" style="padding:9px 18px">${t('save_btn')}</button>
+      <button class="btn-sm white" id="cancelPwBtn" style="padding:9px 12px">${t('cancel_btn')}</button>
+    </div>`}
+  </div>
   </div>`;
 }
 
@@ -1422,6 +1454,9 @@ function bindMain(hw){
   document.getElementById('editProf')?.addEventListener('click',()=>SS({profEdit:true,profDN:S.user.dn,profAv:S.user.av||'⚽'}));
   document.getElementById('saveProf')?.addEventListener('click',()=>{SS({profDN:document.getElementById('profDN')?.value||S.user.dn});saveProf();});
   document.getElementById('cancelProf')?.addEventListener('click',()=>SS({profEdit:false}));
+  document.getElementById('togglePwEdit')?.addEventListener('click',()=>SS({pwEdit:true,pwErr:'',pwMsg:''}));
+  document.getElementById('cancelPwBtn')?.addEventListener('click',()=>SS({pwEdit:false,pwErr:''}));
+  document.getElementById('savePwBtn')?.addEventListener('click',savePassword);
   document.querySelectorAll('[data-av]').forEach(b=>b.addEventListener('click',e=>SS({profAv:e.currentTarget.dataset.av})));
 
   document.getElementById('savePreBtn')?.addEventListener('click',()=>{
