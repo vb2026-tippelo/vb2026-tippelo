@@ -2088,10 +2088,10 @@ function rBracket(){
   }
 
   // SF-ek Y-pozíciói az összesített (TH) koordinátában
-  const topSFy = cy(3,0);           // felső SF: H/2
-  const botSFy = H + cy(3,0);       // alsó SF: H + H/2
-  const finalY = TH/2 - BH - 20;   // Döntő: feljebb
-  const bronzeY = TH/2 + 20;       // Bronz: lejjebb
+  const topSFy = cy(3,0);
+  const botSFy = H + cy(3,0);
+  const finalY = TH/2 - BH/2;
+  const bronzeY = TH/2 - BH/2 + 150;
 
   // 5. oszlop: összekötők + Döntő + Bronz
   const rightColW = CW + MW;
@@ -2224,7 +2224,7 @@ function rPredBracket(r32g,cache){
   }
 
   const topSFy=cy(3,0),botSFy=H+cy(3,0);
-  const finalY=TH/2-BH-20,bronzeY=TH/2+20;
+  const finalY=TH/2-BH/2,bronzeY=TH/2-BH/2+150;
   const rightColW=CW+MW;
   const connLines=[
     `<line x1="0" y1="${topSFy}" x2="${CW/2}" y2="${topSFy}" stroke="${sc}" stroke-width="${sw}"/>`,
