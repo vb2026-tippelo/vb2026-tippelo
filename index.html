@@ -654,9 +654,12 @@ async function fetchTodayOdds(){
     // Sport kulcs keresése
     const sRes=await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${KEY}&all=false`);
     const sports=await sRes.json();
-    const wcKey=(sports.find(s=>s.key.includes('world_cup'))||sports.find(s=>s.key.includes('soccer_international')))?.key;
-    if(!wcKey){console.log('VB sport kulcs nem található');return;}
-    console.log('Odds sport kulcs:',wcKey);
+    const soccerSports=sports.filter(s=>s.key.includes('soccer')||s.key.includes('football'));
+    console.log('Odds API - elérhető focis sportok:',soccerSports.map(s=>s.key));
+    // Több kulcs próbálása
+    const tryKeys=['soccer_fifa_world_cup_2026','soccer_fifa_world_cup','soccer_world_cup_2026','soccer_world_cup','soccer_international','soccer_international_friendlies'];
+    const wcKey=soccerSports.find(s=>tryKeys.some(k=>s.key===k))?.key || soccerSports.find(s=>s.key.includes('world'))?.key;
+    console.log('Választott kulcs:',wcKey,'| Összes elérhető:',sports.length);
     const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h,btts&oddsFormat=decimal`);
     const data=await oRes.json();
     if(!Array.isArray(data)){console.log('Odds API válasz:',data);return;}
