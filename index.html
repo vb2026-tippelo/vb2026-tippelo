@@ -1013,17 +1013,32 @@ async function applyFinishedMatches(apiMatches){
   const live={};
   const applied=[];
   apiMatches.forEach(am=>{
-    const huHome=matchTeamByEng(am.home),huAway=matchTeamByEng(am.away);
+    // SportAPI formátum: am.home már magyar, am.h/am.a a gólok, am.live/am.finished flag
+    // football-data.org formátum: am.home angol, am.homeScore/am.awayScore, am.status string
+    const isSportAPI=am.h!=null||am.finished!=null;
+    let huHome,huAway,hGoal,aGoal,isLive,isFinished;
+    if(isSportAPI){
+      huHome=am.home; huAway=am.away;
+      hGoal=am.h??0; aGoal=am.a??0;
+      isLive=am.live===true;
+      isFinished=am.finished===true||am.status==='finished';
+    } else {
+      huHome=matchTeamByEng(am.home); huAway=matchTeamByEng(am.away);
+      hGoal=am.homeScore??am.score?.fullTime?.home??0;
+      aGoal=am.awayScore??am.score?.fullTime?.away??0;
+      isLive=['IN_PLAY','PAUSED','inprogress'].includes(am.status);
+      isFinished=['FINISHED','finished','Ended'].includes(am.status);
+    }
     if(!huHome||!huAway)return;
     const lm=ALL.find(m=>m.stage==='group'&&((m.home===huHome&&m.away===huAway)||(m.home===huAway&&m.away===huHome)));
-    if(!lm||nr[lm.id])return;
+    if(!lm)return;
     const flip=lm.home===huAway;
-    if(am.status==='FINISHED'&&am.homeScore!=null&&am.awayScore!=null){
-      const h=flip?am.awayScore:am.homeScore,a=flip?am.homeScore:am.awayScore;
+    const h=flip?aGoal:hGoal, a=flip?hGoal:aGoal;
+    if(isFinished&&!nr[lm.id]){
       nr[lm.id]={homeGoals:h,awayGoals:a};
       applied.push({mid:lm.id,home:lm.home,away:lm.away,h,a});
-    }else if((am.status==='IN_PLAY'||am.status==='PAUSED')&&am.homeScore!=null&&am.awayScore!=null){
-      live[lm.id]={h:flip?am.awayScore:am.homeScore,a:flip?am.homeScore:am.awayScore,status:am.status};
+    } else if(isLive){
+      live[lm.id]={h,a,status:am.status,desc:am.desc||am.status};
     }
   });
   const tasks=[sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true)];
