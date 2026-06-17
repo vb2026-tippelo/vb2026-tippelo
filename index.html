@@ -160,7 +160,7 @@ input[type=number]{-moz-appearance:textfield}
 .sdash{font-size:20px;font-weight:400;color:rgba(var(--ink-rgb),.4)}
 .actual-s{display:flex;align-items:center;gap:6px;font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--text-color)}
 .mc-saved{font-size:11px;color:var(--c-green);font-weight:600;height:13px;text-align:center}
-.mc-res{display:flex;align-items:center;justify-content:center;gap:10px;padding:5px 14px 9px;border-top:1px solid var(--border);font-size:12px;color:rgba(var(--ink-rgb),.45)}
+.mc-res{display:flex;align-items:center;justify-content:center;gap:10px;padding:5px 14px 9px;border-top:1px solid var(--border);font-size:12px;color:rgba(var(--ink-rgb),.5)}
 .ptag{font-weight:700;padding:3px 10px;border-radius:12px;font-size:12px;font-family:'Rajdhani',sans-serif;letter-spacing:.3px}
 .p8{background:rgba(212,175,55,.18);color:var(--c-gold)}.p5{background:rgba(27,79,196,.2);color:#6fa3ff}.p3{background:rgba(0,176,80,.15);color:#4de89a}
 .p1{background:rgba(var(--ink-rgb),.07);color:rgba(var(--ink-rgb),.45)}.p0{background:rgba(232,33,42,.12);color:#ff7070}
@@ -686,12 +686,10 @@ async function fetchTodayOdds(){
     const sRes=await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${KEY}&all=true`);
     const sports=await sRes.json();
     const soccerSports=sports.filter(s=>s.key.includes('soccer'));
-    console.log('Focis sportok:',soccerSports.map(s=>s.key));
     const wcKeys=['soccer_fifa_world_cup_2026','soccer_world_cup_2026','soccer_fifa_world_cup','soccer_world_cup'];
     const wcSport=soccerSports.find(s=>wcKeys.includes(s.key));
     const wcKey=wcSport?.key;
     if(!wcKey){console.log('VB kulcs nem található. Elérhető foci kulcsok:',soccerSports.map(s=>s.key));return;}
-    console.log('VB kulcs:',wcKey);
     const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
     const data=await oRes.json();
     if(!Array.isArray(data)){console.log('Odds API h2h hiba:',data);return;}
@@ -700,7 +698,7 @@ async function fetchTodayOdds(){
     for(const ev of data){
       const hCode=EN_TEAM[ev.home_team];
       const aCode=EN_TEAM[ev.away_team];
-      if(!hCode||!aCode){console.log('Ismeretlen csapat:',ev.home_team,'vs',ev.away_team);continue;}
+      if(!hCode||!aCode)continue;
       const match=todayMs.find(m=>(m.home===hCode&&m.away===aCode)||(m.home===aCode&&m.away===hCode));
       if(!match)continue;
       const bk=ev.bookmakers?.[0];if(!bk)continue;
@@ -718,7 +716,6 @@ async function fetchTodayOdds(){
       }
     }
     SS({odds});
-    console.log('Odds betöltve:',Object.keys(odds).length,'mérkőzés');
   }catch(e){console.log('Odds hiba:',e);}
 }
 const KO_SCHEDULE={73:['2026-06-28','2026-06-28T19:00:00Z'],74:['2026-06-29','2026-06-29T20:30:00Z'],75:['2026-06-29','2026-06-30T01:00:00Z'],76:['2026-06-29','2026-06-29T17:00:00Z'],77:['2026-06-30','2026-06-30T21:00:00Z'],78:['2026-06-30','2026-06-30T17:00:00Z'],79:['2026-06-30','2026-07-01T01:00:00Z'],80:['2026-07-01','2026-07-01T16:00:00Z'],81:['2026-07-01','2026-07-02T00:00:00Z'],82:['2026-07-01','2026-07-01T20:00:00Z'],83:['2026-07-02','2026-07-02T23:00:00Z'],84:['2026-07-02','2026-07-02T19:00:00Z'],85:['2026-07-02','2026-07-03T03:00:00Z'],86:['2026-07-03','2026-07-03T22:00:00Z'],87:['2026-07-03','2026-07-04T01:30:00Z'],88:['2026-07-03','2026-07-03T18:00:00Z'],89:['2026-07-04','2026-07-04T21:00:00Z'],90:['2026-07-04','2026-07-04T17:00:00Z'],91:['2026-07-05','2026-07-05T20:00:00Z'],92:['2026-07-05','2026-07-06T00:00:00Z'],93:['2026-07-06','2026-07-06T19:00:00Z'],94:['2026-07-06','2026-07-07T00:00:00Z'],95:['2026-07-07','2026-07-07T16:00:00Z'],96:['2026-07-07','2026-07-07T20:00:00Z'],97:['2026-07-09','2026-07-09T20:00:00Z'],98:['2026-07-10','2026-07-10T19:00:00Z'],99:['2026-07-11','2026-07-11T21:00:00Z'],100:['2026-07-11','2026-07-12T01:00:00Z'],101:['2026-07-14','2026-07-14T19:00:00Z'],102:['2026-07-15','2026-07-15T19:00:00Z'],103:['2026-07-18','2026-07-18T21:00:00Z'],104:['2026-07-19','2026-07-19T19:00:00Z']};
@@ -1342,7 +1339,7 @@ function rCard(m){
     </div>
     ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
     ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span></div>`:''}
-    ${res&&tip?`<div class="mc-res"><span style="color:#999">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
+    ${res&&tip?`<div class="mc-res"><span style="color:rgba(var(--ink-rgb),.45)">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
 
@@ -1817,7 +1814,7 @@ function rUserHistory(targetUid,cfg){
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
     const hidden=targetUid!==S.user.id&&!isLocked(m);
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0f2f8;font-size:12px">
-      <span style="color:#999;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
+      <span style="color:rgba(var(--ink-rgb),.45);min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
       ${hidden?`<span style="color:#bbb;font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:#555">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
       ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'#1a1a2e'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · ${catS[cat]||''} ${p}p</span>`:`<span style="margin-left:auto;color:#bbb">${t('expected')}</span>`}`}
     </div>`;
@@ -1851,7 +1848,7 @@ function rLb(){
         <div class="lb-nm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.dn}${u.id===uid?` <span style="font-size:11px;color:#c9a84c;font-weight:600">${t('you_tag')}</span>`:''}</div>
         <div class="lb-sub" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⭐${u.pf} · 🎯${u.rgd} · ✓${u.res3} · ~${u.og} · ${u.tipped} ${t('tip_label')}</div>
       </div>
-      <div class="lb-pts">${u.pts}<span style="font-size:13px;font-weight:400;color:#999">p</span></div>
+      <div class="lb-pts">${u.pts}<span style="font-size:13px;font-weight:400;color:rgba(var(--ink-rgb),.35)">p</span></div>
       <span style="color:#bbb;font-size:11px">${exp?'▲':'▼'}</span>
     </div>
     ${exp?rUserHistory(u.id,cfg):''}
@@ -1990,7 +1987,7 @@ function rProfile(){
   <div class="sect">${t('my_leagues')}</div>
   ${!myLgs.length?`<p style="font-size:13px;color:rgba(var(--ink-rgb),.4)">${t('no_league_member')}</p>`:myLgs.map(l=>{
     const lr=rankInScope(uid,l.members,l.scoring||DS,eff);
-    return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1;min-width:0"><div class="lb-nm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name}</div><div class="lb-sub">${lr.total} ${t('of_participants')}</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
+    return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1;min-width:0"><div class="lb-nm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name}</div><div class="lb-sub">${lr.total} ${t('of_participants')}</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:rgba(var(--ink-rgb),.4)"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
   }).join('')}
   <div class="sect">${t('password')}</div>
   ${S.pwMsg?`<div class="suc-box" style="margin-bottom:12px">${S.pwMsg}</div>`:''}
@@ -2108,7 +2105,7 @@ function rGlobalLb(){
         <div class="lb-nm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.dn}</div>
         <div class="lb-sub" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⭐${u.pf} · 🎯${u.rgd} · ✓${u.res3} · ~${u.og} · ${u.tipped} ${t('tip_label')}</div>
       </div>
-      <div class="lb-pts">${u.pts}<span style="font-size:13px;font-weight:400;color:#999">p</span></div>
+      <div class="lb-pts">${u.pts}<span style="font-size:13px;font-weight:400;color:rgba(var(--ink-rgb),.35)">p</span></div>
       <span style="color:#bbb;font-size:11px">${exp?'▲':'▼'}</span>
     </div>
     ${exp?rUserHistory(u.id,DS):''}
