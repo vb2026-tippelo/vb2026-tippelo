@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VB 2026">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/png" href="/icon-192.png">
 <title>VB 2026 Tippelő</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -148,13 +149,13 @@ input[type=number]::-webkit-inner-spin-button{opacity:1}
 .team-b.away{justify-content:flex-end;flex-direction:row-reverse}
 .flag-img{height:27px;object-fit:cover;border-radius:3px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .tname{font-size:14px;font-weight:700;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.score-b{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:110px;flex-shrink:0}
+.score-b{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:120px;flex-shrink:0}
 .sinputs{display:flex;align-items:center;gap:8px}
-.sbox{width:52px;height:52px;text-align:center;font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--text-color);border:1.5px solid var(--border);border-radius:10px;background:rgba(var(--ink-rgb),.05);transition:all .15s;padding:0}
+.sbox{width:52px;height:52px;text-align:center;font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--text-color);border:1.5px solid rgba(var(--ink-rgb),.18);border-radius:10px;background:rgba(var(--ink-rgb),.08);transition:all .15s;padding:0}
 .sbox:focus{border-color:var(--c-gold);background:rgba(212,175,55,.07);color:var(--c-gold)}
 .sbox:disabled{opacity:.5}
 .sbox.filled{border-color:rgba(212,175,55,.4)}
-.sdash{font-size:20px;font-weight:400;color:rgba(var(--ink-rgb),.2)}
+.sdash{font-size:20px;font-weight:400;color:rgba(var(--ink-rgb),.4)}
 .actual-s{display:flex;align-items:center;gap:6px;font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--text-color)}
 .mc-saved{font-size:11px;color:var(--c-green);font-weight:600;height:13px;text-align:center}
 .mc-res{display:flex;align-items:center;justify-content:center;gap:10px;padding:5px 14px 9px;border-top:1px solid var(--border);font-size:12px;color:rgba(var(--ink-rgb),.45)}
@@ -224,6 +225,10 @@ table.stdt{width:100%;border-collapse:collapse}
 .tip-row{display:flex;align-items:center;gap:10px;background:rgba(var(--ink-rgb),.04);border:1px solid var(--border);border-radius:11px;padding:10px 14px;margin-bottom:7px;flex-wrap:wrap}
 .lg-sel-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;background:rgba(var(--ink-rgb),.04);border:1px solid var(--border);border-radius:12px;padding:10px 14px}
 .note-bar{background:rgba(var(--ink-rgb),.04);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:rgba(var(--ink-rgb),.4)}
+.lg-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:border-color .15s}
+.lg-card:hover{border-color:rgba(212,175,55,.2)}
+.lg-code{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--c-gold);letter-spacing:3px;margin-top:8px;margin-bottom:2px}
+.lg-sub-row{display:flex;gap:8px;margin-bottom:14px;background:rgba(var(--ink-rgb),.04);border:1px solid var(--border);border-radius:12px;padding:10px 14px}
 .pre-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.25);border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:all .15s}
 .pre-banner:hover{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.15)}
 .pre-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px}
@@ -582,6 +587,22 @@ const IMP_LEAGUE_SMALL=['hetesi.endre','ferenc.bihary','bence.schriffert','peti'
 const IMP_FRA_SEN={'hetesi.endre':[2,1],'bence.schriffert':[2,0],'peti':[2,0],'benedek.locskai':[2,1],'david.szabolcs':[3,1],'nagy.geri':[3,1],'berecz.dora':[2,0],'huszka.mate':[2,0],'kiraly.david':[3,1],'varga.richard':[3,0],'toth.zsolt':[2,0],'laszlo.toth':[5,1],'bohar.nandi':[3,2],'nagy.gabor':[3,0],'petri.balazs':[3,1],'laszlo.gonda':[2,1],'csikos.szilard':[1,0],'palfi.zsombor':[2,1],'tapai.gergely':[2,1],'laczko.szabi':[2,2],'adam.virraszto':[4,2],'laszlo.zahemszky':[3,0],'talpai.judit':[3,1],'kovacs.ferenc':[2,1],'peter.szabo':[3,1],'hunyadi.anna':[3,0],'boldizsar.kiss':[2,0],'orovecz.adam':[5,0],'abelovszki.mihaly':[1,2],'szabo.valentin':[2,0],'juhasz.endre':[2,1],'lovasz.roland':[2,0],'barta.zoltan':[4,1],'busa.adam':[4,0],'rizner.adrian':[3,0],'merei.eszter':[3,1],'kovacs.adam':[2,1],'balazs.szikora':[3,0],'gera.bence':[2,1],'zelena.kristof':[3,1],'czeizel.mate':[2,2],'kozo.balint':[2,0],'horvath.adam':[2,1],'garamvolgyi.csaba':[3,1],'balla.tamas.tibor':[2,1],'rosta.tibor':[3,1],'pataki.gabor':[1,0],'berecz.gergo':[3,1],'ifj.gonda.laszlo':[2,1],'toth.tibor':[3,0],'miklos.mark':[3,0],'banfine.gonda.lujza':[3,1],'molnar.erno':[1,0]};
 
 const GROUP_DATES={A:['2026-06-11','2026-06-18','2026-06-24'],B:['2026-06-12','2026-06-18','2026-06-24'],C:['2026-06-13','2026-06-19','2026-06-24'],D:['2026-06-12','2026-06-19','2026-06-25'],E:['2026-06-14','2026-06-20','2026-06-25'],F:['2026-06-14','2026-06-20','2026-06-25'],G:['2026-06-15','2026-06-21','2026-06-26'],H:['2026-06-15','2026-06-21','2026-06-26'],I:['2026-06-16','2026-06-22','2026-06-27'],J:['2026-06-16','2026-06-22','2026-06-27'],K:['2026-06-17','2026-06-23','2026-06-27'],L:['2026-06-17','2026-06-23','2026-06-27']};
+// Helyszínek csoportmeccsekhez (mérkőzés ID → város)
+const GROUP_VENUE={
+  1:'Mexikóváros',2:'Zapopan',3:'Toronto',4:'Los Angeles',5:'New Jersey',6:'Foxborough',
+  7:'Los Angeles',8:'Vancouver',9:'Los Angeles',10:'Santa Clara',11:'Philadelphia',12:'Foxborough',
+  13:'Houston',14:'Arlington',15:'Philadelphia',16:'Kansas City',17:'New Jersey',18:'Guadalupe',
+  19:'Seattle',20:'Vancouver',21:'Foxborough',22:'Arlington',23:'Foxborough',24:'Atlanta',25:'Miami',
+  26:'Seattle',27:'Atlanta',28:'Miami',29:'Los Angeles',30:'Houston',31:'Toronto',
+  32:'New Jersey',33:'Philadelphia',34:'Toronto',35:'Zapopan',36:'Atlanta',37:'Miami',
+  38:'Houston',39:'Toronto',40:'Atlanta',41:'Los Angeles',42:'Arlington',43:'Philadelphia',
+  44:'Santa Clara',45:'Guadalupe',46:'Houston',47:'Arlington',48:'New Jersey',
+  49:'Foxborough',50:'Seattle',51:'Philadelphia',52:'Kansas City',53:'Toronto',
+  54:'Santa Clara',55:'Guadalupe',56:'Mexico City',57:'Kansas City',58:'Arlington',
+  59:'Los Angeles',60:'Santa Clara',61:'Houston',62:'Kansas City',63:'Foxborough',
+  64:'Foxborough',65:'Atlanta',66:'Miami',67:'Arlington',68:'Toronto',
+  69:'Miami',70:'Philadelphia',71:'New Jersey',72:'Philadelphia'
+};
 const KO_SCHEDULE={73:['2026-06-28','2026-06-28T19:00:00Z'],74:['2026-06-29','2026-06-29T20:30:00Z'],75:['2026-06-29','2026-06-30T01:00:00Z'],76:['2026-06-29','2026-06-29T17:00:00Z'],77:['2026-06-30','2026-06-30T21:00:00Z'],78:['2026-06-30','2026-06-30T17:00:00Z'],79:['2026-06-30','2026-07-01T01:00:00Z'],80:['2026-07-01','2026-07-01T16:00:00Z'],81:['2026-07-01','2026-07-02T00:00:00Z'],82:['2026-07-01','2026-07-01T20:00:00Z'],83:['2026-07-02','2026-07-02T23:00:00Z'],84:['2026-07-02','2026-07-02T19:00:00Z'],85:['2026-07-02','2026-07-03T03:00:00Z'],86:['2026-07-03','2026-07-03T22:00:00Z'],87:['2026-07-03','2026-07-04T01:30:00Z'],88:['2026-07-03','2026-07-03T18:00:00Z'],89:['2026-07-04','2026-07-04T21:00:00Z'],90:['2026-07-04','2026-07-04T17:00:00Z'],91:['2026-07-05','2026-07-05T20:00:00Z'],92:['2026-07-05','2026-07-06T00:00:00Z'],93:['2026-07-06','2026-07-06T19:00:00Z'],94:['2026-07-06','2026-07-07T00:00:00Z'],95:['2026-07-07','2026-07-07T16:00:00Z'],96:['2026-07-07','2026-07-07T20:00:00Z'],97:['2026-07-09','2026-07-09T20:00:00Z'],98:['2026-07-10','2026-07-10T19:00:00Z'],99:['2026-07-11','2026-07-11T21:00:00Z'],100:['2026-07-11','2026-07-12T01:00:00Z'],101:['2026-07-14','2026-07-14T19:00:00Z'],102:['2026-07-15','2026-07-15T19:00:00Z'],103:['2026-07-18','2026-07-18T21:00:00Z'],104:['2026-07-19','2026-07-19T19:00:00Z']};
 function genM(){
   const m=[];let id=1;
@@ -1166,6 +1187,7 @@ function rCard(m){
   const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
+  const venue=m.stage==='group'?GROUP_VENUE[m.id]:null;
   const saved=S.savedMsgs[m.id];
   const th=tip?.homeGoals??'',ta=tip?.awayGoals??'';
   const catLbl={p8:`⭐ ${t('perfect_full')}`,p5:`🎯 ${t('resultgd_full')}`,p3:`✓ ${t('outcome_full')}`,p1:`~ ${t('onegoal_full')}`,p0:'✗'};
@@ -1176,7 +1198,7 @@ function rCard(m){
   if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
-    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
+    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span style="font-size:10.5px;color:rgba(var(--ink-rgb),.35)">📍 ${venue}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
     <div class="mc-main">
       <div class="team-b home">${fImg(home,40)}<span class="tname">${teamName(home)}</span></div>
       <div class="score-b">
