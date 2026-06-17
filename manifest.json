@@ -1,0 +1,22 @@
+{
+  "name": "VB 2026 Tippelő",
+  "short_name": "VB Tippelő",
+  "description": "FIFA VB 2026 tippverseny – tippelj minden meccsre!",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#011524",
+  "theme_color": "#c9a84c",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
