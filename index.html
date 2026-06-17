@@ -652,17 +652,24 @@ async function fetchTodayOdds(){
   if(!todayMs.length)return;
   try{
     // Sport kulcs keresése
-    const sRes=await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${KEY}&all=false`);
+    const sRes=await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${KEY}&all=true`);
     const sports=await sRes.json();
-    const soccerSports=sports.filter(s=>s.key.includes('soccer')||s.key.includes('football'));
-    console.log('Odds API - elérhető focis sportok:',soccerSports.map(s=>s.key));
-    // Több kulcs próbálása
-    const tryKeys=['soccer_fifa_world_cup_2026','soccer_fifa_world_cup','soccer_world_cup_2026','soccer_world_cup','soccer_international','soccer_international_friendlies'];
-    const wcKey=soccerSports.find(s=>tryKeys.some(k=>s.key===k))?.key || soccerSports.find(s=>s.key.includes('world'))?.key;
-    console.log('Választott kulcs:',wcKey,'| Összes elérhető:',sports.length);
-    const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h,btts&oddsFormat=decimal`);
+    const soccerSports=sports.filter(s=>s.key.includes('soccer'));
+    console.log('Focis sportok:',soccerSports.map(s=>s.key));
+    const wcKeys=['soccer_fifa_world_cup_2026','soccer_world_cup_2026','soccer_fifa_world_cup','soccer_world_cup'];
+    const wcSport=soccerSports.find(s=>wcKeys.includes(s.key));
+    const wcKey=wcSport?.key;
+    if(!wcKey){console.log('VB kulcs nem található. Elérhető foci kulcsok:',soccerSports.map(s=>s.key));return;}
+    console.log('VB kulcs:',wcKey);
+    const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
     const data=await oRes.json();
-    if(!Array.isArray(data)){console.log('Odds API válasz:',data);return;}
+    if(!Array.isArray(data)){console.log('Odds API h2h hiba:',data);return;}
+    let bttsData=[];
+    try{
+      const bRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=btts&oddsFormat=decimal`);
+      const bd=await bRes.json();
+      if(Array.isArray(bd))bttsData=bd;
+    }catch(e){}
     const odds={};
     for(const ev of data){
       const hCode=ODDS_TEAM[ev.home_team];
@@ -672,11 +679,13 @@ async function fetchTodayOdds(){
       if(!match)continue;
       const bk=ev.bookmakers?.[0];if(!bk)continue;
       const h2h=bk.markets?.find(mk=>mk.key==='h2h');if(!h2h)continue;
-      const btts=bk.markets?.find(mk=>mk.key==='btts');
+      // BTTS keresés
+      const bttsEv=bttsData.find(b=>b.id===ev.id);
+      const bttsBk=bttsEv?.bookmakers?.[0];
+      const bttsYes=bttsBk?.markets?.find(mk=>mk.key==='btts')?.outcomes?.find(o=>o.name==='Yes');
       const hO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.home||o.name===ev.home_team);
       const aO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.away||o.name===ev.away_team);
       const dO=h2h.outcomes.find(o=>o.name==='Draw');
-      const bttsYes=btts?.outcomes?.find(o=>o.name==='Yes');
       if(hO&&aO){
         const isSwapped=match.home===aCode;
         odds[match.id]={h:(isSwapped?aO:hO).price.toFixed(2),d:dO?.price?.toFixed(2)||null,a:(isSwapped?hO:aO).price.toFixed(2),btts:bttsYes?.price?.toFixed(2)||null,bk:bk.title};
