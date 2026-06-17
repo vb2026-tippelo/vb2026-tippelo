@@ -1,6 +1,9 @@
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '1a897c26b1msh3a5cd4defcc5714p150cd7jsn31d90b539f03';
-const SPORTAPI_HOST = 'sportapi7.p.rapidapi.com';
-const WC_TOURNAMENT_ID = 16;
+const WC_HOST = 'world-cup-2026-live-api.p.rapidapi.com';
+const HEADERS = {
+  'x-rapidapi-key': RAPIDAPI_KEY,
+  'x-rapidapi-host': WC_HOST
+};
 
 const EN_TEAM = {
   'Mexico':'Mexikó','South Africa':'Dél-Afrika','South Korea':'Dél-Korea',
@@ -24,73 +27,60 @@ const EN_TEAM = {
 
 function mapTeam(en){ return EN_TEAM[en] || en; }
 
-function getDateStr(offsetDays=0){
-  const d = new Date(Date.now() + offsetDays*86400000);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-}
-
-async function fetchSportAPI(){
-  const headers = {'x-rapidapi-key':RAPIDAPI_KEY,'x-rapidapi-host':SPORTAPI_HOST};
-  const today = getDateStr(0);
-  const yesterday = getDateStr(-1);
-
-  // 3 endpoint párhuzamosan: live + mai + tegnapi
-  const [liveResp, todayResp, yestResp] = await Promise.all([
-    fetch(`https://${SPORTAPI_HOST}/api/v1/sport/football/events/live`, {headers}),
-    fetch(`https://${SPORTAPI_HOST}/api/v1/sport/football/scheduled-events/${today}`, {headers}),
-    fetch(`https://${SPORTAPI_HOST}/api/v1/sport/football/scheduled-events/${yesterday}`, {headers}),
-  ]);
-
-  const [liveData, todayData, yestData] = await Promise.all([
-    liveResp.ok ? liveResp.json() : {events:[]},
-    todayResp.ok ? todayResp.json() : {events:[]},
-    yestResp.ok ? yestResp.json() : {events:[]},
-  ]);
-
-  const isWC = e => e.tournament?.uniqueTournament?.id === WC_TOURNAMENT_ID;
-  const eventMap = {};
-
-  // Live felül mindent
-  [...(yestData.events||[]), ...(todayData.events||[]), ...(liveData.events||[])]
-    .filter(isWC)
-    .forEach(e => { eventMap[e.id] = e; });
-
-  const matches = Object.values(eventMap).map(e => {
-    const h = e.homeScore?.current ?? 0;
-    const a = e.awayScore?.current ?? 0;
-    const statusType = e.status?.type;
-    const statusDesc = e.status?.description;
-    return {
-      home: mapTeam(e.homeTeam?.name),
-      away: mapTeam(e.awayTeam?.name),
-      homeEn: e.homeTeam?.name,
-      awayEn: e.awayTeam?.name,
-      h, a, status: statusType, desc: statusDesc,
-      live: statusType === 'inprogress',
-      finished: statusType === 'finished' || ['Ended','AP','AET','Penalties'].includes(statusDesc),
-      id: e.id
-    };
-  });
-
-  console.log(`WC matches: ${matches.length}, live: ${matches.filter(m=>m.live).length}, finished: ${matches.filter(m=>m.finished).length}`);
-  return { matches };
-}
+// Status: 2,6-10,37,38 = live; 3,43 = finished; 1 = scheduled
+const LIVE_STATUSES = new Set([2,6,7,8,9,10,37,38]);
+const FINISHED_STATUSES = new Set([3,43]);
 
 exports.handler = async function(event, context) {
   const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
   try {
-    const result = await fetchSportAPI();
+    // /wc/draw visszaadja az összes meccset státusszal + eredménnyel
+    const [drawResp, liveResp] = await Promise.all([
+      fetch(`https://${WC_HOST}/wc/draw`, {headers: HEADERS}),
+      fetch(`https://${WC_HOST}/wc/live`, {headers: HEADERS}),
+    ]);
+
+    const drawData = drawResp.ok ? await drawResp.json() : {data:[]};
+    const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
+
+    // Live percek a /wc/live-ból (matchId alapján)
+    const liveMinutes = {};
+    (liveData.data || []).forEach(m => {
+      liveMinutes[m.matchId] = m.minute || '';
+    });
+
+    const matches = (drawData.data || [])
+      .filter(m => m.scoreHome !== null || LIVE_STATUSES.has(m.status))
+      .map(m => ({
+        home: mapTeam(m.home),
+        away: mapTeam(m.away),
+        homeEn: m.home,
+        awayEn: m.away,
+        h: m.scoreHome ?? 0,
+        a: m.scoreAway ?? 0,
+        status: m.statusText,
+        minute: liveMinutes[m.matchId] || '',
+        live: LIVE_STATUSES.has(m.status),
+        finished: FINISHED_STATUSES.has(m.status),
+        matchId: m.matchId,
+        kickoff: m.kickoff,
+      }));
+
+    const live = matches.filter(m => m.live).length;
+    const finished = matches.filter(m => m.finished).length;
+    console.log(`WC matches: ${matches.length} (live: ${live}, finished: ${finished})`);
+
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
-        matches: result.matches,
+        matches,
         updatedAt: new Date().toISOString(),
-        source: 'sportapi',
-        wcCount: result.matches.length
+        source: 'wc2026api',
+        wcCount: matches.length
       })
     };
   } catch(err) {
     console.error('Error:', err.message);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return {statusCode:500, headers, body: JSON.stringify({error: err.message})};
   }
 };
