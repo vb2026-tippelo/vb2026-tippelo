@@ -693,7 +693,7 @@ EN_TEAM['New Zealand']='Új-Zéland';
 EN_TEAM['South Korea']='Dél-Korea';
 EN_TEAM['South Africa']='Dél-Afrika';
 async function fetchTodayOdds(){
-  const KEY='d2e76cddb77f1adbf0cc133c71abdd39';
+  const KEY=S.adminSpec?.oddsKey||'d2e76cddb77f1adbf0cc133c71abdd39';
   const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
   const todayMs=ALL.filter(m=>m.date===today&&!m.tbd);
   if(!todayMs.length)return;
@@ -846,7 +846,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu'
+  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu',notifOn:false
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -873,10 +873,16 @@ async function init(){
     await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu'});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
-  if(cu)loadPredict(cu.id);
+  if(cu){
+    loadPredict(cu.id);
+    // Értesítés állapot betöltése
+    sG('wc_notif_'+cu.id,false).then(v=>{
+      if(v&&Notification.permission==='granted'){SS({notifOn:true});scheduleNotifs();}
+    });
+  }
   fetchTodayWeather();
   fetchTodayOdds();
 }
@@ -1930,7 +1936,11 @@ function rMyTips(){
   const tPts=S.adminSpec?.top&&ut&&ut.toLowerCase().trim()===S.adminSpec.top?.toLowerCase().trim()?cfg.topScorer:0;
   const totPts=tp+wPts+tPts;
   if(!tipped.length&&!uw&&!ut) return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">📝</div><p>${t('no_tips_yet')}</p></div>`;
-  return `<div class="stat-row">
+  return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div class="sect" style="margin:0">📝 ${t('tab_mytips').replace('📝 ','')}</div>
+    <button id="shareTipsBtn" class="btn-sm gold" style="padding:7px 14px;font-size:13px">🔗 Megosztás</button>
+  </div>
+  <div class="stat-row">
     ${[{l:t('stat_tips'),v:tipped.length,c:'#4a9eff'},{l:t('stat_evaluated'),v:fin,c:'#a78bfa'},{l:t('stat_perfect'),v:pf,c:'#c9a84c'},{l:t('stat_resultgd'),v:rgd,c:'#60d0ff'},{l:t('stat_outcome'),v:r3,c:'#00b050'},{l:t('stat_total'),v:totPts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
   </div>
   ${uw||ut?`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:14px 16px;margin-bottom:14px">
@@ -2163,6 +2173,15 @@ function rProfile(){
       <button class="btn-sm white" id="cancelPwBtn" style="padding:9px 12px">${t('cancel_btn')}</button>
     </div>`}
   </div>
+  <div class="sect">🔔 Értesítések</div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:16px;margin-bottom:16px">
+    <p style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-bottom:12px">Értesítést kapsz 30 perccel és 5 perccel a meccsek előtt (ha még nincs tipped).</p>
+    <button id="notifToggleBtn" class="${S.notifOn?'btn-sm red':'btn-gold'}" style="padding:9px 18px;font-size:14px">
+      ${S.notifOn?'🔕 Értesítések kikapcsolása':'🔔 Értesítések bekapcsolása'}
+    </button>
+    ${S.notifOn?`<div style="margin-top:10px;font-size:12px;color:#00b050">✓ Értesítések aktívak</div>`:''}
+    ${'Notification' in window&&Notification.permission==='denied'?`<div style="margin-top:10px;font-size:12px;color:#e63329">⚠️ Az értesítések le vannak tiltva a böngészőben. Engedélyezd a cím melletti 🔒 ikonra kattintva.</div>`:''}
+  </div>
   </div>`;
 }
 
@@ -2246,6 +2265,14 @@ function rAdmin(){
       <button class="btn-sm red" data-pwreset="${u.id}" style="font-size:12px;padding:6px 11px">🔑 Reset</button>
     </div>`).join('')}
   </div>
+  <div class="divider"></div>
+  <div class="sect">🎲 Odds API beállítás</div>
+  <p style="font-size:12.5px;color:rgba(var(--ink-rgb),.45);margin-bottom:12px">The Odds API kulcs (the-odds-api.com). Ha üres, az alapértelmezett kulcsot használja.</p>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <input class="tinp" id="oddsKeyIn" type="text" placeholder="API kulcs..." value="${S.adminSpec?.oddsKey||''}" style="flex:1;min-width:180px;font-family:monospace;font-size:13px">
+    <button class="btn-gold" id="saveOddsKeyBtn" style="padding:9px 18px">Mentés</button>
+  </div>
+  ${S.adminSpec?.oddsKey?`<div style="margin-top:8px;font-size:12px;color:#00b050">✓ Egyéni kulcs aktív</div>`:`<div style="margin-top:8px;font-size:12px;color:rgba(var(--ink-rgb),.4)">Alapértelmezett kulcs aktív</div>`}
   </div>`;
 }
 function rGlobalLb(){
@@ -2384,6 +2411,13 @@ function bindMain(hw){
   document.querySelectorAll('[data-pwreset]').forEach(b=>b.addEventListener('click',e=>{
     adminResetPassword(e.currentTarget.dataset.pwreset);
   }));
+  document.getElementById('saveOddsKeyBtn')?.addEventListener('click',async()=>{
+    const key=document.getElementById('oddsKeyIn')?.value?.trim()||'';
+    const asp={...S.adminSpec,oddsKey:key||undefined};
+    await sS('wc_adminSpec',asp,true);
+    SS({adminSpec:asp});
+    showMsg('oddsKeySaved','✓ Odds API kulcs mentve');
+  });
   document.getElementById('joinLgBtn')?.addEventListener('click',()=>SS({lgModal:'join',lgErr:'',lgCode:''}));
   document.querySelectorAll('[data-leave]').forEach(b=>b.addEventListener('click',e=>{if(confirm(t('confirm_leave_league')))leaveLeague(e.currentTarget.dataset.leave);}));
   document.getElementById('lgMCl')?.addEventListener('click',()=>SS({lgModal:null,lgErr:''}));
@@ -2395,6 +2429,8 @@ function bindMain(hw){
   document.getElementById('joinOkBtn')?.addEventListener('click',()=>{SS({lgCode:document.getElementById('lgCIn')?.value||''});joinLeague();});
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
+  document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
+  document.getElementById('notifToggleBtn')?.addEventListener('click',togglePushNotif);
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
     const tid=e.currentTarget.dataset.explb;
     SS({expandLb:S.expandLb===tid?null:tid});
@@ -2424,6 +2460,65 @@ function bindMain(hw){
     const el=document.getElementById(`match-${S.highlightMatch}`);
     if(el){el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>SS({highlightMatch:null}),2500);}
   }
+}
+
+function shareTips(){
+  const uid=S.user.id,eff=getEffectiveResults(),cfg=DS;
+  const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
+  let tp=0;
+  tipped.forEach(m=>{const r=eff[m.id];if(r)tp+=calcPts(S.tips[`${uid}_${m.id}`],r,m.stage,cfg)||0;});
+  const uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
+  const url=location.href.split('?')[0];
+  const text=`🏆 VB 2026 Tippelő\n👤 ${S.user.dn}\n📊 ${tipped.length} tipp · ${tp} pont${uw?'\n🏆 Győztes: '+teamName(uw):''}${ut?'\n⚽ Gólkirály: '+ut:''}\n${url}`;
+  if(navigator.share){
+    navigator.share({title:'VB 2026 Tippelő',text,url}).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(text).then(()=>showMsg('shareDone','✓ Vágólapra másolva!'));
+  }
+}
+
+// Push értesítések
+async function togglePushNotif(){
+  if(!('Notification' in window)){alert('A böngésző nem támogatja az értesítéseket.');return;}
+  if(Notification.permission==='denied'){alert('Az értesítések le vannak tiltva. Engedélyezd a böngésző beállításaiban.');return;}
+  if(Notification.permission==='granted'&&S.notifOn){
+    SS({notifOn:false});
+    await sS('wc_notif_'+S.user.id,false,false);
+    render();return;
+  }
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    SS({notifOn:true});
+    await sS('wc_notif_'+S.user.id,true,false);
+    scheduleNotifs();
+    render();
+    new Notification('VB 2026 Tippelő 🏆',{body:'Az értesítések be vannak kapcsolva! Értesítünk a meccsek előtt.',icon:'/trophy.png'});
+  }
+}
+function scheduleNotifs(){
+  if(!S.notifOn||Notification.permission!=='granted')return;
+  const now=Date.now();
+  ALL.forEach(m=>{
+    const ko=S.ko[m.id]||m.koDefault;
+    if(!ko)return;
+    const koMs=new Date(ko).getTime();
+    const delay30=koMs-30*60*1000-now; // 30 perccel előtte
+    const delay5=koMs-5*60*1000-now;   // 5 perccel előtte (utolsó tipp)
+    const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+    const hasTip=!!S.tips[`${S.user.id}_${m.id}`];
+    if(delay30>0&&delay30<24*3600*1000){
+      setTimeout(()=>{
+        if(Notification.permission!=='granted')return;
+        new Notification(`⚽ ${teamName(home)} – ${teamName(away)}`,{body:`30 perc múlva kezdődik!${!hasTip?' 📝 Még nincs tipped!':''}`,icon:'/trophy.png'});
+      },delay30);
+    }
+    if(delay5>0&&delay5<24*3600*1000&&!hasTip){
+      setTimeout(()=>{
+        if(Notification.permission!=='granted')return;
+        new Notification(`⚠️ ${teamName(home)} – ${teamName(away)}`,{body:'5 perc múlva zár a tippelés! Adj le tippet!',icon:'/trophy.png'});
+      },delay5);
+    }
+  });
 }
 
 // Külön 3 perces live frissítés intervall
