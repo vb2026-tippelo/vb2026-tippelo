@@ -1113,9 +1113,9 @@ async function syncKickoffTimes(apiMatches){
   }
   return n;
 }
-async function refreshLiveIfStale(){
+async function refreshLiveIfStale(force=false){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
-  if(Date.now()-last<60*1000)return; // 1 perc
+  if(!force&&Date.now()-last<60*1000)return; // 1 perc, kivéve force
   try{
     const resp=await fetch(location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores');
     const data=await resp.json();
@@ -1437,7 +1437,7 @@ function rMatches(){
   return `${rLiveNow()}${rNext24h()}${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">${t('pretips_banner_t')}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">${t('pretips_banner_s')}</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
   <div class="note-bar" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
     <span>${t('note_bar')}</span>
-    <button id="liveRefreshBtn" onclick="refreshLiveIfStale().then(()=>render())" style="flex-shrink:0;background:rgba(var(--ink-rgb),.08);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:rgba(var(--ink-rgb),.6);font-size:11px;cursor:pointer;white-space:nowrap">🔄 ${lastUpd}</button>
+    <button id="liveRefreshBtn" onclick="refreshLiveIfStale(true).then(()=>render())" style="flex-shrink:0;background:rgba(var(--ink-rgb),.08);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:rgba(var(--ink-rgb),.6);font-size:11px;cursor:pointer;white-space:nowrap">🔄 ${lastUpd}</button>
   </div>
   <div class="pill-row">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
   ${grp?`<div style="font-size:12px;color:rgba(var(--ink-rgb),.3);margin-bottom:10px">${grp.teams.map(tm=>`${fImg(tm,16)} ${teamName(tm)}`).join(' · ')}</div>`:''}
@@ -3115,8 +3115,12 @@ function scheduleNotifs(){
   });
 }
 
-// Külön 3 perces live frissítés intervall
-setInterval(()=>{if(S.user)refreshLiveIfStale();},60*1000);
+// Live frissítés: 30mp-ként, force=true ha van élő meccs
+setInterval(()=>{
+  if(!S.user)return;
+  const hasLive=Object.keys(S.live||{}).length>0;
+  refreshLiveIfStale(hasLive);
+},30*1000);
 setInterval(async()=>{
   if(!S.user)return;
   try{
