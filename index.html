@@ -2584,9 +2584,9 @@ function rFun(){
   <div class="sect">⚔️ Head-to-head</div>
   <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span style="font-size:13px;color:rgba(var(--ink-rgb),.5)">Válassz ellenfelet:</span>
-    <select id="h2hSel" style="background:rgba(var(--ink-rgb),.08);color:var(--text-color);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer">
-      <option value="">– válassz –</option>
-      ${users.filter(u=>u.id!==uid).map(u=>`<option value="${u.id}" ${h2hUid===u.id?'selected':''}>${u.dn}</option>`).join('')}
+    <select id="h2hSel" style="background:rgba(var(--ink-rgb),.08);color:var(--text-color);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;-webkit-text-fill-color:var(--text-color)">
+      <option value="" style="background:var(--bg-card);color:var(--text-color)">– válassz –</option>
+      ${users.filter(u=>u.id!==uid).sort((a,b)=>a.dn.localeCompare(b.dn,'hu')).map(u=>`<option value="${u.id}" style="background:var(--bg-card);color:var(--text-color)" ${h2hUid===u.id?'selected':''}>${u.dn}</option>`).join('')}
     </select>
   </div>
   ${h2hOpp?`<div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
