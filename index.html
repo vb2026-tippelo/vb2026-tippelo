@@ -1932,16 +1932,16 @@ function tournamentStarted(){
 function rUserHistory(targetUid,cfg){
   const eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${targetUid}_${m.id}`]);
-  if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:#888">${t('no_tips_yet')}</div>`;
+  if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('no_tips_yet')}</div>`;
   const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
   return `<div style="padding:8px 4px 2px">${tipped.map(m=>{
     const tip=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null,cat=r?ptsCat(tip,r,m.stage,cfg):null;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
     const hidden=targetUid!==S.user.id&&!isLocked(m);
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0f2f8;font-size:12px">
-      <span style="color:rgba(var(--ink-rgb),.45);min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
-      ${hidden?`<span style="color:#bbb;font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:#555">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
-      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'#1a1a2e'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · ${catS[cat]||''} ${p}p</span>`:`<span style="margin-left:auto;color:#bbb">${t('expected')}</span>`}`}
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:rgba(var(--ink-rgb),.6);min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
+      ${hidden?`<span style="color:rgba(var(--ink-rgb),.35);font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:rgba(var(--ink-rgb),.75)">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
+      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'var(--text-color)'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · <span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span></span>`:`<span style="margin-left:auto;color:rgba(var(--ink-rgb),.4)">${t('expected')}</span>`}`}
     </div>`;
   }).join('')}</div>`;
 }
