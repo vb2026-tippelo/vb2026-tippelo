@@ -216,6 +216,31 @@ table.stdt{width:100%;border-collapse:collapse}
 .av-opt:hover{background:rgba(var(--ink-rgb),.12);transform:scale(1.08)}
 .av-opt.sel{border-color:var(--c-gold);background:rgba(212,175,55,.12)}
 
+/* ===== FOOTER ===== */
+.site-footer{text-align:center;padding:24px 16px 80px;border-top:1px solid var(--border);margin-top:32px}
+.footer-links{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.footer-link{background:none;border:none;color:rgba(var(--ink-rgb),.45);font-size:12px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:color .15s}
+.footer-link:hover{color:var(--c-gold)}
+.footer-sep{color:rgba(var(--ink-rgb),.2);font-size:11px}
+.footer-copy{font-size:11px;color:rgba(var(--ink-rgb),.25)}
+/* ===== LEGAL MODAL ===== */
+.legal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:600px){.legal-overlay{align-items:center}}
+.legal-box{background:var(--bg-main);border-radius:20px 20px 0 0;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:600px){.legal-box{border-radius:16px;margin:16px}}
+.legal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.legal-hdr h2{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--c-gold);margin:0}
+.legal-close{background:rgba(var(--ink-rgb),.08);border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;color:var(--text-color);display:flex;align-items:center;justify-content:center}
+.legal-body{padding:20px;overflow-y:auto;font-size:13.5px;line-height:1.7;color:rgba(var(--ink-rgb),.8)}
+.legal-body h3{font-size:14px;font-weight:700;color:var(--text-color);margin:18px 0 6px}
+.legal-body p{margin:0 0 10px}
+.legal-body ul{margin:0 0 10px;padding-left:18px}
+.legal-body li{margin-bottom:4px}
+.legal-body a{color:var(--c-gold)}
+/* ===== COOKIE BANNER ===== */
+.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;z-index:150;box-shadow:0 -4px 24px rgba(0,0,0,.3)}
+.cookie-banner p{flex:1;min-width:200px;font-size:12.5px;color:rgba(var(--ink-rgb),.7);margin:0}
+.cookie-banner a{color:var(--c-gold);cursor:pointer}
 /* ===== ADMIN ===== */
 .adm-card{background:rgba(var(--ink-rgb),.04);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-bottom:7px}
 .ainp{width:52px;padding:7px;background:rgba(var(--ink-rgb),.08);border:1.5px solid var(--border);border-radius:7px;color:var(--text-color);font-size:16px;font-weight:700;text-align:center}
@@ -846,7 +871,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null
+  live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk')
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1266,6 +1291,22 @@ function rMain(hw){
   <div class="nav"><div class="nav-in">${tabs.map(tb=>`<button class="ntab${S.view===tb.id?' on':''}" data-v="${tb.id}">${tb.l}${tb.id==='pre-tips'&&hw?'<span class="nbadge">!</span>':''}</button>`).join('')}</div></div>
   <div class="content">${vc}</div>
   ${S.preModal?rPM():''}
+  <footer class="site-footer">
+    <div class="footer-links">
+      <button class="footer-link" data-legal="impresszum">Impresszum</button>
+      <span class="footer-sep">·</span>
+      <button class="footer-link" data-legal="adatkezeles">Adatkezelés</button>
+      <span class="footer-sep">·</span>
+      <button class="footer-link" data-legal="aszf">ÁSZF</button>
+      <span class="footer-sep">·</span>
+      <button class="footer-link" data-legal="cookie">Cookie</button>
+      <span class="footer-sep">·</span>
+      <button class="footer-link" data-legal="gyik">GYIK</button>
+    </div>
+    <div class="footer-copy">© 2026 VB 2026 Tippelő · Minden jog fenntartva</div>
+  </footer>
+  ${S.legalModal?rLegal():''}
+  ${S.cookieBanner?rCookieBanner():''}
   </div>`;
 }
 
@@ -1504,7 +1545,125 @@ function rGroupForecast(){
 }
 
 const R32_SLOTS={73:['2A','2B'],74:['1E','3. A/B/C/D/F'],75:['1F','2C'],76:['1C','2F'],77:['1I','3. C/D/F/G/H'],78:['2E','2I'],79:['1A','3. C/E/F/H/I'],80:['1L','3. E/H/I/J/K'],81:['1D','3. B/E/F/I/J'],82:['1G','3. A/E/H/I/J'],83:['2K','2L'],84:['1H','2J'],85:['1B','3. E/F/G/I/J'],86:['1J','2H'],87:['1K','3. D/E/I/J/L'],88:['2D','2G']};
-const WINNER_SOURCES={89:[74,77],90:[73,75],91:[76,78],92:[79,80],93:[83,84],94:[81,82],95:[86,88],96:[85,87],97:[89,90],98:[93,94],99:[91,92],100:[95,96],101:[97,98],102:[99,100],104:[101,102]};
+const LEGAL={
+  impresszum:{
+    title:'Impresszum',
+    html:`<h3>Az oldal üzemeltetője</h3>
+<p><b>Hetesi Endre</b><br>
+E-mail: <a href="mailto:info@forma1fitnesz.hu">info@forma1fitnesz.hu</a><br>
+Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a></p>
+<h3>A szolgáltatásról</h3>
+<p>A VB 2026 Tippelő egy ingyenes, nem kereskedelmi célú focitippelő játék, amelyet a 2026-os FIFA Labdarúgó-világbajnokság alkalmából hoztunk létre baráti körök szórakoztatására.</p>
+<h3>Tárhelyszolgáltató</h3>
+<p>GitHub Pages (GitHub, Inc.)<br>88 Colin P Kelly Jr St, San Francisco, CA 94107, USA</p>
+<h3>Adatbázis</h3>
+<p>Google Firebase / Firestore (Google LLC)<br>1600 Amphitheatre Parkway, Mountain View, CA 94043, USA</p>`
+  },
+  adatkezeles:{
+    title:'Adatkezelési tájékoztató',
+    html:`<h3>Adatkezelő</h3>
+<p>Hetesi Endre · info@forma1fitnesz.hu</p>
+<h3>Kezelt adatok</h3>
+<ul>
+  <li><b>Felhasználónév és jelszó</b> – regisztrációhoz szükséges</li>
+  <li><b>Megjelenített név és avatar</b> – profilhoz választható</li>
+  <li><b>Tippek és predikciók</b> – a játék alapját képező adatok</li>
+  <li><b>Böngésző beállítások</b> – téma, nyelv (csak helyi tárolás)</li>
+</ul>
+<h3>Adatkezelés célja és jogalapja</h3>
+<p>A játék működtetése (jogos érdek, GDPR 6. cikk (1) f) pont). Személyes adatokat harmadik félnek nem adunk át, hirdetési célra nem használunk fel.</p>
+<h3>Adatmegőrzés</h3>
+<p>Az adatokat a VB 2026 lezárultát követő 3 hónapon belül töröljük, vagy kérésre azonnal.</p>
+<h3>Érintetti jogok</h3>
+<p>Hozzáférés, helyesbítés, törlés kérhető: <a href="mailto:info@forma1fitnesz.hu">info@forma1fitnesz.hu</a></p>
+<h3>Adattárolás helye</h3>
+<p>Google Firebase (EU adatközpontok). A Firebase adatvédelmi tájékoztatója: <a href="https://firebase.google.com/support/privacy" target="_blank">firebase.google.com/support/privacy</a></p>
+<h3>Jogorvoslat</h3>
+<p>Panasz benyújtható a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH): <a href="https://naih.hu" target="_blank">naih.hu</a></p>`
+  },
+  aszf:{
+    title:'Általános Szerződési Feltételek',
+    html:`<h3>1. A szolgáltatás jellege</h3>
+<p>A VB 2026 Tippelő ingyenes, nem kereskedelmi célú szórakoztató alkalmazás. A játék nem minősül szerencsejátéknak, valódi pénznyeremény nem kapcsolódik hozzá.</p>
+<h3>2. Regisztráció</h3>
+<p>A regisztrációval a felhasználó elfogadja jelen ÁSZF-et és az Adatkezelési tájékoztatót. A felhasználónak 16. életévét be kell töltenie.</p>
+<h3>3. Felhasználói kötelezettségek</h3>
+<ul>
+  <li>Valós adatok megadása</li>
+  <li>Más felhasználók zavarásától való tartózkodás</li>
+  <li>A rendszer manipulálásának mellőzése</li>
+</ul>
+<h3>4. Pontrendszer</h3>
+<p>A pontszámítás az alkalmazásban meghatározott szabályok szerint történik. Az üzemeltető fenntartja a jogot a pontrendszer módosítására, amelyről értesítést küld.</p>
+<h3>5. Felelősségkorlátozás</h3>
+<p>Az üzemeltető nem vállal felelősséget az esetleges technikai hibákból, adatvesztésből vagy elérhetetlenségből eredő károkért. A szolgáltatás "as is" alapon érhető el.</p>
+<h3>6. Fiók törlése</h3>
+<p>A felhasználó bármikor kérheti fiókja törlését az üzemeltetőtől e-mailben.</p>
+<h3>7. Módosítások</h3>
+<p>Az ÁSZF módosítása esetén az üzemeltető az alkalmazáson belül értesíti a felhasználókat. A folyamatos használat az új feltételek elfogadását jelenti.</p>`
+  },
+  cookie:{
+    title:'Cookie (süti) tájékoztató',
+    html:`<h3>Mit használunk?</h3>
+<p>Az oldal <b>LocalStorage</b>-ot használ (nem hagyományos cookie-t) a következő adatok helyi tárolásához:</p>
+<ul>
+  <li>Bejelentkezési munkamenet</li>
+  <li>Téma beállítás (sötét/világos)</li>
+  <li>Nyelv beállítás</li>
+  <li>Értesítési preferencia</li>
+</ul>
+<h3>Harmadik fél sütik</h3>
+<p><b>Google Firebase</b> – az adatbázis-kapcsolathoz szükséges munkamenet azonosítók. Google adatvédelmi tájékoztató: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></p>
+<h3>Analitika</h3>
+<p>Az oldal semmilyen analitikai vagy nyomkövető sütit nem használ (nincs Google Analytics, Meta Pixel stb.).</p>
+<h3>Kezelés</h3>
+<p>A LocalStorage adatok a böngésző beállításaiban törölhetők. Ez a kijelentkezést és az összes helyi beállítás elvesztését eredményezi.</p>`
+  },
+  gyik:{
+    title:'Gyakran Ismételt Kérdések',
+    html:`<h3>Mikor zárul le a tippelés?</h3>
+<p>Minden meccs esetén a <b>rúgás előtt 5 perccel</b> zár a tippelési lehetőség. Utána az adott meccs tippje nem módosítható.</p>
+<h3>Hogyan számítódnak a pontok?</h3>
+<ul>
+  <li>⭐ <b>Pontos eredmény</b> (pl. 2-1 = 2-1): 8 pont</li>
+  <li>🎯 <b>Helyes eredmény + gólkülönbség</b>: 5 pont</li>
+  <li>✓ <b>Helyes kimenetel</b> (győzelem/döntetlen/vereség): 3 pont</li>
+  <li>~ <b>Egyik gól egyezik</b>: 1 pont</li>
+  <li>🔄 <b>Kieséses meccs szorzó</b>: ×2</li>
+  <li>🏆 <b>Helyes bajnok tipp</b>: 25 pont</li>
+  <li>⚽ <b>Helyes gólkirály tipp</b>: 25 pont</li>
+</ul>
+<h3>Mi az a Liga?</h3>
+<p>Létrehozhatsz vagy csatlakozhatsz baráti ligához, ahol csak a csoport tagjainak tabellája látható. A ligakódot oszd meg az ismerőseiddel.</p>
+<h3>Honnan jönnek az élő eredmények?</h3>
+<p>Az élő állások a football-data.org API-ból érkeznek, 3 percenként frissülnek. A végleges eredményeket az admin rögzíti.</p>
+<h3>Mit jelent a Predikció fül?</h3>
+<p>A tornamentum megkezdése előtt megjósolhatod az egész torna menetét – ki jut tovább csoportonként, ki nyeri a negyeddöntőket stb. Ez jelenleg szórakoztató funkció, pontozása folyamatban.</p>
+<h3>Elfelejtettem a jelszavamat</h3>
+<p>Keresd az oldal adminisztrátorát aki vissza tudja állítani a jelszavadat.</p>
+<h3>Hogyan kérhetek segítséget?</h3>
+<p>Írj e-mailt: <a href="mailto:info@forma1fitnesz.hu">info@forma1fitnesz.hu</a></p>`
+  }
+};
+function rLegal(){
+  const pg=LEGAL[S.legalModal];
+  if(!pg)return '';
+  return `<div class="legal-overlay" id="legalOv">
+    <div class="legal-box">
+      <div class="legal-hdr">
+        <h2>${pg.title}</h2>
+        <button class="legal-close" id="legalCl">✕</button>
+      </div>
+      <div class="legal-body">${pg.html}</div>
+    </div>
+  </div>`;
+}
+function rCookieBanner(){
+  return `<div class="cookie-banner">
+    <p>🍪 Ez az oldal LocalStorage-ot használ a működéshez. Részletek: <a onclick="SS({legalModal:'cookie',cookieBanner:false})">Cookie tájékoztató</a></p>
+    <button class="btn-green" id="cookieOk" style="padding:8px 18px;font-size:13px;white-space:nowrap">Rendben</button>
+  </div>`;
+}
 const LOSER_SOURCES={103:[101,102]};
 const ANNEX_C={EFGHIJKL:"EJIFHGLK",DFGHIJKL:"HGIDJFLK",DEGHIJKL:"EJIDHGLK",DEFHIJKL:"EJIDHFLK",DEFGIJKL:"EGIDJFLK",DEFGHJKL:"EGJDHFLK",DEFGHIKL:"EGIDHFLK",DEFGHIJL:"EGJDHFLI",DEFGHIJK:"EGJDHFIK",CFGHIJKL:"HGICJFLK",CEGHIJKL:"EJICHGLK",CEFHIJKL:"EJICHFLK",CEFGIJKL:"EGICJFLK",CEFGHJKL:"EGJCHFLK",CEFGHIKL:"EGICHFLK",CEFGHIJL:"EGJCHFLI",CEFGHIJK:"EGJCHFIK",CDGHIJKL:"HGICJDLK",CDFHIJKL:"CJIDHFLK",CDFGIJKL:"CGIDJFLK",CDFGHJKL:"CGJDHFLK",CDFGHIKL:"CGIDHFLK",CDFGHIJL:"CGJDHFLI",CDFGHIJK:"CGJDHFIK",CDEHIJKL:"EJICHDLK",CDEGIJKL:"EGICJDLK",CDEGHJKL:"EGJCHDLK",CDEGHIKL:"EGICHDLK",CDEGHIJL:"EGJCHDLI",CDEGHIJK:"EGJCHDIK",CDEFIJKL:"CJEDIFLK",CDEFHJKL:"CJEDHFLK",CDEFHIKL:"CEIDHFLK",CDEFHIJL:"CJEDHFLI",CDEFHIJK:"CJEDHFIK",CDEFGJKL:"CGEDJFLK",CDEFGIKL:"CGEDIFLK",CDEFGIJL:"CGEDJFLI",CDEFGIJK:"CGEDJFIK",CDEFGHKL:"CGEDHFLK",CDEFGHJL:"CGJDHFLE",CDEFGHJK:"CGJDHFEK",CDEFGHIL:"CGEDHFLI",CDEFGHIK:"CGEDHFIK",CDEFGHIJ:"CGJDHFEI",BFGHIJKL:"HJBFIGLK",BEGHIJKL:"EJIBHGLK",BEFHIJKL:"EJBFIHLK",BEFGIJKL:"EJBFIGLK",BEFGHJKL:"EJBFHGLK",BEFGHIKL:"EGBFIHLK",BEFGHIJL:"EJBFHGLI",BEFGHIJK:"EJBFHGIK",BDGHIJKL:"HJBDIGLK",BDFHIJKL:"HJBDIFLK",BDFGIJKL:"IGBDJFLK",BDFGHJKL:"HGBDJFLK",BDFGHIKL:"HGBDIFLK",BDFGHIJL:"HGBDJFLI",BDFGHIJK:"HGBDJFIK",BDEHIJKL:"EJBDIHLK",BDEGIJKL:"EJBDIGLK",BDEGHJKL:"EJBDHGLK",BDEGHIKL:"EGBDIHLK",BDEGHIJL:"EJBDHGLI",BDEGHIJK:"EJBDHGIK",BDEFIJKL:"EJBDIFLK",BDEFHJKL:"EJBDHFLK",BDEFHIKL:"EIBDHFLK",BDEFHIJL:"EJBDHFLI",BDEFHIJK:"EJBDHFIK",BDEFGJKL:"EGBDJFLK",BDEFGIKL:"EGBDIFLK",BDEFGIJL:"EGBDJFLI",BDEFGIJK:"EGBDJFIK",BDEFGHKL:"EGBDHFLK",BDEFGHJL:"HGBDJFLE",BDEFGHJK:"HGBDJFEK",BDEFGHIL:"EGBDHFLI",BDEFGHIK:"EGBDHFIK",BDEFGHIJ:"HGBDJFEI",BCGHIJKL:"HJBCIGLK",BCFHIJKL:"HJBCIFLK",BCFGIJKL:"IGBCJFLK",BCFGHJKL:"HGBCJFLK",BCFGHIKL:"HGBCIFLK",BCFGHIJL:"HGBCJFLI",BCFGHIJK:"HGBCJFIK",BCEHIJKL:"EJBCIHLK",BCEGIJKL:"EJBCIGLK",BCEGHJKL:"EJBCHGLK",BCEGHIKL:"EGBCIHLK",BCEGHIJL:"EJBCHGLI",BCEGHIJK:"EJBCHGIK",BCEFIJKL:"EJBCIFLK",BCEFHJKL:"EJBCHFLK",BCEFHIKL:"EIBCHFLK",BCEFHIJL:"EJBCHFLI",BCEFHIJK:"EJBCHFIK",BCEFGJKL:"EGBCJFLK",BCEFGIKL:"EGBCIFLK",BCEFGIJL:"EGBCJFLI",BCEFGIJK:"EGBCJFIK",BCEFGHKL:"EGBCHFLK",BCEFGHJL:"HGBCJFLE",BCEFGHJK:"HGBCJFEK",BCEFGHIL:"EGBCHFLI",BCEFGHIK:"EGBCHFIK",BCEFGHIJ:"HGBCJFEI",BCDHIJKL:"HJBCIDLK",BCDGIJKL:"IGBCJDLK",BCDGHJKL:"HGBCJDLK",BCDGHIKL:"HGBCIDLK",BCDGHIJL:"HGBCJDLI",BCDGHIJK:"HGBCJDIK",BCDFIJKL:"CJBDIFLK",BCDFHJKL:"CJBDHFLK",BCDFHIKL:"CIBDHFLK",BCDFHIJL:"CJBDHFLI",BCDFHIJK:"CJBDHFIK",BCDFGJKL:"CGBDJFLK",BCDFGIKL:"CGBDIFLK",BCDFGIJL:"CGBDJFLI",BCDFGIJK:"CGBDJFIK",BCDFGHKL:"HGFCADLK",BCDFGHJL:"CGBDHFLJ",BCDFGHJK:"HGJCAFDK",BCDFGHIL:"HGFCADLI",BCDFGHIK:"HGFCADIK",BCDFGHIJ:"HGJCAFDI",BCDEIJKL:"EJICADLK",BCDEHJKL:"HJECADLK",BCDEHIKL:"HEICADLK",BCDEHIJL:"HJECADLI",BCDEHIJK:"HJECADIK",BCDEGJKL:"EGJCADLK",BCDEGIKL:"EGICADLK",BCDEGIJL:"EGJCADLI",BCDEGIJK:"EGJCADIK",BCDEGHKL:"HGECADLK",BCDEGHJL:"HGJCADLE",BCDEGHJK:"HGJCADEK",BCDEGHIL:"HGECADLI",BCDEGHIK:"HGECADIK",BCDEGHIJ:"HGJCADEI",BCDEFJKL:"CJEDAFLK",BCDEFIKL:"CEIDAFLK",BCDEFIJL:"CJEDAFLI",BCDEFIJK:"CJEDAFIK",BCDEFHKL:"HEFCADLK",BCDEFHJL:"HJFCADLE",BCDEFHJK:"HJECAFDK",BCDEFHIL:"HEFCADLI",BCDEFHIK:"HEFCADIK",BCDEFHIJ:"HJECAFDI",BCDEFGKL:"CGEDAFLK",BCDEFGJL:"CGJDAFLE",BCDEFGJK:"CGJDAFEK",BCDEFGIL:"CGEDAFLI",BCDEFGIK:"CGEDAFIK",BCDEFGIJ:"CGJDAFEI",BCDEFGHL:"HGFCADLE",BCDEFGHK:"HGECAFDK",BCDEFGHJ:"HGJCAFDE",BCDEFGHI:"HGECAFDI",AFGHIJKL:"HJIFAGLK",AEGHIJKL:"EJIAHGLK",AEFHIJKL:"EJIFAHLK",AEFGIJKL:"EJIFAGLK",AEFGHJKL:"EGJFAHLK",AEFGHIKL:"EGIFAHLK",AEFGHIJL:"EGJFAHLI",AEFGHIJK:"EGJFAHIK",ADGHIJKL:"HJIDAGLK",ADFHIJKL:"HJIDAFLK",ADFGIJKL:"IGJDAFLK",ADFGHJKL:"HGJDAFLK",ADFGHIKL:"HGIDAFLK",ADFGHIJL:"HGJDAFLI",ADFGHIJK:"HGJDAFIK",ADEHIJKL:"EJIDAHLK",ADEGIJKL:"EJIDAGLK",ADEGHJKL:"EGJDAHLK",ADEGHIKL:"EGIDAHLK",ADEGHIJL:"EGJDAHLI",ADEGHIJK:"EGJDAHIK",ADEFIJKL:"EJIDAFLK",ADEFHJKL:"HJEDAFLK",ADEFHIKL:"HEIDAFLK",ADEFHIJL:"HJEDAFLI",ADEFHIJK:"HJEDAFIK",ADEFGJKL:"EGJDAFLK",ADEFGIKL:"EGIDAFLK",ADEFGIJL:"EGJDAFLI",ADEFGIJK:"EGJDAFIK",ADEFGHKL:"HGEDAFLK",ADEFGHJL:"HGJDAFLE",ADEFGHJK:"HGJDAFEK",ADEFGHIL:"HGEDAFLI",ADEFGHIK:"HGEDAFIK",ADEFGHIJ:"HGJDAFEI",ACGHIJKL:"HJICAGLK",ACFHIJKL:"HJICAFLK",ACFGIJKL:"IGJCAFLK",ACFGHJKL:"HGJCAFLK",ACFGHIKL:"HGICAFLK",ACFGHIJL:"HGJCAFLI",ACFGHIJK:"HGJCAFIK",ACEHIJKL:"EJICAHLK",ACEGIJKL:"EJICAGLK",ACEGHJKL:"EGJCAHLK",ACEGHIKL:"EGICAHLK",ACEGHIJL:"EGJCAHLI",ACEGHIJK:"EGJCAHIK",ACEFIJKL:"EJICAFLK",ACEFHJKL:"HJECAFLK",ACEFHIKL:"HEICAFLK",ACEFHIJL:"HJECAFLI",ACEFHIJK:"HJECAFIK",ACEFGJKL:"EGJCAFLK",ACEFGIKL:"EGICAFLK",ACEFGIJL:"EGJCAFLI",ACEFGIJK:"EGJCAFIK",ACEFGHKL:"HGECAFLK",ACEFGHJL:"HGJCAFLE",ACEFGHJK:"HGJCAFEK",ACEFGHIL:"HGECAFLI",ACEFGHIK:"HGECAFIK",ACEFGHIJ:"HGJCAFEI",ACDHIJKL:"HJICADLK",ACDGIJKL:"IGJCADLK",ACDGHJKL:"HGJCADLK",ACDGHIKL:"HGICADLK",ACDGHIJL:"HGJCADLI",ACDGHIJK:"HGJCADIK",ACDFIJKL:"CJIDAFLK",ACDFHJKL:"HJFCADLK",ACDFHIKL:"HFICADLK",ACDFHIJL:"HJFCADLI",ACDFHIJK:"HJFCADIK",ACDFGJKL:"CGJDAFLK",ACDFGIKL:"CGIDAFLK",ACDFGIJL:"CGJDAFLI",ACDFGIJK:"CGJDAFIK",ACDFGHKL:"HGFCADLK",ACDFGHJL:"CGJDAFLH",ACDFGHJK:"HGJCAFDK",ACDFGHIL:"HGFCADLI",ACDFGHIK:"HGFCADIK",ACDFGHIJ:"HGJCAFDI",ACDEIJKL:"EJICADLK",ACDEHJKL:"HJECADLK",ACDEHIKL:"HEICADLK",ACDEHIJL:"HJECADLI",ACDEHIJK:"HJECADIK",ACDEGJKL:"EGJCADLK",ACDEGIKL:"EGICADLK",ACDEGIJL:"EGJCADLI",ACDEGIJK:"EGJCADIK",ACDEGHKL:"HGECADLK",ACDEGHJL:"HGJCADLE",ACDEGHJK:"HGJCADEK",ACDEGHIL:"HGECADLI",ACDEGHIK:"HGECADIK",ACDEGHIJ:"HGJCADEI",ACDEFJKL:"CJEDAFLK",ACDEFIKL:"CEIDAFLK",ACDEFIJL:"CJEDAFLI",ACDEFIJK:"CJEDAFIK",ACDEFHKL:"HEFCADLK",ACDEFHJL:"HJFCADLE",ACDEFHJK:"HJECAFDK",ACDEFHIL:"HEFCADLI",ACDEFHIK:"HEFCADIK",ACDEFHIJ:"HJECAFDI",ACDEFGKL:"CGEDAFLK",ACDEFGJL:"CGJDAFLE",ACDEFGJK:"CGJDAFEK",ACDEFGIL:"CGEDAFLI",ACDEFGIK:"CGEDAFIK",ACDEFGIJ:"CGJDAFEI",ACDEFGHL:"HGFCADLE",ACDEFGHK:"HGECAFDK",ACDEFGHJ:"HGJCAFDE",ACDEFGHI:"HGECAFDI",ABGHIJKL:"HJBAIGLK",ABFHIJKL:"HJBAIFLK",ABFGIJKL:"IJBFAGLK",ABFGHJKL:"HJBFAGLK",ABFGHIKL:"HGBAIFLK",ABFGHIJL:"HJBFAGLI",ABFGHIJK:"HJBFAGIK",ABEHIJKL:"EJBAIHLK",ABEGIJKL:"EJBAIGLK",ABEGHJKL:"EJBAHGLK",ABEGHIKL:"EGBAIHLK",ABEGHIJL:"EJBAHGLI",ABEGHIJK:"EJBAHGIK",ABEFIJKL:"EJBAIFLK",ABEFHJKL:"EJBFAHLK",ABEFHIKL:"EIBFAHLK",ABEFHIJL:"EJBFAHLI",ABEFHIJK:"EJBFAHIK",ABEFGJKL:"EJBFAGLK",ABEFGIKL:"EGBAIFLK",ABEFGIJL:"EJBFAGLI",ABEFGIJK:"EJBFAGIK",ABEFGHKL:"EGBFAHLK",ABEFGHJL:"HJBFAGLE",ABEFGHJK:"HJBFAGEK",ABEFGHIL:"EGBFAHLI",ABEFGHIK:"EGBFAHIK",ABEFGHIJ:"HJBFAGEI",ABDHIJKL:"IJBDAHLK",ABDGIJKL:"IJBDAGLK",ABDGHJKL:"HJBDAGLK",ABDGHIKL:"IGBDAHLK",ABDGHIJL:"HJBDAGLI",ABDGHIJK:"HJBDAGIK",ABDFIJKL:"IJBDAFLK",ABDFHJKL:"HJBDAFLK",ABDFHIKL:"HIBDAFLK",ABDFHIJL:"HJBDAFLI",ABDFHIJK:"HJBDAFIK",ABDFGJKL:"FJBDAGLK",ABDFGIKL:"IGBDAFLK",ABDFGIJL:"FJBDAGLI",ABDFGIJK:"FJBDAGIK",ABDFGHKL:"HGBDAFLK",ABDFGHJL:"HGBDAFLJ",ABDFGHJK:"HGBDAFJK",ABDFGHIL:"HGBDAFLI",ABDFGHIK:"HGBDAFIK",ABDFGHIJ:"HGBDAFIJ",ABDEIJKL:"EJBAIDLK",ABDEHJKL:"EJBDAHLK",ABDEHIKL:"EIBDAHLK",ABDEHIJL:"EJBDAHLI",ABDEHIJK:"EJBDAHIK",ABDEGJKL:"EJBDAGLK",ABDEGIKL:"EGBAIDLK",ABDEGIJL:"EJBDAGLI",ABDEGIJK:"EJBDAGIK",ABDEGHKL:"EGBDAHLK",ABDEGHJL:"HJBDAGLE",ABDEGHJK:"HJBDAGEK",ABDEGHIL:"EGBDAHLI",ABDEGHIK:"EGBDAHIK",ABDEGHIJ:"HJBDAGEI",ABDEFJKL:"EJBDAFLK",ABDEFIKL:"EIBDAFLK",ABDEFIJL:"EJBDAFLI",ABDEFIJK:"EJBDAFIK",ABDEFHKL:"HEBDAFLK",ABDEFHJL:"HJBDAFLE",ABDEFHJK:"HJBDAFEK",ABDEFHIL:"HEBDAFLI",ABDEFHIK:"HEBDAFIK",ABDEFHIJ:"HJBDAFEI",ABDEFGKL:"EGBDAFLK",ABDEFGJL:"EGBDAFLJ",ABDEFGJK:"EGBDAFJK",ABDEFGIL:"EGBDAFLI",ABDEFGIK:"EGBDAFIK",ABDEFGIJ:"EGBDAFIJ",ABDEFGHL:"HGBDAFLE",ABDEFGHK:"HGBDAFEK",ABDEFGHJ:"HGBDAFEJ",ABDEFGHI:"HGBDAFEI",ABCHIJKL:"IJBCAHLK",ABCGIJKL:"IJBCAGLK",ABCGHJKL:"HJBCAGLK",ABCGHIKL:"IGBCAHLK",ABCGHIJL:"HJBCAGLI",ABCGHIJK:"HJBCAGIK",ABCFIJKL:"IJBCAFLK",ABCFHJKL:"HJBCAFLK",ABCFHIKL:"HIBCAFLK",ABCFHIJL:"HJBCAFLI",ABCFHIJK:"HJBCAFIK",ABCFGJKL:"CJBFAGLK",ABCFGIKL:"IGBCAFLK",ABCFGIJL:"CJBFAGLI",ABCFGIJK:"CJBFAGIK",ABCFGHKL:"HGBCAFLK",ABCFGHJL:"HGBCAFLJ",ABCFGHJK:"HGBCAFJK",ABCFGHIL:"HGBCAFLI",ABCFGHIK:"HGBCAFIK",ABCFGHIJ:"HGBCAFIJ",ABCEIJKL:"EJBAICLK",ABCEHJKL:"EJBCAHLK",ABCEHIKL:"EIBCAHLK",ABCEHIJL:"EJBCAHLI",ABCEHIJK:"EJBCAHIK",ABCEGJKL:"EJBCAGLK",ABCEGIKL:"EGBAICLK",ABCEGIJL:"EJBCAGLI",ABCEGIJK:"EJBCAGIK",ABCEGHKL:"EGBCAHLK",ABCEGHJL:"HJBCAGLE",ABCEGHJK:"HJBCAGEK",ABCEGHIL:"EGBCAHLI",ABCEGHIK:"EGBCAHIK",ABCEGHIJ:"HJBCAGEI",ABCEFJKL:"EJBCAFLK",ABCEFIKL:"EIBCAFLK",ABCEFIJL:"EJBCAFLI",ABCEFIJK:"EJBCAFIK",ABCEFHKL:"HEBCAFLK",ABCEFHJL:"HJBCAFLE",ABCEFHJK:"HJBCAFEK",ABCEFHIL:"HEBCAFLI",ABCEFHIK:"HEBCAFIK",ABCEFHIJ:"HJBCAFEI",ABCEFGKL:"EGBCAFLK",ABCEFGJL:"EGBCAFLJ",ABCEFGJK:"EGBCAFJK",ABCEFGIL:"EGBCAFLI",ABCEFGIK:"EGBCAFIK",ABCEFGIJ:"EGBCAFIJ",ABCEFGHL:"HGBCAFLE",ABCEFGHK:"HGBCAFEK",ABCEFGHJ:"HGBCAFEJ",ABCEFGHI:"HGBCAFEI",ABCDIJKL:"IJBCADLK",ABCDHJKL:"HJBCADLK",ABCDHIKL:"HIBCADLK",ABCDHIJL:"HJBCADLI",ABCDHIJK:"HJBCADIK",ABCDGJKL:"CJBDAGLK",ABCDGIKL:"IGBCADLK",ABCDGIJL:"CJBDAGLI",ABCDGIJK:"CJBDAGIK",ABCDGHKL:"HGBCADLK",ABCDGHJL:"HGBCADLJ",ABCDGHJK:"HGBCADJK",ABCDGHIL:"HGBCADLI",ABCDGHIK:"HGBCADIK",ABCDGHIJ:"HGBCADIJ",ABCDFJKL:"CJBDAFLK",ABCDFIKL:"CIBDAFLK",ABCDFIJL:"CJBDAFLI",ABCDFIJK:"CJBDAFIK",ABCDFHKL:"HFBCADLK",ABCDFHJL:"CJBDAFLH",ABCDFHJK:"HJBCAFDK",ABCDFHIL:"HFBCADLI",ABCDFHIK:"HFBCADIK",ABCDFHIJ:"HJBCAFDI",ABCDFGKL:"CGBDAFLK",ABCDFGJL:"CGBDAFLJ",ABCDFGJK:"CGBDAFJK",ABCDFGIL:"CGBDAFLI",ABCDFGIK:"CGBDAFIK",ABCDFGIJ:"CGBDAFIJ",ABCDFGHL:"CGBDAFLH",ABCDFGHK:"HGBCAFDK",ABCDFGHJ:"HGBCAFDJ",ABCDFGHI:"HGBCAFDI",ABCDEJKL:"EJBCADLK",ABCDEIKL:"EIBCADLK",ABCDEIJL:"EJBCADLI",ABCDEIJK:"EJBCADIK",ABCDEHKL:"HEBCADLK",ABCDEHJL:"HJBCADLE",ABCDEHJK:"HJBCADEK",ABCDEHIL:"HEBCADLI",ABCDEHIK:"HEBCADIK",ABCDEHIJ:"HJBCADEI",ABCDEGKL:"EGBCADLK",ABCDEGJL:"EGBCADLJ",ABCDEGJK:"EGBCADJK",ABCDEGIL:"EGBCADLI",ABCDEGIK:"EGBCADIK",ABCDEGIJ:"EGBCADIJ",ABCDEGHL:"HGBCADLE",ABCDEGHK:"HGBCADEK",ABCDEGHJ:"HGBCADEJ",ABCDEGHI:"HGBCADEI",ABCDEFKL:"CEBDAFLK",ABCDEFJL:"CJBDAFLE",ABCDEFJK:"CJBDAFEK",ABCDEFIL:"CEBDAFLI",ABCDEFIK:"CEBDAFIK",ABCDEFIJ:"CJBDAFEI",ABCDEFHL:"HFBCADLE",ABCDEFHK:"HEBCAFDK",ABCDEFHJ:"HJBCAFDE",ABCDEFHI:"HEBCAFDI",ABCDEFGL:"CGBDAFLE",ABCDEFGK:"CGBDAFEK",ABCDEFGJ:"CGBDAFEJ",ABCDEFGI:"CGBDAFEI",ABCDEFGH:"HGBCAFDE"};
 const KO_VENUE={73:'Los Angeles, USA',74:'Foxborough (Boston), USA',75:'Guadalupe (Monterrey), Mexikó',76:'Houston, USA',77:'New Jersey, USA',78:'Arlington (Dallas), USA',79:'Mexikóváros, Mexikó',80:'Atlanta, USA',81:'Santa Clara (San Francisco), USA',82:'Seattle, USA',83:'Toronto, Kanada',84:'Los Angeles, USA',85:'Vancouver, Kanada',86:'Miami, USA',87:'Kansas City, USA',88:'Arlington (Dallas), USA',89:'Philadelphia, USA',90:'Houston, USA',91:'New Jersey, USA',92:'Mexikóváros, Mexikó',93:'Arlington (Dallas), USA',94:'Seattle, USA',95:'Atlanta, USA',96:'Vancouver, Kanada',97:'Foxborough (Boston), USA',98:'Los Angeles, USA',99:'Miami, USA',100:'Kansas City, USA',101:'Arlington (Dallas), USA',102:'Atlanta, USA',103:'Miami, USA',104:'New Jersey, USA'};
@@ -2653,6 +2812,10 @@ function bindMain(hw){
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
   document.getElementById('notifToggleBtn')?.addEventListener('click',togglePushNotif);
   document.getElementById('h2hSel')?.addEventListener('change',e=>SS({h2hOpp:e.target.value||null}));
+  document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',e=>SS({legalModal:e.currentTarget.dataset.legal})));
+  document.getElementById('legalCl')?.addEventListener('click',()=>SS({legalModal:null}));
+  document.getElementById('legalOv')?.addEventListener('click',e=>{if(e.target.id==='legalOv')SS({legalModal:null});});
+  document.getElementById('cookieOk')?.addEventListener('click',()=>{localStorage.setItem('cookieOk','1');SS({cookieBanner:false});});
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
     const tid=e.currentTarget.dataset.explb;
     SS({expandLb:S.expandLb===tid?null:tid});
