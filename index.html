@@ -1268,15 +1268,20 @@ async function setLang(l){
   await sS('wc_lang',l,false);
 }
 function render(){
-  document.body.classList.toggle('light-theme',S.theme==='light');
-  const root=document.getElementById('root');
-  if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
-  if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
-  const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
-  root.innerHTML=rMain(hw);
-  if(S.preModal)bindPM();else bindMain(hw);
-  // Visszaszámláló indítása ha a countdown elem létezik
-  if(document.getElementById('countdown-display'))startCountdown();
+  try{
+    document.body.classList.toggle('light-theme',S.theme==='light');
+    const root=document.getElementById('root');
+    if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
+    if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
+    const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
+    root.innerHTML=rMain(hw);
+    if(S.preModal)bindPM();else bindMain(hw);
+    if(document.getElementById('countdown-display'))startCountdown();
+  }catch(e){
+    console.error('render hiba:',e);
+    const root=document.getElementById('root');
+    if(root)root.innerHTML=`<div style="padding:32px;color:#e63329;font-size:14px">⚠️ Hiba: ${e.message}<br><br><button onclick="SS({view:'matches'})" style="background:#c9a84c;color:#000;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;margin-top:10px">↩ Meccsek</button></div>`;
+  }
 }
 
 function rAuth(){
