@@ -1047,8 +1047,25 @@ async function refreshLiveIfStale(){
     SS({results,live,liveUpdatedAt:new Date().toISOString()});
   }catch(e){}
 }
-// Külön 3 perces live frissítés intervall
-setInterval(()=>{if(S.user)refreshLiveIfStale();},3*60*1000);
+// Visszaszámláló - DOM-ba ír közvetlenül, nem re-renderel
+let _cdInterval=null;
+function startCountdown(){
+  if(_cdInterval)clearInterval(_cdInterval);
+  function updateCd(){
+    const el=document.getElementById('countdown-display');
+    if(!el)return;
+    const nextM=ALL.filter(m=>{
+      const ko=S.ko[m.id]||m.koDefault;
+      return ko&&new Date(ko).getTime()>Date.now()&&!S.results[m.id]&&!S.live[m.id];
+    }).sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault))[0];
+    if(!nextM){el.textContent='–';return;}
+    const diff=Math.max(0,new Date(S.ko[nextM.id]||nextM.koDefault).getTime()-Date.now());
+    const h=Math.floor(diff/3600000),m=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000);
+    el.textContent=h>0?`${h}ó ${String(m).padStart(2,'0')}p ${String(s).padStart(2,'0')}m`:`${m}p ${String(s).padStart(2,'0')}m`;
+  }
+  updateCd();
+  _cdInterval=setInterval(updateCd,1000);
+}
 function getEffectiveResults(){
   const eff={...S.results};
   Object.entries(S.live||{}).forEach(([mid,sc])=>{
@@ -1179,6 +1196,8 @@ function render(){
   const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
   root.innerHTML=rMain(hw);
   if(S.preModal)bindPM();else bindMain(hw);
+  // Visszaszámláló indítása ha a countdown elem létezik
+  if(document.getElementById('countdown-display'))startCountdown();
 }
 
 function rAuth(){
@@ -1281,10 +1300,19 @@ function rNext24h(){
   const uid=S.user.id,ms=next24h();
   if(!ms.length)return '';
   const missing=ms.filter(m=>!S.tips[`${uid}_${m.id}`]);
+  // Következő meccs időpontja
+  const nextM=ALL.filter(m=>{
+    const ko=S.ko[m.id]||m.koDefault;
+    return ko&&new Date(ko).getTime()>Date.now()&&!S.results[m.id];
+  }).sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault))[0];
+  const nextKo=nextM?(S.ko[nextM.id]||nextM.koDefault):null;
   return `<div style="background:rgba(var(--ink-rgb),.05);border:1px solid rgba(var(--ink-rgb),.1);border-radius:14px;padding:16px;margin-bottom:18px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-      <div style="font-size:15px;font-weight:800;color:#c9a84c">⏰ ${t('next24h')}</div>
-      ${missing.length?`<span style="background:#e63329;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px">${missing.length} ${t('missing_tips')}</span>`:`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t('all_tipped')}</span>`}
+      <div style="font-size:15px;font-weight:800;color:var(--c-gold)">⏰ ${t('next24h')}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        ${nextKo?`<div id="countdown-wrap" style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--c-gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:3px 10px"><span id="countdown-display">–</span></div>`:''}
+        ${missing.length?`<span style="background:#e63329;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px">${missing.length} ${t('missing_tips')}</span>`:`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t('all_tipped')}</span>`}
+      </div>
     </div>
     ${ms.map(m=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
@@ -2398,6 +2426,8 @@ function bindMain(hw){
   }
 }
 
+// Külön 3 perces live frissítés intervall
+setInterval(()=>{if(S.user)refreshLiveIfStale();},3*60*1000);
 setInterval(async()=>{
   if(!S.user)return;
   try{
