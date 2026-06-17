@@ -287,6 +287,9 @@ table.stdt{width:100%;border-collapse:collapse}
 .pbk-tnm{overflow:hidden;text-overflow:ellipsis;max-width:80px}
 
 /* ===== ANIMATIONS ===== */
+.mc-odds{display:flex;align-items:center;gap:5px;padding:4px 14px 9px;justify-content:center;flex-wrap:wrap}
+.mc-odds-pill{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;padding:3px 10px;border-radius:7px;background:rgba(27,79,196,.15);color:#6fa3ff;border:1px solid rgba(27,79,196,.2);letter-spacing:.3px}
+.mc-odds-draw{background:rgba(212,175,55,.1);color:var(--c-gold);border-color:rgba(212,175,55,.2)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ===== RESPONSIVE ===== */
@@ -639,6 +642,44 @@ async function fetchTodayWeather(){
   }));
   SS({weather});
 }
+// Odds API csapatnév → belső kód
+const ODDS_TEAM={'Mexico':'MEX','South Africa':'ZAF','South Korea':'KOR','Czech Republic':'CZE','Czechia':'CZE','Portugal':'POR','DR Congo':'COD','Congo DR':'COD','Uzbekistan':'UZB','Colombia':'COL','Brazil':'BRA','Morocco':'MAR','Haiti':'HAI','Scotland':'SCO','USA':'USA','United States':'USA','Paraguay':'PAR','Australia':'AUS','Turkey':'TUR','Turkiye':'TUR','Germany':'GER','Ivory Coast':'CIV',"Côte d'Ivoire":'CIV','Ecuador':'ECU','Netherlands':'NED','Japan':'JPN','Sweden':'SWE','Tunisia':'TUN','Belgium':'BEL','Egypt':'EGY','New Zealand':'NZL','Serbia':'SRB','Argentina':'ARG','Chile':'CHI','El Salvador':'SLV','Saudi Arabia':'KSA','France':'FRA','Nigeria':'NGA','Senegal':'SEN','Norway':'NOR','Croatia':'CRO','England':'ENG','Ghana':'GHA','Panama':'PAN','Angola':'ANG','Romania':'ROU','Indonesia':'IDN','Cape Verde':'CPV','Spain':'ESP','Iran':'IRN','Jordan':'JOR','Switzerland':'SUI','Canada':'CAN','Bosnia and Herzegovina':'BIH','Bosnia':'BIH','Qatar':'QAT','Honduras':'HON','Venezuela':'VEN','Cameroon':'CMR','Uruguay':'URU','Austria':'AUT','Kenya':'KEN','Peru':'PER','Costa Rica':'CRC','Cuba':'CUB','Curaçao':'CUW','Curacao':'CUW','Slovakia':'SVK','Poland':'POL','Ukraine':'UKR'};
+async function fetchTodayOdds(){
+  const KEY='d2e76cddb77f1adbf0cc133c71abdd39';
+  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const todayMs=ALL.filter(m=>m.date===today&&!m.tbd);
+  if(!todayMs.length)return;
+  try{
+    // Sport kulcs keresése
+    const sRes=await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${KEY}&all=false`);
+    const sports=await sRes.json();
+    const wcKey=(sports.find(s=>s.key.includes('world_cup'))||sports.find(s=>s.key.includes('soccer_international')))?.key;
+    if(!wcKey){console.log('VB sport kulcs nem található');return;}
+    console.log('Odds sport kulcs:',wcKey);
+    const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
+    const data=await oRes.json();
+    if(!Array.isArray(data)){console.log('Odds API válasz:',data);return;}
+    const odds={};
+    for(const ev of data){
+      const hCode=ODDS_TEAM[ev.home_team];
+      const aCode=ODDS_TEAM[ev.away_team];
+      if(!hCode||!aCode)continue;
+      const match=todayMs.find(m=>(m.home===hCode&&m.away===aCode)||(m.home===aCode&&m.away===hCode));
+      if(!match)continue;
+      const bk=ev.bookmakers?.[0];if(!bk)continue;
+      const h2h=bk.markets?.find(mk=>mk.key==='h2h');if(!h2h)continue;
+      const hO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.home||o.name===ev.home_team);
+      const aO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.away||o.name===ev.away_team);
+      const dO=h2h.outcomes.find(o=>o.name==='Draw');
+      if(hO&&aO){
+        const isSwapped=match.home===aCode;
+        odds[match.id]={h:(isSwapped?aO:hO).price.toFixed(2),d:dO?.price?.toFixed(2)||null,a:(isSwapped?hO:aO).price.toFixed(2),bk:bk.title};
+      }
+    }
+    SS({odds});
+    console.log('Odds betöltve:',Object.keys(odds).length,'mérkőzés');
+  }catch(e){console.log('Odds hiba:',e);}
+}
 const KO_SCHEDULE={73:['2026-06-28','2026-06-28T19:00:00Z'],74:['2026-06-29','2026-06-29T20:30:00Z'],75:['2026-06-29','2026-06-30T01:00:00Z'],76:['2026-06-29','2026-06-29T17:00:00Z'],77:['2026-06-30','2026-06-30T21:00:00Z'],78:['2026-06-30','2026-06-30T17:00:00Z'],79:['2026-06-30','2026-07-01T01:00:00Z'],80:['2026-07-01','2026-07-01T16:00:00Z'],81:['2026-07-01','2026-07-02T00:00:00Z'],82:['2026-07-01','2026-07-01T20:00:00Z'],83:['2026-07-02','2026-07-02T23:00:00Z'],84:['2026-07-02','2026-07-02T19:00:00Z'],85:['2026-07-02','2026-07-03T03:00:00Z'],86:['2026-07-03','2026-07-03T22:00:00Z'],87:['2026-07-03','2026-07-04T01:30:00Z'],88:['2026-07-03','2026-07-03T18:00:00Z'],89:['2026-07-04','2026-07-04T21:00:00Z'],90:['2026-07-04','2026-07-04T17:00:00Z'],91:['2026-07-05','2026-07-05T20:00:00Z'],92:['2026-07-05','2026-07-06T00:00:00Z'],93:['2026-07-06','2026-07-06T19:00:00Z'],94:['2026-07-06','2026-07-07T00:00:00Z'],95:['2026-07-07','2026-07-07T16:00:00Z'],96:['2026-07-07','2026-07-07T20:00:00Z'],97:['2026-07-09','2026-07-09T20:00:00Z'],98:['2026-07-10','2026-07-10T19:00:00Z'],99:['2026-07-11','2026-07-11T21:00:00Z'],100:['2026-07-11','2026-07-12T01:00:00Z'],101:['2026-07-14','2026-07-14T19:00:00Z'],102:['2026-07-15','2026-07-15T19:00:00Z'],103:['2026-07-18','2026-07-18T21:00:00Z'],104:['2026-07-19','2026-07-19T19:00:00Z']};
 function genM(){
   const m=[];let id=1;
@@ -748,7 +789,7 @@ let S={
   pwEdit:false,pwErr:'',pwMsg:'',
   selLg:null,lgModal:null,lgName:'',lgCode:'',lgErr:'',lgSco:{...DS},
   editLgId:null,editLgSco:null,
-  preModal:false,savedMsgs:{},weather:{},
+  preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
   live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu'
@@ -783,6 +824,7 @@ async function init(){
   autoFillKnockoutTeams();
   if(cu)loadPredict(cu.id);
   fetchTodayWeather();
+  fetchTodayOdds();
 }
 async function loadPredict(uid){
   const all=await sG('wc_predict',true);
@@ -1227,6 +1269,7 @@ function rCard(m){
   const venue=m.stage==='group'?GROUP_VENUE[m.id]:null;
   const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
   const wx=isToday&&venue?S.weather?.[venue]:null;
+  const mOdds=isToday?S.odds?.[m.id]:null;
   const saved=S.savedMsgs[m.id];
   const th=tip?.homeGoals??'',ta=tip?.awayGoals??'';
   const catLbl={p8:`⭐ ${t('perfect_full')}`,p5:`🎯 ${t('resultgd_full')}`,p3:`✓ ${t('outcome_full')}`,p1:`~ ${t('onegoal_full')}`,p0:'✗'};
@@ -1252,6 +1295,7 @@ function rCard(m){
       <div class="team-b away"><span class="tname">${teamName(away)}</span>${fImg(away,40)}</div>
     </div>
     ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
+    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">🏠 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">✕ ${mOdds.d||'–'}</span><span class="mc-odds-pill">✈️ ${mOdds.a}</span><span style="font-size:9.5px;color:rgba(var(--ink-rgb),.25);margin-left:4px">${mOdds.bk}</span></div>`:''}
     ${res&&tip?`<div class="mc-res"><span style="color:#999">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
