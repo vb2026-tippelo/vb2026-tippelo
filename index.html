@@ -2206,6 +2206,244 @@ function rPredBracket(r32g,cache){
     ${finalSection}
   </div>${mob}`;
 }
+function rPredict(){
+  const allDone=predAllGroupsComplete();
+  const candidates=predThirdCandidates();
+  const third8Done=S.predThird8.length===8;
+  const r32=third8Done?resolvePredR32():null;
+
+  const groupCards=GD.map(g=>{
+    const picked=S.predGroups[g.id]||[];
+    const teamBtns=g.teams.map(team=>{
+      const rank=picked.indexOf(team),rankShown=rank>=0?rank+1:null;
+      const rankCls=rankShown?` picked rank-${rankShown}`:'';
+      return `<button class="pred-team-btn${rankCls}" data-predteam="${g.id}|${team}">
+        ${rankShown?`<span class="pred-rank-badge r${rankShown}">${rankShown}</span>`:''}
+        ${fImg(team,18)}<span class="pred-team-nm">${teamName(team)}</span>
+      </button>`;
+    }).join('');
+    return `<div class="pred-group-card${predGroupComplete(g.id)?' done':''}">
+      <div class="pred-group-h">${g.id} ${t('group_word')}</div>
+      <div class="pred-team-grid">${teamBtns}</div>
+    </div>`;
+  }).join('');
+
+  let thirdSection='';
+  if(allDone){
+    thirdSection=`<div class="divider"></div>
+    <div class="sect" style="font-size:15px">${t('pred_third_h')}</div>
+    <p style="color:rgba(var(--ink-rgb),.5);font-size:12.5px;margin-bottom:12px">${t('pred_third_hint')}</p>
+    <div class="pred-third-grid">${candidates.map(c=>`<button class="pred-third-btn${S.predThird8.includes(c.grp)?' picked':''}" data-predthird="${c.grp}">${fImg(c.team,18)}<span class="pred-team-nm">${teamName(c.team)}</span><span class="pred-grp-tag">${c.grp}</span></button>`).join('')}</div>
+    <div class="pred-third-count">${S.predThird8.length}/8 ${t('pred_selected')}</div>`;
+  }
+
+  let bracketSection='';
+  if(third8Done&&r32){
+    const cache={};
+    const rounds=[
+      {label:t('bracket_round32'),nums:Array.from({length:16},(_,i)=>73+i)},
+      {label:t('bracket_round16'),nums:Array.from({length:8},(_,i)=>89+i)},
+      {label:t('bracket_qf'),nums:Array.from({length:4},(_,i)=>97+i)},
+      {label:t('bracket_sf'),nums:[101,102]},
+    ];
+    const koRow=(fifaNum,extraCls='')=>{
+      const teams=predTeamsForFifaNum(fifaNum,r32,cache);
+      if(!teams)return `<div class="pred-ko-row pending">${t('pred_pending')}</div>`;
+      const pick=S.predKO[fifaNum];
+      return `<div class="pred-ko-row${extraCls}">
+        <button class="pred-ko-btn${pick==='home'?' picked':''}" data-predko="${fifaNum}|home">${fImg(teams.home,18)} ${teamName(teams.home)}</button>
+        <span class="pred-ko-vs">–</span>
+        <button class="pred-ko-btn${pick==='away'?' picked':''}" data-predko="${fifaNum}|away">${fImg(teams.away,18)} ${teamName(teams.away)}</button>
+      </div>`;
+    };
+    const roundsHtml=rounds.map(rd=>`<div class="pred-round-block"><div class="pred-round-h">${rd.label}</div>${rd.nums.map(n=>koRow(n)).join('')}</div>`).join('');
+    const finalTeams=predTeamsForFifaNum(104,r32,cache),finalPick=S.predKO[104];
+    const champion=finalTeams&&finalPick?(finalPick==='home'?finalTeams.home:finalTeams.away):null;
+    const finalBronzeHtml=`<div class="pred-round-block">
+      <div class="pred-round-h">🏆 ${t('bracket_final')}</div>
+      ${koRow(104,' final')}
+      <div class="pred-round-h" style="margin-top:14px">🥉 ${t('bracket_bronze')}</div>
+      ${koRow(103)}
+    </div>`;
+    bracketSection=`<div class="divider"></div>
+      <div class="sect" style="font-size:15px">${t('pred_bracket_h')}</div>
+      <p style="color:rgba(var(--ink-rgb),.45);font-size:12px;margin-bottom:10px">${S.lang==='en'?'Click the team that advances in each match.':'Kattints a továbbjutóra minden meccsben.'}</p>
+      ${rPredBracket(r32,cache)}
+      ${champion?`<div class="pred-champion">🏆 ${t('pred_champion_lbl')} <b>${fImg(champion,22)} ${teamName(champion)}</b></div>`:''}`;
+  }
+
+  return `<div>
+    <div class="sect">${t('predict_t')}</div>
+    <p style="color:rgba(var(--ink-rgb),.5);font-size:13px;margin-bottom:14px">${t('predict_intro')}</p>
+    <button class="btn-sm red" id="resetPredBtn" style="margin-bottom:16px">🔄 ${t('pred_reset_btn')}</button>
+    <div class="pred-group-grid">${groupCards}</div>
+    ${thirdSection}
+    ${bracketSection}
+  </div>`;
+}
+
+function rPredBracket(r32g,cache){
+  const MH=68,MW=162,CW=20,H=720;
+  const L={
+    r32:[{fn:74,cy:34},{fn:77,cy:102},{fn:73,cy:204},{fn:75,cy:272},{fn:83,cy:374},{fn:84,cy:442},{fn:81,cy:544},{fn:82,cy:612}],
+    r16:[{fn:89,cy:68},{fn:90,cy:238},{fn:93,cy:408},{fn:94,cy:578}],
+    qf:[{fn:97,cy:153},{fn:98,cy:493}],
+    sf:[{fn:101,cy:323}]
+  };
+  const R={
+    r32:[{fn:76,cy:34},{fn:78,cy:102},{fn:79,cy:204},{fn:80,cy:272},{fn:86,cy:374},{fn:88,cy:442},{fn:85,cy:544},{fn:87,cy:612}],
+    r16:[{fn:91,cy:68},{fn:92,cy:238},{fn:95,cy:408},{fn:96,cy:578}],
+    qf:[{fn:99,cy:153},{fn:100,cy:493}],
+    sf:[{fn:102,cy:323}]
+  };
+  const FC={fn:104,cy:323},BC={fn:103,cy:540};
+
+  function mkPredBox(fn,cy,isFinal){
+    const teams=predTeamsForFifaNum(fn,r32g,cache);
+    const pick=S.predKO[fn];
+    const top=Math.round(cy-MH/2);
+    if(!teams){
+      return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
+        <div class="wk-box"><div class="wk-hdr" style="opacity:.4">M${fn}</div>
+        <div class="wk-team wk-slot">—</div><div class="wk-sep"></div><div class="wk-team wk-slot">—</div></div></div>`;
+    }
+    const hPick=pick==='home', aPick=pick==='away';
+    return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
+      <div class="wk-box${isFinal?' wk-final-box':''}">
+        <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span></div>
+        <button class="wk-team wk-pred${hPick?' wk-win':''}" data-predko="${fn}|home" style="width:100%;border:none;text-align:left;cursor:pointer;background:inherit">
+          ${fImg(teams.home,14)}<span class="wk-tnm">${teamName(teams.home)}</span>${hPick?'<span class="wk-sc">✓</span>':''}
+        </button>
+        <div class="wk-sep"></div>
+        <button class="wk-team wk-pred${aPick?' wk-win':''}" data-predko="${fn}|away" style="width:100%;border:none;text-align:left;cursor:pointer;background:inherit">
+          ${fImg(teams.away,14)}<span class="wk-tnm">${teamName(teams.away)}</span>${aPick?'<span class="wk-sc">✓</span>':''}
+        </button>
+      </div></div>`;
+  }
+
+  function col(arr){
+    return `<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">
+      ${arr.map(({fn,cy})=>mkPredBox(fn,cy,false)).join('')}</div>`;
+  }
+  function conn(fromArr,toArr,side){
+    const w=CW,xF=side==='right'?w:0,xT=side==='right'?0:w,xM=w/2;
+    const s='rgba(212,175,55,0.35)',sw=1.5,lns=[];
+    for(let i=0;i<toArr.length;i++){
+      const to=toArr[i],f1=fromArr[i*2],f2=fromArr[i*2+1];
+      if(!f1)continue;
+      if(f2){
+        lns.push(
+          `<line x1="${xF}" y1="${f1.cy}" x2="${xM}" y2="${f1.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xF}" y1="${f2.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xM}" y1="${f1.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xM}" y1="${to.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`
+        );
+      }else{
+        lns.push(`<line x1="${xF}" y1="${f1.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`);
+      }
+    }
+    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px">
+      <svg width="${w}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
+  }
+
+  const cW=MW+24;
+  const ctr=`<div style="position:relative;width:${cW}px;flex-shrink:0;height:${H}px">
+    <div style="position:absolute;top:${Math.round(FC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">🏆 ${t('bracket_final')}</div>
+    ${mkPredBox(104,FC.cy,true)}
+    <div style="position:absolute;top:${Math.round(BC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px">🥉 ${t('bracket_bronze')}</div>
+    ${mkPredBox(103,BC.cy,false)}
+  </div>`;
+
+  const h=(txt,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;padding-bottom:5px">${txt}</div>`;
+  const sp=w=>`<div style="width:${w}px;flex-shrink:0"></div>`;
+  const rdL=[t('bracket_round32'),t('bracket_round16'),t('bracket_qf'),t('bracket_sf')];
+  const hdrRow=`<div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:4px">
+    ${rdL.map(l=>h(l,MW)+sp(CW)).join('')}${h('🏆',cW)}
+    ${[...rdL].reverse().map(l=>sp(CW)+h(l,MW)).join('')}
+  </div>`;
+
+  return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
+    <div style="min-width:${8*MW+8*CW+cW}px">
+      ${hdrRow}
+      <div style="display:flex">
+        ${col(L.r32)}${conn(L.r32,L.r16,'left')}
+        ${col(L.r16)}${conn(L.r16,L.qf,'left')}
+        ${col(L.qf)}${conn(L.qf,L.sf,'left')}
+        ${col(L.sf)}${conn([L.sf[0]],[FC],'left')}
+        ${ctr}
+        ${conn([R.sf[0]],[FC],'right')}${col(R.sf)}
+        ${conn(R.qf,R.sf,'right')}${col(R.qf)}
+        ${conn(R.r16,R.qf,'right')}${col(R.r16)}
+        ${conn(R.r32,R.r16,'right')}${col(R.r32)}
+      </div>
+    </div>
+  </div>`;
+}
+
+
+function rMyTips(){
+  const uid=S.user.id,cfg=DS,eff=getEffectiveResults();
+  const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
+  let tp=0,fin=0,pf=0,rgd=0,r3=0;
+  tipped.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!r)return;fin++;const p=calcPts(tip,r,m.stage,cfg)||0;tp+=p;const cat=ptsCat(tip,r,m.stage,cfg);if(cat==='p8')pf++;else if(cat==='p5')rgd++;else if(cat==='p3')r3++;});
+  const uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
+  const wPts=S.adminSpec?.winner&&uw===S.adminSpec.winner?cfg.winner:0;
+  const tPts=S.adminSpec?.top&&ut&&ut.toLowerCase().trim()===S.adminSpec.top?.toLowerCase().trim()?cfg.topScorer:0;
+  const totPts=tp+wPts+tPts;
+  if(!tipped.length&&!uw&&!ut) return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">📝</div><p>${t('no_tips_yet')}</p></div>`;
+  return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div class="sect" style="margin:0">📝 ${t('tab_mytips').replace('📝 ','')}</div>
+    <button id="shareTipsBtn" class="btn-sm gold" style="padding:7px 14px;font-size:13px">🔗 Megosztás</button>
+  </div>
+  <div class="stat-row">
+    ${[{l:t('stat_tips'),v:tipped.length,c:'#4a9eff'},{l:t('stat_evaluated'),v:fin,c:'#a78bfa'},{l:t('stat_perfect'),v:pf,c:'#c9a84c'},{l:t('stat_resultgd'),v:rgd,c:'#60d0ff'},{l:t('stat_outcome'),v:r3,c:'#00b050'},{l:t('stat_total'),v:totPts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
+  </div>
+  ${uw||ut?`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:8px">${t('pretips_section')}</div>
+    <div style="font-size:13px;color:rgba(var(--ink-rgb),.7)">${t('final_winner')} <b>${uw?teamName(uw):'—'}</b>${wPts?` <span style="color:#00b050;font-weight:700">+${wPts}p ✓</span>`:S.adminSpec?.winner?` <span style="color:#e63329">✗</span>`:''}</div>
+    <div style="font-size:13px;color:rgba(var(--ink-rgb),.7);margin-top:5px">${t('top_scorer_lbl')} <b>${ut||'—'}</b>${tPts?` <span style="color:#00b050;font-weight:700">+${tPts}p ✓</span>`:S.adminSpec?.top?` <span style="color:#e63329">✗</span>`:''}</div>
+  </div>`:''}
+  <div>${tipped.map(m=>{
+    const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null;
+    const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+    const cat=r?ptsCat(tip,r,m.stage,cfg):null;
+    const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
+    return `<div class="tip-row">
+      <div style="font-size:10.5px;color:rgba(var(--ink-rgb),.35);min-width:42px">${m.group?m.group+(m.md||''):stageLabel(m.stage)?.slice(0,3)||''}<div>${fd(m.date)}</div></div>
+      <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</div>
+      <div style="font-size:13px;white-space:nowrap">${t('your_tip')} <b>${tip.homeGoals}–${tip.awayGoals}</b></div>
+      ${r?`<div style="text-align:right;min-width:85px"><div style="font-size:11px;color:${r.live?'#e63329':'rgba(var(--ink-rgb),.35)'}">${r.live?'🔴 '+t('live_lbl'):t('result_lbl')}: ${r.homeGoals}–${r.awayGoals}</div><span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p${r.live?' ('+t('live_lbl')+')':''}</span></div>`:`<div style="font-size:11px;color:rgba(var(--ink-rgb),.2);min-width:85px;text-align:right">${t('expected')}</div>`}
+    </div>`;
+  }).join('')}</div>
+  <div class="scoring-hint"><b>${t('scoring_hint')}</b> ⭐ ${t('perfect_full')}: 8p · 🎯 ${t('resultgd_full')}: 5p · ✓ ${t('outcome_full')}: 3p · ~ ${t('onegoal_full')}: 1p · 🔄 ${t('ko_full')}: ×2 · 🏆 ${t('winner_full')}: 25p · ⚽ ${t('topscorer_full')}: 25p<br><i>${t('scoring_note')}</i><br><span style="color:rgba(var(--ink-rgb),.4)">ℹ️ ${t('scoring_auto_note')}</span></div>`;
+}
+
+function isLocked(m){
+  const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
+  const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
+  return Date.now()>=lockMs||!!S.results[m.id];
+}
+function tournamentStarted(){
+  const m1=ALL.find(x=>x.id===1);
+  const ko=S.ko?.[1]||m1?.koDefault;
+  return ko?Date.now()>=new Date(ko).getTime():false;
+}
+function rUserHistory(targetUid,cfg){
+  const eff=getEffectiveResults();
+  const tipped=ALL.filter(m=>S.tips[`${targetUid}_${m.id}`]);
+  if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('no_tips_yet')}</div>`;
+  const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
+  return `<div style="padding:8px 4px 2px">${tipped.map(m=>{
+    const tip=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null,cat=r?ptsCat(tip,r,m.stage,cfg):null;
+    const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+    const hidden=targetUid!==S.user.id&&!isLocked(m);
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:rgba(var(--ink-rgb),.6);min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
+      ${hidden?`<span style="color:rgba(var(--ink-rgb),.35);font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:rgba(var(--ink-rgb),.75)">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
+      ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'var(--text-color)'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · <span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span></span>`:`<span style="margin-left:auto;color:rgba(var(--ink-rgb),.4)">${t('expected')}</span>`}`}
+    </div>`;
+  }).join('')}</div>`;
+}
 function rMyTips(){
   const uid=S.user.id,cfg=DS,eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
