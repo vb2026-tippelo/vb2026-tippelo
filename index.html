@@ -691,12 +691,21 @@ async function saveProf(){
 
 const fd=d=>{const p=d.split('-');return `jún. ${parseInt(p[2])}., ${['vas','hét','kedd','szer','csüt','pén','szo'][new Date(d).getDay()]}`;};
 const fImg=(nm,sz=40)=>CC[nm]?`<img class="flag-img" src="https://flagcdn.com/w${sz}/${CC[nm]}.png" style="width:${sz}px;height:${Math.round(sz*.67)}px" alt="${nm}" onerror="this.outerHTML='<span style=&quot;font-size:${Math.round(sz*.6)}px&quot;>${FL[nm]||'🏳'}</span>'">`:`<span style="font-size:${Math.round(sz*.6)}px">${FL[nm]||'🏳'}</span>`;
-const getLgCfg=()=>S.selLg?S.leagues.find(l=>l.id===S.selLg)?.scoring||DS:DS;
+function getEffectiveLgId(){
+  const uid=S.user?.id;
+  const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
+  if(myLgs.find(l=>l.id===S.selLg))return S.selLg;
+  return myLgs[0]?.id||null;
+}
+const getLgCfg=()=>{
+  const lgId=getEffectiveLgId();
+  return lgId?S.leagues.find(l=>l.id===lgId)?.scoring||DS:DS;
+};
 const medals=['🥇','🥈','🥉'];
 function exportLbImage(){
-  const cfg=getLgCfg(),eff=getEffectiveResults();
-  const fIds=S.selLg?S.leagues.find(l=>l.id===S.selLg)?.members:null;
-  const lgN=S.selLg?S.leagues.find(l=>l.id===S.selLg)?.name:'Globális';
+  const cfg=getLgCfg(),eff=getEffectiveResults(),effLg=getEffectiveLgId();
+  const fIds=effLg?S.leagues.find(l=>l.id===effLg)?.members:null;
+  const lgN=effLg?S.leagues.find(l=>l.id===effLg)?.name:t('global_word');
   const board=S.users.filter(u=>!u.isAdmin&&(!fIds||fIds.includes(u.id))).map(u=>{
     const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);return{...u,...r};
   }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
@@ -1065,18 +1074,19 @@ function rUserHistory(targetUid,cfg){
   }).join('')}</div>`;
 }
 function rLb(){
-  const uid=S.user.id,cfg=getLgCfg(),eff=getEffectiveResults();
+  const uid=S.user.id,eff=getEffectiveResults();
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
-  const fIds=S.selLg?S.leagues.find(l=>l.id===S.selLg)?.members:null;
+  if(!myLgs.length)return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏅</div><p>${t('no_league_member')}</p></div>`;
+  const effLg=getEffectiveLgId(),cfg=getLgCfg();
+  const fIds=S.leagues.find(l=>l.id===effLg)?.members;
   const board=S.users.filter(u=>!u.isAdmin&&(!fIds||fIds.includes(u.id))).map(u=>{
     const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);return{...u,...r};
   }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
-  const lgN=S.selLg?S.leagues.find(l=>l.id===S.selLg)?.name:t('global_word');
+  const lgN=S.leagues.find(l=>l.id===effLg)?.name||'';
   return `<div>
   <div class="lg-sel-row">
     <span style="font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('league_lbl')}</span>
-    <button class="pill${!S.selLg?' on':' off'}" id="lgAll">${t('global_lbl')}</button>
-    ${myLgs.map(l=>`<button class="pill${S.selLg===l.id?' on':' off'}" data-lbid="${l.id}">${l.name}</button>`).join('')}
+    ${myLgs.map(l=>`<button class="pill${effLg===l.id?' on':' off'}" data-lbid="${l.id}">${l.name}</button>`).join('')}
   </div>
   <div class="sect">${t('lb_title')} ${lgN} – ${t('tab_lb').replace('🏅 ','')}</div>
   ${board.length?`<button class="btn-sm gold" id="shareLbBtn" style="margin-bottom:14px">${t('lb_share')}</button>`:''}
@@ -1210,7 +1220,6 @@ function rankInScope(targetUid,memberIds,cfg,eff){
 function rProfile(){
   const u=S.user,uid=u.id,eff=getEffectiveResults(),r=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,DS);
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
-  const globalRank=rankInScope(uid,null,DS,eff);
   return `<div>
   <div class="prof-hdr">
     <div class="av-big">${S.profEdit?S.profAv:u.av||'⚽'}</div>
@@ -1228,7 +1237,6 @@ function rProfile(){
     ${[{l:t('stat_tips'),v:r.tipped,c:'#4a9eff'},{l:t('stat_evaluated'),v:r.fin,c:'#a78bfa'},{l:t('stat_perfect'),v:r.pf,c:'#c9a84c'},{l:t('stat_resultgd'),v:r.rgd,c:'#60d0ff'},{l:t('stat_outcome'),v:r.res3,c:'#00b050'},{l:t('stat_total'),v:r.pts,c:'#c9a84c'}].map(x=>`<div class="sbox2"><div class="sv2" style="color:${x.c}">${x.v}</div><div class="sl2">${x.l}</div></div>`).join('')}
   </div>
   <div class="sect">${t('my_leagues')}</div>
-  <div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="__global__"><span style="font-size:18px">🌍</span><div style="flex:1"><div class="lb-nm">${t('global_word')}</div><div class="lb-sub">${globalRank.total} ${t('of_participants')}</div></div><div class="lb-pts">${globalRank.rank}.<span style="font-size:13px;font-weight:400;color:#999"> ${t('rank_suffix')}</span></div><span style="color:#bbb;font-size:13px">›</span></div>
   ${!myLgs.length?`<p style="font-size:13px;color:rgba(var(--ink-rgb),.4)">${t('no_league_member')}</p>`:myLgs.map(l=>{
     const lr=rankInScope(uid,l.members,l.scoring||DS,eff);
     return `<div class="lb-card" style="margin-bottom:7px;cursor:pointer" data-gotolg="${l.id}"><span style="font-size:18px">🏅</span><div style="flex:1"><div class="lb-nm">${l.name}</div><div class="lb-sub">${lr.total} ${t('of_participants')}</div></div><div class="lb-pts">${lr.rank}.<span style="font-size:13px;font-weight:400;color:#999"> · ${lr.pts}p</span></div><span style="color:#bbb;font-size:13px">›</span></div>`;
@@ -1302,7 +1310,34 @@ function rAdmin(){
     <button class="btn-gold" id="savAspBtn" style="margin-top:12px;max-width:200px">Mentés</button>
     ${S.adminSpec?.winner?`<div class="suc-box" style="margin-top:12px">Beállítva: <b>${S.adminSpec.winner}</b> / <b>${S.adminSpec.top||'—'}</b></div>`:''}
   </div>
+  <div class="divider"></div>
+  <div class="sect">🌍 Globális Tabella (összes liga, alap pontozással)</div>
+  <p style="font-size:12.5px;color:rgba(var(--ink-rgb),.45);margin-bottom:14px">Ez a nézet csak itt, admin felületen érhető el – a játékosok a Tabella fülön csak a saját ligáikat látják.</p>
+  ${rGlobalLb()}
   </div>`;
+}
+function rGlobalLb(){
+  const eff=getEffectiveResults();
+  const board=S.users.filter(u=>!u.isAdmin).map(u=>{
+    const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,DS);return{...u,...r};
+  }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
+  if(!board.length)return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏅</div><p>Még nincs regisztrált játékos.</p></div>`;
+  return board.map((u,i)=>{
+    const exp=S.expandLb===`g_${u.id}`;
+    return `<div class="lb-card" style="flex-direction:column;align-items:stretch;cursor:pointer" data-explb="g_${u.id}">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="lb-rank" style="color:${i===0?'#c9a84c':i===1?'silver':i===2?'#cd7f32':'#ccc'};font-size:${i<3?22:16}px">${i<3?medals[i]:`${i+1}.`}</div>
+      <span style="font-size:20px">${u.av||'⚽'}</span>
+      <div style="flex:1">
+        <div class="lb-nm">${u.dn}</div>
+        <div class="lb-sub">⭐${u.pf} · 🎯${u.rgd} · ✓${u.res3} · ~${u.og} · ${u.tipped} tipp</div>
+      </div>
+      <div class="lb-pts">${u.pts}<span style="font-size:13px;font-weight:400;color:#999">p</span></div>
+      <span style="color:#bbb;font-size:11px">${exp?'▲':'▼'}</span>
+    </div>
+    ${exp?rUserHistory(u.id,DS):''}
+  </div>`;
+  }).join('');
 }
 
 function rPM(){
@@ -1407,7 +1442,6 @@ function bindMain(hw){
     SS({lgName:document.getElementById('lgNIn')?.value||'',lgSco:sco});createLeague();
   });
   document.getElementById('joinOkBtn')?.addEventListener('click',()=>{SS({lgCode:document.getElementById('lgCIn')?.value||''});joinLeague();});
-  document.getElementById('lgAll')?.addEventListener('click',()=>SS({selLg:null}));
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
@@ -1429,7 +1463,7 @@ function bindMain(hw){
   }));
   document.querySelectorAll('[data-gotolg]').forEach(el=>el.addEventListener('click',e=>{
     const lid=e.currentTarget.dataset.gotolg;
-    SS({view:'leaderboard',selLg:lid==='__global__'?null:lid});
+    SS({view:'leaderboard',selLg:lid});
   }));
   document.querySelectorAll('[data-gomatch]').forEach(el=>el.addEventListener('click',e=>{
     const mid=parseInt(e.currentTarget.dataset.gomatch),grp=e.currentTarget.dataset.grp;
