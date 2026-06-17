@@ -871,7 +871,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1465,8 +1465,15 @@ function rCard(m){
       tips.forEach(t=>{const k=`${t.homeGoals}-${t.awayGoals}`;scoreMap[k]=(scoreMap[k]||0)+1;});
       const topScore=Object.entries(scoreMap).sort((a,b)=>b[1]-a[1])[0];
       const isExp=S.expandTips===m.id;
+      const myLgs=S.leagues.filter(l=>l.members?.includes(S.user.id));
+      const filterLg=S.tipFilterLg||'all';
+      const filteredUsers=filterLg==='all'?allU:allU.filter(u=>myLgs.find(l=>l.id===filterLg)?.members?.includes(u.id));
       const expHtml=isExp?`<div style="padding:6px 14px 10px;border-top:1px solid rgba(var(--ink-rgb),.06)">
-        ${allU.sort((a,b)=>a.dn.localeCompare(b.dn,'hu')).map(u=>{
+        ${myLgs.length>1?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+          <button data-tipfilt="all" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid ${filterLg==='all'?'var(--c-gold)':'rgba(var(--ink-rgb),.15)'};background:${filterLg==='all'?'rgba(212,175,55,.15)':'none'};color:${filterLg==='all'?'var(--c-gold)':'rgba(var(--ink-rgb),.5)'};cursor:pointer">Mindenki</button>
+          ${myLgs.map(l=>`<button data-tipfilt="${l.id}" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid ${filterLg===l.id?'var(--c-gold)':'rgba(var(--ink-rgb),.15)'};background:${filterLg===l.id?'rgba(212,175,55,.15)':'none'};color:${filterLg===l.id?'var(--c-gold)':'rgba(var(--ink-rgb),.5)'};cursor:pointer">${l.name}</button>`).join('')}
+        </div>`:''}
+        ${filteredUsers.sort((a,b)=>a.dn.localeCompare(b.dn,'hu')).map(u=>{
           const tip=S.tips[`${u.id}_${m.id}`];
           const r=getEffectiveResults()[m.id];
           const pts=tip&&r?calcPts(tip,r,m.stage,DS):null;
@@ -2875,6 +2882,10 @@ function bindMain(hw){
     e.stopPropagation();
     const mid=parseInt(e.currentTarget.dataset.exptips);
     SS({expandTips:S.expandTips===mid?null:mid});
+  }));
+  document.querySelectorAll('[data-tipfilt]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    SS({tipFilterLg:e.currentTarget.dataset.tipfilt});
   }));
   document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',e=>SS({legalModal:e.currentTarget.dataset.legal})));
   document.getElementById('legalCl')?.addEventListener('click',()=>SS({legalModal:null}));
