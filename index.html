@@ -643,8 +643,21 @@ async function fetchTodayWeather(){
   }));
   SS({weather});
 }
-// Odds API csapatnév → belső kód
-const ODDS_TEAM={'Mexico':'MEX','South Africa':'ZAF','South Korea':'KOR','Czech Republic':'CZE','Czechia':'CZE','Portugal':'POR','DR Congo':'COD','Congo DR':'COD','Uzbekistan':'UZB','Colombia':'COL','Brazil':'BRA','Morocco':'MAR','Haiti':'HAI','Scotland':'SCO','USA':'USA','United States':'USA','Paraguay':'PAR','Australia':'AUS','Turkey':'TUR','Turkiye':'TUR','Germany':'GER','Ivory Coast':'CIV',"Côte d'Ivoire":'CIV','Ecuador':'ECU','Netherlands':'NED','Japan':'JPN','Sweden':'SWE','Tunisia':'TUN','Belgium':'BEL','Egypt':'EGY','New Zealand':'NZL','Serbia':'SRB','Argentina':'ARG','Chile':'CHI','El Salvador':'SLV','Saudi Arabia':'KSA','France':'FRA','Nigeria':'NGA','Senegal':'SEN','Norway':'NOR','Croatia':'CRO','England':'ENG','Ghana':'GHA','Panama':'PAN','Angola':'ANG','Romania':'ROU','Indonesia':'IDN','Cape Verde':'CPV','Spain':'ESP','Iran':'IRN','Jordan':'JOR','Switzerland':'SUI','Canada':'CAN','Bosnia and Herzegovina':'BIH','Bosnia':'BIH','Qatar':'QAT','Honduras':'HON','Venezuela':'VEN','Cameroon':'CMR','Uruguay':'URU','Austria':'AUT','Kenya':'KEN','Peru':'PER','Costa Rica':'CRC','Cuba':'CUB','Curaçao':'CUW','Curacao':'CUW','Slovakia':'SVK','Poland':'POL','Ukraine':'UKR'};
+// Odds API angol csapatnév → belső magyar név (TEAM_EN fordítottja)
+const EN_TEAM=Object.fromEntries(Object.entries(TEAM_EN).map(([hu,en])=>[en,hu]));
+// Variációk amik eltérhetnek az Odds API-ban
+EN_TEAM['Bosnia & Herzegovina']='Bosznia-Hercegovina';
+EN_TEAM['Bosnia and Herzegovina']='Bosznia-Hercegovina';
+EN_TEAM['Ivory Coast']='Elefántcsontpart';
+EN_TEAM["Côte d'Ivoire"]='Elefántcsontpart';
+EN_TEAM['DR Congo']='DR Kongó';
+EN_TEAM['Congo DR']='DR Kongó';
+EN_TEAM['Turkiye']='Törökország';
+EN_TEAM['Cape Verde']='Zöld-foki-sz.';
+EN_TEAM['Saudi Arabia']='Szaúd-Arábia';
+EN_TEAM['New Zealand']='Új-Zéland';
+EN_TEAM['South Korea']='Dél-Korea';
+EN_TEAM['South Africa']='Dél-Afrika';
 async function fetchTodayOdds(){
   const KEY='d2e76cddb77f1adbf0cc133c71abdd39';
   const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
@@ -671,11 +684,9 @@ async function fetchTodayOdds(){
       if(Array.isArray(bd))bttsData=bd;
     }catch(e){}
     const odds={};
-    console.log('H2H meccsek az API-ban:',data.length,'db | Pl:',data[0]?.home_team,'vs',data[0]?.away_team);
-    console.log('Mai meccsek:',todayMs.map(m=>m.home+'v'+m.away));
     for(const ev of data){
-      const hCode=ODDS_TEAM[ev.home_team];
-      const aCode=ODDS_TEAM[ev.away_team];
+      const hCode=EN_TEAM[ev.home_team];
+      const aCode=EN_TEAM[ev.away_team];
       if(!hCode||!aCode){console.log('Ismeretlen csapat:',ev.home_team,'vs',ev.away_team);continue;}
       const match=todayMs.find(m=>(m.home===hCode&&m.away===aCode)||(m.home===aCode&&m.away===hCode));
       if(!match)continue;
@@ -685,8 +696,8 @@ async function fetchTodayOdds(){
       const bttsEv=bttsData.find(b=>b.id===ev.id);
       const bttsBk=bttsEv?.bookmakers?.[0];
       const bttsYes=bttsBk?.markets?.find(mk=>mk.key==='btts')?.outcomes?.find(o=>o.name==='Yes');
-      const hO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.home||o.name===ev.home_team);
-      const aO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.away||o.name===ev.away_team);
+      const hO=h2h.outcomes.find(o=>EN_TEAM[o.name]===match.home||o.name===ev.home_team);
+      const aO=h2h.outcomes.find(o=>EN_TEAM[o.name]===match.away||o.name===ev.away_team);
       const dO=h2h.outcomes.find(o=>o.name==='Draw');
       if(hO&&aO){
         const isSwapped=match.home===aCode;
