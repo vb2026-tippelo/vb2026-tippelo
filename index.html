@@ -605,6 +605,40 @@ const GROUP_VENUE={
   64:'Foxborough',65:'Atlanta',66:'Miami',67:'Arlington',68:'Toronto',
   69:'Miami',70:'Philadelphia',71:'New Jersey',72:'Philadelphia'
 };
+const VENUE_COORDS={
+  'Mexikóváros':[19.433,-99.133],'Zapopan':[20.722,-103.388],'Guadalupe':[25.677,-100.261],
+  'Toronto':[43.641,-79.390],'Vancouver':[49.277,-123.112],
+  'Los Angeles':[34.014,-118.288],'Santa Clara':[37.403,-121.970],'Seattle':[47.595,-122.332],
+  'San Francisco':[37.403,-121.970],
+  'New Jersey':[40.814,-74.074],'Foxborough':[42.091,-71.264],'Philadelphia':[39.901,-75.167],
+  'Atlanta':[33.755,-84.401],'Miami':[25.958,-80.239],'Houston':[29.685,-95.411],
+  'Arlington':[32.748,-97.093],'Kansas City':[39.049,-94.484],'Mexico City':[19.433,-99.133]
+};
+const WMO_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
+async function fetchTodayWeather(){
+  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const todayMatches=ALL.filter(m=>m.stage==='group'&&m.date===today);
+  if(!todayMatches.length)return;
+  const venues=[...new Set(todayMatches.map(m=>GROUP_VENUE[m.id]).filter(Boolean))];
+  const weather={};
+  await Promise.all(venues.map(async venue=>{
+    const coords=VENUE_COORDS[venue];
+    if(!coords)return;
+    try{
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${coords[0]}&longitude=${coords[1]}&current=temperature_2m,precipitation_probability,weather_code&timezone=auto&forecast_days=1`;
+      const r=await fetch(url);
+      const d=await r.json();
+      if(d.current){
+        weather[venue]={
+          temp:Math.round(d.current.temperature_2m),
+          icon:WMO_ICON[d.current.weather_code]||'🌡️',
+          precip:d.current.precipitation_probability??0
+        };
+      }
+    }catch(e){}
+  }));
+  SS({weather});
+}
 const KO_SCHEDULE={73:['2026-06-28','2026-06-28T19:00:00Z'],74:['2026-06-29','2026-06-29T20:30:00Z'],75:['2026-06-29','2026-06-30T01:00:00Z'],76:['2026-06-29','2026-06-29T17:00:00Z'],77:['2026-06-30','2026-06-30T21:00:00Z'],78:['2026-06-30','2026-06-30T17:00:00Z'],79:['2026-06-30','2026-07-01T01:00:00Z'],80:['2026-07-01','2026-07-01T16:00:00Z'],81:['2026-07-01','2026-07-02T00:00:00Z'],82:['2026-07-01','2026-07-01T20:00:00Z'],83:['2026-07-02','2026-07-02T23:00:00Z'],84:['2026-07-02','2026-07-02T19:00:00Z'],85:['2026-07-02','2026-07-03T03:00:00Z'],86:['2026-07-03','2026-07-03T22:00:00Z'],87:['2026-07-03','2026-07-04T01:30:00Z'],88:['2026-07-03','2026-07-03T18:00:00Z'],89:['2026-07-04','2026-07-04T21:00:00Z'],90:['2026-07-04','2026-07-04T17:00:00Z'],91:['2026-07-05','2026-07-05T20:00:00Z'],92:['2026-07-05','2026-07-06T00:00:00Z'],93:['2026-07-06','2026-07-06T19:00:00Z'],94:['2026-07-06','2026-07-07T00:00:00Z'],95:['2026-07-07','2026-07-07T16:00:00Z'],96:['2026-07-07','2026-07-07T20:00:00Z'],97:['2026-07-09','2026-07-09T20:00:00Z'],98:['2026-07-10','2026-07-10T19:00:00Z'],99:['2026-07-11','2026-07-11T21:00:00Z'],100:['2026-07-11','2026-07-12T01:00:00Z'],101:['2026-07-14','2026-07-14T19:00:00Z'],102:['2026-07-15','2026-07-15T19:00:00Z'],103:['2026-07-18','2026-07-18T21:00:00Z'],104:['2026-07-19','2026-07-19T19:00:00Z']};
 function genM(){
   const m=[];let id=1;
@@ -714,7 +748,7 @@ let S={
   pwEdit:false,pwErr:'',pwMsg:'',
   selLg:null,lgModal:null,lgName:'',lgCode:'',lgErr:'',lgSco:{...DS},
   editLgId:null,editLgSco:null,
-  preModal:false,savedMsgs:{},
+  preModal:false,savedMsgs:{},weather:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
   live:{},liveUpdatedAt:null,expandLb:null,highlightMatch:null,theme:'dark',lang:'hu'
@@ -748,6 +782,7 @@ async function init(){
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   if(cu)loadPredict(cu.id);
+  fetchTodayWeather();
 }
 async function loadPredict(uid){
   const all=await sG('wc_predict',true);
@@ -1190,6 +1225,8 @@ function rCard(m){
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
   const venue=m.stage==='group'?GROUP_VENUE[m.id]:null;
+  const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const wx=isToday&&venue?S.weather?.[venue]:null;
   const saved=S.savedMsgs[m.id];
   const th=tip?.homeGoals??'',ta=tip?.awayGoals??'';
   const catLbl={p8:`⭐ ${t('perfect_full')}`,p5:`🎯 ${t('resultgd_full')}`,p3:`✓ ${t('outcome_full')}`,p1:`~ ${t('onegoal_full')}`,p0:'✗'};
@@ -1200,7 +1237,7 @@ function rCard(m){
   if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
-    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span style="font-size:10.5px;color:rgba(var(--ink-rgb),.35)">📍 ${venue}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
+    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span style="font-size:10.5px;color:rgba(var(--ink-rgb),.35)">📍 ${venue}</span>`:''} ${wx?`<span style="font-size:11px;background:rgba(var(--ink-rgb),.08);border:1px solid rgba(var(--ink-rgb),.1);border-radius:6px;padding:1px 6px;color:rgba(var(--ink-rgb),.7)">${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
     <div class="mc-main">
       <div class="team-b home">${fImg(home,40)}<span class="tname">${teamName(home)}</span></div>
       <div class="score-b">
