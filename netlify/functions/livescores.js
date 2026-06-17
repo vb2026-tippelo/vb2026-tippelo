@@ -1,5 +1,6 @@
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '1a897c26b1msh3a5cd4defcc5714p150cd7jsn31d90b539f03';
 const WC_HOST = 'world-cup-2026-live-api.p.rapidapi.com';
+const HEADERS = { 'x-rapidapi-key': RAPIDAPI_KEY, 'x-rapidapi-host': WC_HOST };
 
 const EN_TEAM = {
   'Mexico':'Mexikó','South Africa':'Dél-Afrika','South Korea':'Dél-Korea',
@@ -29,16 +30,20 @@ const FINISHED_STATUSES = new Set([3,43]);
 exports.handler = async function(event, context) {
   const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
   try {
-    const resp = await fetch(`https://${WC_HOST}/wc/draw`, {
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': WC_HOST
-      }
-    });
-    if(!resp.ok) throw new Error(`API error: ${resp.status}`);
-    const json = await resp.json();
+    // /wc/draw: összes meccs eredménnyel + /wc/live: élő percszám
+    const [drawResp, liveResp] = await Promise.all([
+      fetch(`https://${WC_HOST}/wc/draw`, {headers: HEADERS}),
+      fetch(`https://${WC_HOST}/wc/live`, {headers: HEADERS}),
+    ]);
 
-    const matches = (json.data || [])
+    const drawData = drawResp.ok ? await drawResp.json() : {data:[]};
+    const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
+
+    // Percszám matchId alapján
+    const minuteMap = {};
+    (liveData.data || []).forEach(m => { minuteMap[m.matchId] = m.minute || ''; });
+
+    const matches = (drawData.data || [])
       .filter(m => m.scoreHome !== null || LIVE_STATUSES.has(m.status))
       .map(m => ({
         home: mapTeam(m.home),
@@ -46,19 +51,21 @@ exports.handler = async function(event, context) {
         h: m.scoreHome ?? 0,
         a: m.scoreAway ?? 0,
         status: m.statusText,
-        minute: m.minute || '',
+        minute: minuteMap[m.matchId] || '',
         live: LIVE_STATUSES.has(m.status),
         finished: FINISHED_STATUSES.has(m.status),
         kickoff: m.kickoff,
       }));
 
+    const liveCount = matches.filter(m => m.live).length;
+    const finishedCount = matches.filter(m => m.finished).length;
+    console.log(`WC: ${matches.length} meccs (élő: ${liveCount}, befejezett: ${finishedCount})`);
+
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
-        matches,
-        updatedAt: new Date().toISOString(),
-        source: 'wc2026api',
-        wcCount: matches.length
+        matches, updatedAt: new Date().toISOString(),
+        source: 'wc2026api', wcCount: matches.length
       })
     };
   } catch(err) {
