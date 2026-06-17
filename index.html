@@ -248,6 +248,17 @@ table.stdt{width:100%;border-collapse:collapse}
 .bk-venue{font-size:9px;color:rgba(var(--ink-rgb),.3);text-align:center;line-height:1.6;padding:5px 8px 7px;background:rgba(0,0,0,.2);border-top:1px solid var(--border)}
 .bk-final-wrap .bk-match{border:1.5px solid var(--c-gold);box-shadow:0 0 20px rgba(212,175,55,.2)}
 .bk-bronze-lbl{text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
+.wk-box{border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--bg-card)}
+.wk-final-box{border:1.5px solid var(--c-gold);box-shadow:0 0 16px rgba(212,175,55,.2)}
+.wk-hdr{padding:3px 7px;font-size:9px;color:rgba(var(--ink-rgb),.35);background:rgba(0,0,0,.2);border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.light-theme .wk-hdr{background:rgba(0,0,0,.04)}
+.wk-team{display:flex;align-items:center;gap:5px;padding:5px 7px;font-size:12px;color:rgba(var(--ink-rgb),.75);min-height:28px}
+.wk-team.wk-win{background:rgba(212,175,55,.12);font-weight:700;color:var(--c-gold)}
+.wk-team.wk-slot{font-size:10.5px;font-style:italic;color:rgba(var(--ink-rgb),.3)}
+.wk-tnm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-sc{font-family:'Rajdhani';font-size:15px;font-weight:700;min-width:16px;text-align:right}
+.wk-sep{height:1px;background:var(--border)}
+.wk-tbd{color:rgba(var(--ink-rgb),.25);font-style:italic;font-size:11px}
 
 /* ===== PREDICTOR ===== */
 .pred-group-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
@@ -1543,6 +1554,16 @@ function fifaNumOf(m){
   if(m.stage==='final')return 104;
   return null;
 }
+function byFifaNum(fn){
+  if(fn>=73&&fn<=88)return ALL.find(m=>m.stage==='r32'&&m.mn===fn-72)||null;
+  if(fn>=89&&fn<=96)return ALL.find(m=>m.stage==='r16'&&m.mn===fn-88)||null;
+  if(fn>=97&&fn<=100)return ALL.find(m=>m.stage==='qf'&&m.mn===fn-96)||null;
+  if(fn===101)return ALL.find(m=>m.stage==='sf'&&m.mn===1)||null;
+  if(fn===102)return ALL.find(m=>m.stage==='sf'&&m.mn===2)||null;
+  if(fn===103)return ALL.find(m=>m.stage==='bronze')||null;
+  if(fn===104)return ALL.find(m=>m.stage==='final')||null;
+  return null;
+}
 function fmtKoTime(m){
   const koTime=S.ko[m.id]||m.koDefault;
   if(!koTime)return '';
@@ -1557,39 +1578,104 @@ function slotLabel(matchId,side){
   if(LOSER_SOURCES[matchId])return `${t('loser_of')} – M${LOSER_SOURCES[matchId][side]}`;
   return 'TBD';
 }
-function bkBox(m){
-  const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away,r=S.results[m.id],isTBD=m.tbd&&!ov;
-  const hLbl=isTBD?slotLabel(m.id,0):home,aLbl=isTBD?slotLabel(m.id,1):away;
-  const win=r?getWinnerSide(m.id,r):null;
-  const fn=fifaNumOf(m),venue=fn?KO_VENUE[fn]:null,koLbl=fmtKoTime(m);
-  return `<div class="bk-match">
-    <div class="bk-team${win==='home'?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?hLbl:`${fImg(home,18)} ${teamName(home)}`}</span>${r?`<span class="bk-sc">${r.homeGoals}</span>`:''}</div>
-    <div class="bk-team${win==='away'?' win':''}${isTBD?' bk-slot':''}"><span>${isTBD?aLbl:`${fImg(away,18)} ${teamName(away)}`}</span>${r?`<span class="bk-sc">${r.awayGoals}</span>`:''}</div>
-    ${venue?`<div class="bk-venue">📍 ${venue}<br>🕐 ${koLbl} ${t('hu_time_lbl')}</div>`:''}
+function wkBox(fn,cy,MH,MW,isFinal){
+  const m=byFifaNum(fn);
+  const top=Math.round(cy-MH/2);
+  const empty=`<div style="position:absolute;top:${top}px;left:1px;right:1px"><div class="wk-box"><div class="wk-hdr" style="opacity:.4">M${fn}</div><div class="wk-team"><span class="wk-tbd">TBD</span></div><div class="wk-sep"></div><div class="wk-team"><span class="wk-tbd">TBD</span></div></div></div>`;
+  if(!m)return empty;
+  const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+  const isTBD=m.tbd&&!ov;
+  const res=getEffectiveResults()[m.id];
+  const win=res?getWinnerSide(m.id,res):null;
+  const venue=KO_VENUE[fn]||'';
+  const koLbl=fmtKoTime(m);
+  const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
+  const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
+  const hFlag=(!isTBD&&home)?fImg(home,15):'';
+  const aFlag=(!isTBD&&away)?fImg(away,15):'';
+  return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
+    <div class="wk-box${isFinal?' wk-final-box':''}">
+      <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span> · ${koLbl}${venue?` · ${venue}`:''}</div>
+      <div class="wk-team${win==='home'?' wk-win':''}${isTBD?' wk-slot':''}">${hFlag}<span class="wk-tnm">${hLbl}</span>${res!==undefined?`<span class="wk-sc">${res.homeGoals}</span>`:''}</div>
+      <div class="wk-sep"></div>
+      <div class="wk-team${win==='away'?' wk-win':''}${isTBD?' wk-slot':''}">${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
+    </div>
   </div>`;
 }
+function bkBox(m){
+  const fn=fifaNumOf(m);
+  return wkBox(fn,40,76,165,m.stage==='final');
+}
 function rBracket(){
-  const rounds=[{id:'r32',label:t('bracket_round32'),n:16},{id:'r16',label:t('bracket_round16'),n:8},{id:'qf',label:t('bracket_qf'),n:4},{id:'sf',label:t('bracket_sf'),n:2}];
-  const ROUND_H=2100;
-  const cols=rounds.map(rd=>{
-    const ms=ALL.filter(m=>m.stage===rd.id).sort((a,b)=>(a.mn||0)-(b.mn||0));
-    const boxes=ms.map((m,i)=>{
-      const top=(i+0.5)/rd.n*ROUND_H;
-      return `<div style="position:absolute;top:${Math.round(top)}px;left:0;right:0;transform:translateY(-50%)">${bkBox(m)}</div>`;
-    }).join('');
-    return `<div class="bk-col"><div class="bk-colhead">${rd.label}</div><div style="position:relative;height:${ROUND_H}px">${boxes}</div></div>`;
-  }).join('');
-  const final=ALL.find(m=>m.stage==='final'),bronze=ALL.find(m=>m.stage==='bronze');
-  const finalTop=Math.round(0.50*ROUND_H);
-  const bronzeTop=Math.round(0.87*ROUND_H);
-  const finalCol=`<div class="bk-col"><div class="bk-colhead">${t('bracket_final')}</div><div style="position:relative;height:${ROUND_H}px">
-    <div style="position:absolute;top:${finalTop}px;left:0;right:0;transform:translateY(-50%)"><div class="bk-final-wrap">${bkBox(final)}</div></div>
-    <div style="position:absolute;top:${bronzeTop}px;left:0;right:0;transform:translateY(-50%)"><div class="bk-bronze-lbl">🥉 ${t('bracket_bronze')}</div>${bkBox(bronze)}</div>
-  </div></div>`;
+  const MH=76,MW=172,CW=22,H=720;
+  const L={
+    r32:[{fn:74,cy:34},{fn:77,cy:102},{fn:73,cy:204},{fn:75,cy:272},{fn:83,cy:374},{fn:84,cy:442},{fn:81,cy:544},{fn:82,cy:612}],
+    r16:[{fn:89,cy:68},{fn:90,cy:238},{fn:93,cy:408},{fn:94,cy:578}],
+    qf:[{fn:97,cy:153},{fn:98,cy:493}],
+    sf:[{fn:101,cy:323}]
+  };
+  const R={
+    r32:[{fn:76,cy:34},{fn:78,cy:102},{fn:79,cy:204},{fn:80,cy:272},{fn:86,cy:374},{fn:88,cy:442},{fn:85,cy:544},{fn:87,cy:612}],
+    r16:[{fn:91,cy:68},{fn:92,cy:238},{fn:95,cy:408},{fn:96,cy:578}],
+    qf:[{fn:99,cy:153},{fn:100,cy:493}],
+    sf:[{fn:102,cy:323}]
+  };
+  const FC={fn:104,cy:323},BC={fn:103,cy:540};
+  function col(arr){
+    return `<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">${arr.map(({fn,cy})=>wkBox(fn,cy,MH,MW,false)).join('')}</div>`;
+  }
+  function conn(fromArr,toArr,side){
+    const w=CW,xF=side==='right'?w:0,xT=side==='right'?0:w,xM=w/2;
+    const s='rgba(212,175,55,0.4)',sw=1.5,lns=[];
+    for(let i=0;i<toArr.length;i++){
+      const to=toArr[i],f1=fromArr[i*2],f2=fromArr[i*2+1];
+      if(!f1)continue;
+      if(f2){
+        lns.push(
+          `<line x1="${xF}" y1="${f1.cy}" x2="${xM}" y2="${f1.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xF}" y1="${f2.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xM}" y1="${f1.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xM}" y1="${to.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`
+        );
+      }else{
+        lns.push(`<line x1="${xF}" y1="${f1.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`);
+      }
+    }
+    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px"><svg width="${w}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
+  }
+  const cW=MW+24;
+  const ctr=`<div style="position:relative;width:${cW}px;flex-shrink:0;height:${H}px">
+    <div style="position:absolute;top:${Math.round(FC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">🏆 ${t('bracket_final')}</div>
+    ${wkBox(104,FC.cy,MH,cW,true)}
+    <div style="position:absolute;top:${Math.round(BC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px">🥉 ${t('bracket_bronze')}</div>
+    ${wkBox(103,BC.cy,MH,cW,false)}
+  </div>`;
+  const h=(txt,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;padding-bottom:5px">${txt}</div>`;
+  const sp=w=>`<div style="width:${w}px;flex-shrink:0"></div>`;
+  const rdL=[t('bracket_round32'),t('bracket_round16'),t('bracket_qf'),t('bracket_sf')];
+  const hdrRow=`<div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:4px">
+    ${rdL.map(l=>h(l,MW)+sp(CW)).join('')}${h('🏆',cW)}
+    ${[...rdL].reverse().map(l=>sp(CW)+h(l,MW)).join('')}
+  </div>`;
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
-    <p style="color:rgba(var(--ink-rgb),.45);font-size:12.5px;margin-bottom:14px">${t('bracket_hint')}</p>
-    <div style="overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch"><div style="display:flex;gap:12px;min-width:1080px">${cols}${finalCol}</div></div>
+    <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:14px">${t('bracket_hint')}</p>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
+      <div style="min-width:${8*MW+8*CW+cW}px">
+        ${hdrRow}
+        <div style="display:flex">
+          ${col(L.r32)}${conn(L.r32,L.r16,'left')}
+          ${col(L.r16)}${conn(L.r16,L.qf,'left')}
+          ${col(L.qf)}${conn(L.qf,L.sf,'left')}
+          ${col(L.sf)}${conn([L.sf[0]],[FC],'left')}
+          ${ctr}
+          ${conn([R.sf[0]],[FC],'right')}${col(R.sf)}
+          ${conn(R.qf,R.sf,'right')}${col(R.qf)}
+          ${conn(R.r16,R.qf,'right')}${col(R.r16)}
+          ${conn(R.r32,R.r16,'right')}${col(R.r32)}
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
