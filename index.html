@@ -154,8 +154,9 @@ input[type=number]{-moz-appearance:textfield}
 .score-b{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:120px;flex-shrink:0}
 .sinputs{display:flex;align-items:center;gap:8px}
 .sbox{width:52px;height:52px;text-align:center;font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.08);transition:all .15s;padding:0;-moz-appearance:textfield;appearance:textfield}
-.sbox:focus{border-color:var(--c-gold);background:rgba(212,175,55,.07);color:var(--c-gold)}
-.sbox:focus{border-color:var(--c-gold);background:rgba(212,175,55,.07);color:var(--c-gold)}
+.sbox{-webkit-text-fill-color:#fff}
+body.light-theme .sbox{-webkit-text-fill-color:#0c1228}
+.sbox:focus{border-color:var(--c-gold);background:rgba(212,175,55,.07);color:var(--c-gold);-webkit-text-fill-color:var(--c-gold)}
 .sbox:disabled{opacity:.5}
 .sbox.filled{border-color:rgba(212,175,55,.4)}
 .sdash{font-size:20px;font-weight:400;color:rgba(var(--ink-rgb),.4)}
@@ -1354,7 +1355,7 @@ function rCard(m){
     </div>
     ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
     ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span></div>`:''}
-    ${res&&tip?`<div class="mc-res"><span style="color:rgba(var(--ink-rgb),.45)">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
+    ${res&&tip?`<div class="mc-res"><span style="color:rgba(var(--ink-rgb),.45)">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:rgba(var(--ink-rgb),.4);font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
 
