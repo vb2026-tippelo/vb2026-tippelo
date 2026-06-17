@@ -55,6 +55,7 @@ exports.handler = async function(event, context) {
         live: LIVE_STATUSES.has(m.status),
         finished: FINISHED_STATUSES.has(m.status),
         kickoff: m.kickoff,
+        matchId: m.matchId || null,
       }));
 
     const liveCount = matches.filter(m => m.live).length;
