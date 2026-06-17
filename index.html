@@ -1164,10 +1164,10 @@ async function toggleTheme(){
   await sS('wc_theme',nt,false);
 }
 function langSwitcher(){
-  return `<div style="display:flex;gap:2px">
-    <button id="langHu" onclick="setLang('hu')" style="background:${S.lang==='hu'?'rgba(255,255,255,.2)':'rgba(255,255,255,.05)'};border:1px solid rgba(255,255,255,${S.lang==='hu'?'.3':'.1'});border-radius:7px;padding:5px 7px;font-size:17px;cursor:pointer;line-height:1" title="Magyar">🇭🇺</button>
-    <button id="langEn" onclick="setLang('en')" style="background:${S.lang==='en'?'rgba(255,255,255,.2)':'rgba(255,255,255,.05)'};border:1px solid rgba(255,255,255,${S.lang==='en'?'.3':'.1'});border-radius:7px;padding:5px 7px;font-size:17px;cursor:pointer;line-height:1" title="English">🇬🇧</button>
-  </div>`;
+  const btn=(code,lbl,active)=>`<button onclick="setLang('${lbl}')" style="background:${active?'rgba(255,255,255,.2)':'rgba(255,255,255,.05)'};border:1px solid rgba(255,255,255,${active?'.35':'.12'});border-radius:7px;padding:4px 7px;cursor:pointer;display:flex;align-items:center;line-height:1">
+    <img src="https://flagcdn.com/w40/${code}.png" height="16" style="border-radius:2px;display:block">
+  </button>`;
+  return `<div style="display:flex;gap:3px">${btn('hu','hu',S.lang==='hu')}${btn('gb','en',S.lang==='en')}</div>`;
 }
 async function setLang(l){
   SS({lang:l});
