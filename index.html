@@ -1068,7 +1068,7 @@ async function syncKickoffTimes(apiMatches){
 }
 async function refreshLiveIfStale(){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
-  if(Date.now()-last<3*60*1000)return; // 3 perc
+  if(Date.now()-last<60*1000)return; // 1 perc
   try{
     const resp=await fetch(location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores');
     const data=await resp.json();
@@ -2925,7 +2925,7 @@ function scheduleNotifs(){
 }
 
 // Külön 3 perces live frissítés intervall
-setInterval(()=>{if(S.user)refreshLiveIfStale();},3*60*1000);
+setInterval(()=>{if(S.user)refreshLiveIfStale();},60*1000);
 setInterval(async()=>{
   if(!S.user)return;
   try{
