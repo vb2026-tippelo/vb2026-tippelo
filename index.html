@@ -256,6 +256,8 @@ table.stdt{width:100%;border-collapse:collapse}
 body.light-theme .wk-hdr{background:rgba(0,0,0,.04)}
 .wk-team{display:flex;align-items:center;gap:5px;padding:5px 7px;font-size:12px;color:rgba(var(--ink-rgb),.75);min-height:28px}
 .wk-team.wk-win{background:rgba(212,175,55,.12);font-weight:700;color:var(--c-gold)}
+.wk-team.wk-pred:hover{background:rgba(var(--ink-rgb),.06)}
+.wk-team.wk-pred.wk-win{background:rgba(0,176,80,.15);color:var(--c-green);font-weight:700}
 .wk-team.wk-slot{font-size:10.5px;font-style:italic;color:rgba(var(--ink-rgb),.3)}
 .wk-tnm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wk-sc{font-family:'Rajdhani';font-size:15px;font-weight:700;min-width:16px;text-align:right}
@@ -1786,37 +1788,101 @@ function rPredict(){
 }
 
 function rPredBracket(r32g,cache){
-  const rounds=[
-    {label:t('bracket_round32'),fns:[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
-    {label:t('bracket_round16'),fns:[89,90,91,92,93,94,95,96]},
-    {label:t('bracket_qf'),fns:[97,98,99,100]},
-    {label:t('bracket_sf'),fns:[101,102]},
-    {label:'🏆 '+t('bracket_final'),fns:[104]},
-    {label:'🥉 '+t('bracket_bronze'),fns:[103]},
-  ];
+  const MH=68,MW=162,CW=20,H=720;
+  const L={
+    r32:[{fn:74,cy:34},{fn:77,cy:102},{fn:73,cy:204},{fn:75,cy:272},{fn:83,cy:374},{fn:84,cy:442},{fn:81,cy:544},{fn:82,cy:612}],
+    r16:[{fn:89,cy:68},{fn:90,cy:238},{fn:93,cy:408},{fn:94,cy:578}],
+    qf:[{fn:97,cy:153},{fn:98,cy:493}],
+    sf:[{fn:101,cy:323}]
+  };
+  const R={
+    r32:[{fn:76,cy:34},{fn:78,cy:102},{fn:79,cy:204},{fn:80,cy:272},{fn:86,cy:374},{fn:88,cy:442},{fn:85,cy:544},{fn:87,cy:612}],
+    r16:[{fn:91,cy:68},{fn:92,cy:238},{fn:95,cy:408},{fn:96,cy:578}],
+    qf:[{fn:99,cy:153},{fn:100,cy:493}],
+    sf:[{fn:102,cy:323}]
+  };
+  const FC={fn:104,cy:323},BC={fn:103,cy:540};
 
-  function mkRow(fn){
+  function mkPredBox(fn,cy,isFinal){
     const teams=predTeamsForFifaNum(fn,r32g,cache);
     const pick=S.predKO[fn];
-    const isFinal=fn===104;
+    const top=Math.round(cy-MH/2);
     if(!teams){
-      return `<div class="pred-ko-row pending" style="opacity:.4;font-size:11px;padding:6px 0">M${fn} – ${t('pred_pending')}</div>`;
+      return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
+        <div class="wk-box"><div class="wk-hdr" style="opacity:.4">M${fn}</div>
+        <div class="wk-team wk-slot">—</div><div class="wk-sep"></div><div class="wk-team wk-slot">—</div></div></div>`;
     }
-    return `<div class="pred-bk-list-row">
-      <span class="pred-bk-mn">M${fn}</span>
-      <button class="pred-ko-btn${pick==='home'?' picked':''}${isFinal?' pred-ko-final':''}" data-predko="${fn}|home">${fImg(teams.home,16)} ${teamName(teams.home)}</button>
-      <span class="pred-ko-vs">–</span>
-      <button class="pred-ko-btn${pick==='away'?' picked':''}${isFinal?' pred-ko-final':''}" data-predko="${fn}|away">${fImg(teams.away,16)} ${teamName(teams.away)}</button>
-    </div>`;
+    const hPick=pick==='home', aPick=pick==='away';
+    return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
+      <div class="wk-box${isFinal?' wk-final-box':''}">
+        <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span></div>
+        <button class="wk-team wk-pred${hPick?' wk-win':''}" data-predko="${fn}|home" style="width:100%;border:none;text-align:left;cursor:pointer;background:inherit">
+          ${fImg(teams.home,14)}<span class="wk-tnm">${teamName(teams.home)}</span>${hPick?'<span class="wk-sc">✓</span>':''}
+        </button>
+        <div class="wk-sep"></div>
+        <button class="wk-team wk-pred${aPick?' wk-win':''}" data-predko="${fn}|away" style="width:100%;border:none;text-align:left;cursor:pointer;background:inherit">
+          ${fImg(teams.away,14)}<span class="wk-tnm">${teamName(teams.away)}</span>${aPick?'<span class="wk-sc">✓</span>':''}
+        </button>
+      </div></div>`;
   }
 
-  const html=rounds.map(rd=>`
-    <div class="pred-round-block">
-      <div class="pred-round-h">${rd.label}</div>
-      ${rd.fns.map(fn=>mkRow(fn)).join('')}
-    </div>`).join('');
+  function col(arr){
+    return `<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">
+      ${arr.map(({fn,cy})=>mkPredBox(fn,cy,false)).join('')}</div>`;
+  }
+  function conn(fromArr,toArr,side){
+    const w=CW,xF=side==='right'?w:0,xT=side==='right'?0:w,xM=w/2;
+    const s='rgba(212,175,55,0.35)',sw=1.5,lns=[];
+    for(let i=0;i<toArr.length;i++){
+      const to=toArr[i],f1=fromArr[i*2],f2=fromArr[i*2+1];
+      if(!f1)continue;
+      if(f2){
+        lns.push(
+          `<line x1="${xF}" y1="${f1.cy}" x2="${xM}" y2="${f1.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xF}" y1="${f2.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xM}" y1="${f1.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
+          `<line x1="${xM}" y1="${to.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`
+        );
+      }else{
+        lns.push(`<line x1="${xF}" y1="${f1.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`);
+      }
+    }
+    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px">
+      <svg width="${w}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
+  }
 
-  return `<div class="pred-rounds">${html}</div>`;
+  const cW=MW+24;
+  const ctr=`<div style="position:relative;width:${cW}px;flex-shrink:0;height:${H}px">
+    <div style="position:absolute;top:${Math.round(FC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">🏆 ${t('bracket_final')}</div>
+    ${mkPredBox(104,FC.cy,true)}
+    <div style="position:absolute;top:${Math.round(BC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px">🥉 ${t('bracket_bronze')}</div>
+    ${mkPredBox(103,BC.cy,false)}
+  </div>`;
+
+  const h=(txt,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;padding-bottom:5px">${txt}</div>`;
+  const sp=w=>`<div style="width:${w}px;flex-shrink:0"></div>`;
+  const rdL=[t('bracket_round32'),t('bracket_round16'),t('bracket_qf'),t('bracket_sf')];
+  const hdrRow=`<div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:4px">
+    ${rdL.map(l=>h(l,MW)+sp(CW)).join('')}${h('🏆',cW)}
+    ${[...rdL].reverse().map(l=>sp(CW)+h(l,MW)).join('')}
+  </div>`;
+
+  return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
+    <div style="min-width:${8*MW+8*CW+cW}px">
+      ${hdrRow}
+      <div style="display:flex">
+        ${col(L.r32)}${conn(L.r32,L.r16,'left')}
+        ${col(L.r16)}${conn(L.r16,L.qf,'left')}
+        ${col(L.qf)}${conn(L.qf,L.sf,'left')}
+        ${col(L.sf)}${conn([L.sf[0]],[FC],'left')}
+        ${ctr}
+        ${conn([R.sf[0]],[FC],'right')}${col(R.sf)}
+        ${conn(R.qf,R.sf,'right')}${col(R.qf)}
+        ${conn(R.r16,R.qf,'right')}${col(R.r16)}
+        ${conn(R.r32,R.r16,'right')}${col(R.r32)}
+      </div>
+    </div>
+  </div>`;
 }
 
 
