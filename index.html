@@ -234,6 +234,19 @@ table.stdt{width:100%;border-collapse:collapse}
 .av-opt:hover{background:rgba(var(--ink-rgb),.12);transform:scale(1.08)}
 .av-opt.sel{border-color:var(--c-gold);background:rgba(212,175,55,.12)}
 
+/* ===== BRACKET MOBILE ===== */
+.bk-mob{display:none}
+.bk-mob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bk-mob-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.bk-mob-teams{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.bk-mob-team{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:5px 0}
+.bk-mob-team b{margin-left:auto;font-size:16px;font-family:'Rajdhani',sans-serif}
+.bk-mob-team.wk-win{color:var(--c-gold)}
+@media(max-width:700px){
+  .bk-desktop{display:none!important}
+  .bk-mob{display:block}
+  .bk-mob-grid{grid-template-columns:1fr}
+}
 /* ===== FOOTER ===== */
 .site-footer{text-align:center;padding:24px 16px 80px;border-top:1px solid var(--border);margin-top:32px}
 .footer-links{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
@@ -889,7 +902,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -2026,7 +2039,7 @@ function rBracket(){
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:14px">${t('bracket_hint')}</p>
-    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
+    <div class="bk-desktop" style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
       <div style="min-width:${8*MW+8*CW+cW}px">
         ${hdrRow}
         <div style="display:flex">
@@ -2041,6 +2054,51 @@ function rBracket(){
           ${conn(R.r32,R.r16,'right')}${col(R.r32)}
         </div>
       </div>
+    </div>
+  </div>
+  ${rBracketMobile(L,R,FC,BC,col,conn,ctr,MH,MW,CW,H)}`;
+}
+
+function rBracketMobile(L,R,FC,BC,col,conn,ctr,MH,MW,CW,H){
+  const rounds=[
+    {id:'r32',l:'32-es kör',fns:[...L.r32,...R.r32]},
+    {id:'r16',l:'16-os kör',fns:[...L.r16,...R.r16]},
+    {id:'qf',l:'Negyeddöntő',fns:[...L.qf,...R.qf]},
+    {id:'sf',l:'Elődöntő',fns:[...L.sf,...R.sf]},
+    {id:'final',l:'Döntő + Bronz',fns:[FC,BC]},
+  ];
+  const sel=S.bkRound||'r32';
+  const cur=rounds.find(r=>r.id===sel)||rounds[0];
+
+  function mobileBox(item){
+    const fn=item.fn, cy=item.cy;
+    const m=byFifaNum(fn);
+    if(!m) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – TBD</div><div class="bk-mob-teams"><span class="wk-tbd">TBD</span><span class="bk-mob-vs">–</span><span class="wk-tbd">TBD</span></div></div>`;
+    const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+    const isTBD=m.tbd&&!ov;
+    const res=getEffectiveResults()[m.id];
+    const win=res?getWinnerSide(m.id,res):null;
+    const venue=KO_VENUE[fn]||'';
+    const koLbl=fmtKoTime(m);
+    const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
+    const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
+    const hFlag=(!isTBD&&home)?fImg(home,20):'';
+    const aFlag=(!isTBD&&away)?fImg(away,20):'';
+    return `<div class="bk-mob-card">
+      <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venue:''}</div>
+      <div class="bk-mob-teams">
+        <div class="bk-mob-team${win==='home'?' wk-win':''}">${hFlag}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='away'?' wk-win':''}">${aFlag}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="bk-mob">
+    <div class="pill-row" style="margin-bottom:14px">
+      ${rounds.map(r=>`<button class="pill ${sel===r.id?'on':'off'}" data-bkr="${r.id}">${r.l}</button>`).join('')}
+    </div>
+    <div class="bk-mob-grid">
+      ${cur.fns.map(item=>mobileBox(item)).join('')}
     </div>
   </div>`;
 }
@@ -2201,7 +2259,7 @@ function rPredBracket(r32g,cache){
     ${[...rdL].reverse().map(l=>sp(CW)+h(l,MW)).join('')}
   </div>`;
 
-  return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
+  return `<div class="bk-desktop"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
     <div style="min-width:${8*MW+8*CW+cW}px">
       ${hdrRow}
       <div style="display:flex">
@@ -2216,9 +2274,44 @@ function rPredBracket(r32g,cache){
         ${conn(R.r32,R.r16,'right')}${col(R.r32)}
       </div>
     </div>
+  </div></div>
+  ${rPredBracketMobile(r32g,cache)}`;}
+
+function rPredBracketMobile(r32g,cache){
+  const rounds=[
+    {id:'r32',l:'32-es kör',fns:[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
+    {id:'r16',l:'16-os kör',fns:[89,90,91,92,93,94,95,96]},
+    {id:'qf',l:'Negyeddöntő',fns:[97,98,99,100]},
+    {id:'sf',l:'Elődöntő',fns:[101,102]},
+    {id:'final',l:'Döntő + Bronz',fns:[104,103]},
+  ];
+  const sel=S.bkRound||'r32';
+  const cur=rounds.find(r=>r.id===sel)||rounds[0];
+  return `<div class="bk-mob">
+    <div class="pill-row" style="margin-bottom:14px">
+      ${rounds.map(r=>`<button class="pill ${sel===r.id?'on':'off'}" data-bkr="${r.id}">${r.l}</button>`).join('')}
+    </div>
+    <div class="bk-mob-grid">
+      ${cur.fns.map(fn=>{
+        const teams=predTeamsForFifaNum(fn,r32g,cache);
+        const pick=S.predKO[fn];
+        const isFinal=fn===104||fn===103;
+        if(!teams) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – várható</div></div>`;
+        return `<div class="bk-mob-card">
+          <div class="wk-hdr">M${fn}${isFinal?` · ${fn===104?'🏆 Döntő':'🥉 Bronz'}`:''}</div>
+          <div class="bk-mob-teams">
+            <button class="bk-mob-team${pick==='home'?' wk-win':''}" data-predko="${fn}|home" style="width:100%;border:none;text-align:left;cursor:pointer;background:none;padding:5px 0">
+              ${fImg(teams.home,18)}<span>${teamName(teams.home)}</span>${pick==='home'?'<b>✓</b>':''}
+            </button>
+            <button class="bk-mob-team${pick==='away'?' wk-win':''}" data-predko="${fn}|away" style="width:100%;border:none;text-align:left;cursor:pointer;background:none;padding:5px 0">
+              ${fImg(teams.away,18)}<span>${teamName(teams.away)}</span>${pick==='away'?'<b>✓</b>':''}
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
   </div>`;
 }
-
 
 function rMyTips(){
   const uid=S.user.id,cfg=DS,eff=getEffectiveResults();
@@ -2864,6 +2957,7 @@ function bindMain(hw){
   document.querySelectorAll('[data-predthird]').forEach(b=>b.addEventListener('click',e=>{
     togglePredThird(e.currentTarget.dataset.predthird);
   }));
+  document.querySelectorAll('[data-bkr]').forEach(b=>b.addEventListener('click',e=>SS({bkRound:e.currentTarget.dataset.bkr})));
   document.querySelectorAll('[data-predko]').forEach(b=>b.addEventListener('click',e=>{
     const[fn,side]=e.currentTarget.dataset.predko.split('|');
     savePredKO(parseInt(fn),side);
