@@ -290,6 +290,7 @@ table.stdt{width:100%;border-collapse:collapse}
 .mc-odds{display:flex;align-items:center;gap:5px;padding:4px 14px 9px;justify-content:center;flex-wrap:wrap}
 .mc-odds-pill{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;padding:3px 10px;border-radius:7px;background:rgba(27,79,196,.15);color:#6fa3ff;border:1px solid rgba(27,79,196,.2);letter-spacing:.3px}
 .mc-odds-draw{background:rgba(212,175,55,.1);color:var(--c-gold);border-color:rgba(212,175,55,.2)}
+.mc-odds-btts{background:rgba(0,176,80,.1);color:#4de89a;border-color:rgba(0,176,80,.2)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ===== RESPONSIVE ===== */
@@ -656,7 +657,7 @@ async function fetchTodayOdds(){
     const wcKey=(sports.find(s=>s.key.includes('world_cup'))||sports.find(s=>s.key.includes('soccer_international')))?.key;
     if(!wcKey){console.log('VB sport kulcs nem található');return;}
     console.log('Odds sport kulcs:',wcKey);
-    const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
+    const oRes=await fetch(`https://api.the-odds-api.com/v4/sports/${wcKey}/odds/?apiKey=${KEY}&regions=eu&markets=h2h,btts&oddsFormat=decimal`);
     const data=await oRes.json();
     if(!Array.isArray(data)){console.log('Odds API válasz:',data);return;}
     const odds={};
@@ -668,12 +669,14 @@ async function fetchTodayOdds(){
       if(!match)continue;
       const bk=ev.bookmakers?.[0];if(!bk)continue;
       const h2h=bk.markets?.find(mk=>mk.key==='h2h');if(!h2h)continue;
+      const btts=bk.markets?.find(mk=>mk.key==='btts');
       const hO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.home||o.name===ev.home_team);
       const aO=h2h.outcomes.find(o=>ODDS_TEAM[o.name]===match.away||o.name===ev.away_team);
       const dO=h2h.outcomes.find(o=>o.name==='Draw');
+      const bttsYes=btts?.outcomes?.find(o=>o.name==='Yes');
       if(hO&&aO){
         const isSwapped=match.home===aCode;
-        odds[match.id]={h:(isSwapped?aO:hO).price.toFixed(2),d:dO?.price?.toFixed(2)||null,a:(isSwapped?hO:aO).price.toFixed(2),bk:bk.title};
+        odds[match.id]={h:(isSwapped?aO:hO).price.toFixed(2),d:dO?.price?.toFixed(2)||null,a:(isSwapped?hO:aO).price.toFixed(2),btts:bttsYes?.price?.toFixed(2)||null,bk:bk.title};
       }
     }
     SS({odds});
@@ -1295,7 +1298,7 @@ function rCard(m){
       <div class="team-b away"><span class="tname">${teamName(away)}</span>${fImg(away,40)}</div>
     </div>
     ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
-    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">🏠 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">✕ ${mOdds.d||'–'}</span><span class="mc-odds-pill">✈️ ${mOdds.a}</span><span style="font-size:9.5px;color:rgba(var(--ink-rgb),.25);margin-left:4px">${mOdds.bk}</span></div>`:''}
+    ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">🏠 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">✕ ${mOdds.d||'–'}</span><span class="mc-odds-pill">✈️ ${mOdds.a}</span>${mOdds.btts?`<span class="mc-odds-pill mc-odds-btts">⚽⚽ ${mOdds.btts}</span>`:''}<span style="font-size:9.5px;color:rgba(var(--ink-rgb),.25);margin-left:4px">${mOdds.bk}</span></div>`:''}
     ${res&&tip?`<div class="mc-res"><span style="color:#999">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:#bbb;font-size:12px">${t('no_tip_match')}</div>`:''}
   </div>`;
 }
