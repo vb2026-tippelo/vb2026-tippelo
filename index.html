@@ -1986,333 +1986,109 @@ function bkBox(m){
   return wkBox(fn,40,76,165,m.stage==='final');
 }
 function rBracket(){
-  const MH=76,MW=172,CW=22,H=720;
-  const L={
-    r32:[{fn:74,cy:34},{fn:77,cy:102},{fn:73,cy:204},{fn:75,cy:272},{fn:83,cy:374},{fn:84,cy:442},{fn:81,cy:544},{fn:82,cy:612}],
-    r16:[{fn:89,cy:68},{fn:90,cy:238},{fn:93,cy:408},{fn:94,cy:578}],
-    qf:[{fn:97,cy:153},{fn:98,cy:493}],
-    sf:[{fn:101,cy:323}]
-  };
-  const R={
-    r32:[{fn:76,cy:34},{fn:78,cy:102},{fn:79,cy:204},{fn:80,cy:272},{fn:86,cy:374},{fn:88,cy:442},{fn:85,cy:544},{fn:87,cy:612}],
-    r16:[{fn:91,cy:68},{fn:92,cy:238},{fn:95,cy:408},{fn:96,cy:578}],
-    qf:[{fn:99,cy:153},{fn:100,cy:493}],
-    sf:[{fn:102,cy:323}]
-  };
-  const FC={fn:104,cy:323},BC={fn:103,cy:540};
-  function col(arr){
-    return `<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">${arr.map(({fn,cy})=>wkBox(fn,cy,MH,MW,false)).join('')}</div>`;
-  }
-  function conn(fromArr,toArr,side){
-    const w=CW,xF=side==='right'?w:0,xT=side==='right'?0:w,xM=w/2;
-    const s='rgba(212,175,55,0.4)',sw=1.5,lns=[];
-    for(let i=0;i<toArr.length;i++){
-      const to=toArr[i],f1=fromArr[i*2],f2=fromArr[i*2+1];
-      if(!f1)continue;
-      if(f2){
-        lns.push(
-          `<line x1="${xF}" y1="${f1.cy}" x2="${xM}" y2="${f1.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xF}" y1="${f2.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xM}" y1="${f1.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xM}" y1="${to.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`
-        );
-      }else{
-        lns.push(`<line x1="${xF}" y1="${f1.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`);
-      }
-    }
-    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px"><svg width="${w}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
-  }
-  const cW=MW+24;
-  const ctr=`<div style="position:relative;width:${cW}px;flex-shrink:0;height:${H}px">
-    <div style="position:absolute;top:${Math.round(FC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">🏆 ${t('bracket_final')}</div>
-    ${wkBox(104,FC.cy,MH,cW,true)}
-    <div style="position:absolute;top:${Math.round(BC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px">🥉 ${t('bracket_bronze')}</div>
-    ${wkBox(103,BC.cy,MH,cW,false)}
-  </div>`;
-  const h=(txt,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;padding-bottom:5px">${txt}</div>`;
-  const sp=w=>`<div style="width:${w}px;flex-shrink:0"></div>`;
-  const rdL=[t('bracket_round32'),t('bracket_round16'),t('bracket_qf'),t('bracket_sf')];
-  const hdrRow=`<div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:4px">
-    ${rdL.map(l=>h(l,MW)+sp(CW)).join('')}${h('🏆',cW)}
-    ${[...rdL].reverse().map(l=>sp(CW)+h(l,MW)).join('')}
-  </div>`;
-  return `<div>
-    <div class="sect">${t('bracket_t')}</div>
-    <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:14px">${t('bracket_hint')}</p>
-    <div class="bk-desktop" style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
-      <div style="min-width:${8*MW+8*CW+cW}px">
-        ${hdrRow}
-        <div style="display:flex">
-          ${col(L.r32)}${conn(L.r32,L.r16,'left')}
-          ${col(L.r16)}${conn(L.r16,L.qf,'left')}
-          ${col(L.qf)}${conn(L.qf,L.sf,'left')}
-          ${col(L.sf)}${conn([L.sf[0]],[FC],'left')}
-          ${ctr}
-          ${conn([R.sf[0]],[FC],'right')}${col(R.sf)}
-          ${conn(R.qf,R.sf,'right')}${col(R.qf)}
-          ${conn(R.r16,R.qf,'right')}${col(R.r16)}
-          ${conn(R.r32,R.r16,'right')}${col(R.r32)}
-        </div>
-      </div>
-    </div>
-  </div>
-  ${rBracketMobile(L,R,FC,BC,col,conn,ctr,MH,MW,CW,H)}`;
-}
-
-function rBracketMobile(L,R,FC,BC,col,conn,ctr,MH,MW,CW,H){
   const rounds=[
-    {id:'r32',l:'32-es kör',fns:[...L.r32,...R.r32]},
-    {id:'r16',l:'16-os kör',fns:[...L.r16,...R.r16]},
-    {id:'qf',l:'Negyeddöntő',fns:[...L.qf,...R.qf]},
-    {id:'sf',l:'Elődöntő',fns:[...L.sf,...R.sf]},
-    {id:'final',l:'Döntő + Bronz',fns:[FC,BC]},
+    {id:'r32', l:t('bracket_round32'), fns:[74,77,73,75,83,84,81,82,76,78,79,80,86,88,85,87], cols:4},
+    {id:'r16', l:t('bracket_round16'), fns:[89,90,93,94,91,92,95,96], cols:4},
+    {id:'qf',  l:t('bracket_qf'),      fns:[97,98,99,100], cols:4},
+    {id:'sf',  l:t('bracket_sf'),      fns:[101,102], cols:2},
+    {id:'final',l:'🏆 '+t('bracket_final'), fns:[104,103], cols:2, labels:{104:'🏆 '+t('bracket_final'), 103:'🥉 '+t('bracket_bronze')}},
   ];
-  const sel=S.bkRound||'r32';
-  const cur=rounds.find(r=>r.id===sel)||rounds[0];
 
-  function mobileBox(item){
-    const fn=item.fn, cy=item.cy;
+  function bkCard(fn, label){
     const m=byFifaNum(fn);
-    if(!m) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – TBD</div><div class="bk-mob-teams"><span class="wk-tbd">TBD</span><span class="bk-mob-vs">–</span><span class="wk-tbd">TBD</span></div></div>`;
+    if(!m) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn}</div><div class="bk-mob-teams"><span class="wk-tbd">TBD</span></div></div>`;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
-    const isTBD=m.tbd&&!ov;
-    const res=getEffectiveResults()[m.id];
+    const isTBD=m.tbd&&!ov,res=getEffectiveResults()[m.id];
     const win=res?getWinnerSide(m.id,res):null;
-    const venue=KO_VENUE[fn]||'';
-    const koLbl=fmtKoTime(m);
     const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
     const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
-    const hFlag=(!isTBD&&home)?fImg(home,20):'';
-    const aFlag=(!isTBD&&away)?fImg(away,20):'';
-    return `<div class="bk-mob-card">
+    const koLbl=fmtKoTime(m),venue=KO_VENUE[fn]||'';
+    return `<div class="bk-mob-card${fn===104?' bk-final-card':''}">
+      ${label?`<div style="font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${label}</div>`:''}
       <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venue:''}</div>
       <div class="bk-mob-teams">
-        <div class="bk-mob-team${win==='home'?' wk-win':''}">${hFlag}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
-        <div class="bk-mob-team${win==='away'?' wk-win':''}">${aFlag}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='home'?' wk-win':''}">${!isTBD&&home?fImg(home,18):''}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='away'?' wk-win':''}">${!isTBD&&away?fImg(away,18):''}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
       </div>
     </div>`;
   }
 
-  return `<div class="bk-mob">
-    <div class="pill-row" style="margin-bottom:14px">
-      ${rounds.map(r=>`<button class="pill ${sel===r.id?'on':'off'}" data-bkr="${r.id}">${r.l}</button>`).join('')}
-    </div>
-    <div class="bk-mob-grid">
-      ${cur.fns.map(item=>mobileBox(item)).join('')}
-    </div>
-  </div>`;
-}
-
-function rPredict(){
-  const allDone=predAllGroupsComplete();
-  const candidates=predThirdCandidates();
-  const third8Done=S.predThird8.length===8;
-  const r32=third8Done?resolvePredR32():null;
-
-  const groupCards=GD.map(g=>{
-    const picked=S.predGroups[g.id]||[];
-    const teamBtns=g.teams.map(team=>{
-      const rank=picked.indexOf(team),rankShown=rank>=0?rank+1:null;
-      const rankCls=rankShown?` picked rank-${rankShown}`:'';
-      return `<button class="pred-team-btn${rankCls}" data-predteam="${g.id}|${team}">
-        ${rankShown?`<span class="pred-rank-badge r${rankShown}">${rankShown}</span>`:''}
-        ${fImg(team,18)}<span class="pred-team-nm">${teamName(team)}</span>
-      </button>`;
-    }).join('');
-    return `<div class="pred-group-card${predGroupComplete(g.id)?' done':''}">
-      <div class="pred-group-h">${g.id} ${t('group_word')}</div>
-      <div class="pred-team-grid">${teamBtns}</div>
-    </div>`;
-  }).join('');
-
-  let thirdSection='';
-  if(allDone){
-    thirdSection=`<div class="divider"></div>
-    <div class="sect" style="font-size:15px">${t('pred_third_h')}</div>
-    <p style="color:rgba(var(--ink-rgb),.5);font-size:12.5px;margin-bottom:12px">${t('pred_third_hint')}</p>
-    <div class="pred-third-grid">${candidates.map(c=>`<button class="pred-third-btn${S.predThird8.includes(c.grp)?' picked':''}" data-predthird="${c.grp}">${fImg(c.team,18)}<span class="pred-team-nm">${teamName(c.team)}</span><span class="pred-grp-tag">${c.grp}</span></button>`).join('')}</div>
-    <div class="pred-third-count">${S.predThird8.length}/8 ${t('pred_selected')}</div>`;
-  }
-
-  let bracketSection='';
-  if(third8Done&&r32){
-    const cache={};
-    const rounds=[
-      {label:t('bracket_round32'),nums:Array.from({length:16},(_,i)=>73+i)},
-      {label:t('bracket_round16'),nums:Array.from({length:8},(_,i)=>89+i)},
-      {label:t('bracket_qf'),nums:Array.from({length:4},(_,i)=>97+i)},
-      {label:t('bracket_sf'),nums:[101,102]},
-    ];
-    const koRow=(fifaNum,extraCls='')=>{
-      const teams=predTeamsForFifaNum(fifaNum,r32,cache);
-      if(!teams)return `<div class="pred-ko-row pending">${t('pred_pending')}</div>`;
-      const pick=S.predKO[fifaNum];
-      return `<div class="pred-ko-row${extraCls}">
-        <button class="pred-ko-btn${pick==='home'?' picked':''}" data-predko="${fifaNum}|home">${fImg(teams.home,18)} ${teamName(teams.home)}</button>
-        <span class="pred-ko-vs">–</span>
-        <button class="pred-ko-btn${pick==='away'?' picked':''}" data-predko="${fifaNum}|away">${fImg(teams.away,18)} ${teamName(teams.away)}</button>
-      </div>`;
-    };
-    const roundsHtml=rounds.map(rd=>`<div class="pred-round-block"><div class="pred-round-h">${rd.label}</div>${rd.nums.map(n=>koRow(n)).join('')}</div>`).join('');
-    const finalTeams=predTeamsForFifaNum(104,r32,cache),finalPick=S.predKO[104];
-    const champion=finalTeams&&finalPick?(finalPick==='home'?finalTeams.home:finalTeams.away):null;
-    const finalBronzeHtml=`<div class="pred-round-block">
-      <div class="pred-round-h">🏆 ${t('bracket_final')}</div>
-      ${koRow(104,' final')}
-      <div class="pred-round-h" style="margin-top:14px">🥉 ${t('bracket_bronze')}</div>
-      ${koRow(103)}
-    </div>`;
-    bracketSection=`<div class="divider"></div>
-      <div class="sect" style="font-size:15px">${t('pred_bracket_h')}</div>
-      <p style="color:rgba(var(--ink-rgb),.45);font-size:12px;margin-bottom:10px">${S.lang==='en'?'Click the team that advances in each match.':'Kattints a továbbjutóra minden meccsben.'}</p>
-      ${rPredBracket(r32,cache)}
-      ${champion?`<div class="pred-champion">🏆 ${t('pred_champion_lbl')} <b>${fImg(champion,22)} ${teamName(champion)}</b></div>`:''}`;
-  }
+  const desktop=rounds.map((rd,ri)=>`
+    <div style="margin-bottom:${ri<rounds.length-1?24:0}px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">${rd.l}</div>
+        <div style="flex:1;height:1px;background:rgba(212,175,55,.2)"></div>
+        ${ri<rounds.length-1?`<div style="font-size:11px;color:rgba(var(--ink-rgb),.3)">→ ${rounds[ri+1].l}</div>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(${rd.cols},1fr);gap:10px">
+        ${rd.fns.map(fn=>bkCard(fn,rd.labels?.[fn])).join('')}
+      </div>
+    </div>`).join('');
 
   return `<div>
-    <div class="sect">${t('predict_t')}</div>
-    <p style="color:rgba(var(--ink-rgb),.5);font-size:13px;margin-bottom:14px">${t('predict_intro')}</p>
-    <button class="btn-sm red" id="resetPredBtn" style="margin-bottom:16px">🔄 ${t('pred_reset_btn')}</button>
-    <div class="pred-group-grid">${groupCards}</div>
-    ${thirdSection}
-    ${bracketSection}
-  </div>`;
-}
+    <div class="sect">${t('bracket_t')}</div>
+    <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
+    <div class="bk-desktop">${desktop}</div>
+  </div>
+  ${rBracketMobile()}`;}
 
-function rPredBracket(r32g,cache){
-  const MH=68,MW=162,CW=20,H=720;
-  const L={
-    r32:[{fn:74,cy:34},{fn:77,cy:102},{fn:73,cy:204},{fn:75,cy:272},{fn:83,cy:374},{fn:84,cy:442},{fn:81,cy:544},{fn:82,cy:612}],
-    r16:[{fn:89,cy:68},{fn:90,cy:238},{fn:93,cy:408},{fn:94,cy:578}],
-    qf:[{fn:97,cy:153},{fn:98,cy:493}],
-    sf:[{fn:101,cy:323}]
-  };
-  const R={
-    r32:[{fn:76,cy:34},{fn:78,cy:102},{fn:79,cy:204},{fn:80,cy:272},{fn:86,cy:374},{fn:88,cy:442},{fn:85,cy:544},{fn:87,cy:612}],
-    r16:[{fn:91,cy:68},{fn:92,cy:238},{fn:95,cy:408},{fn:96,cy:578}],
-    qf:[{fn:99,cy:153},{fn:100,cy:493}],
-    sf:[{fn:102,cy:323}]
-  };
-  const FC={fn:104,cy:323},BC={fn:103,cy:540};
-
-  function mkPredBox(fn,cy,isFinal){
-    const teams=predTeamsForFifaNum(fn,r32g,cache);
-    const pick=S.predKO[fn];
-    const top=Math.round(cy-MH/2);
-    if(!teams){
-      return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
-        <div class="wk-box"><div class="wk-hdr" style="opacity:.4">M${fn}</div>
-        <div class="wk-team wk-slot">—</div><div class="wk-sep"></div><div class="wk-team wk-slot">—</div></div></div>`;
-    }
-    const hPick=pick==='home', aPick=pick==='away';
-    return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
-      <div class="wk-box${isFinal?' wk-final-box':''}">
-        <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span></div>
-        <button class="wk-team wk-pred${hPick?' wk-win':''}" data-predko="${fn}|home" style="width:100%;border:none;text-align:left;cursor:pointer;background:inherit">
-          ${fImg(teams.home,14)}<span class="wk-tnm">${teamName(teams.home)}</span>${hPick?'<span class="wk-sc">✓</span>':''}
-        </button>
-        <div class="wk-sep"></div>
-        <button class="wk-team wk-pred${aPick?' wk-win':''}" data-predko="${fn}|away" style="width:100%;border:none;text-align:left;cursor:pointer;background:inherit">
-          ${fImg(teams.away,14)}<span class="wk-tnm">${teamName(teams.away)}</span>${aPick?'<span class="wk-sc">✓</span>':''}
-        </button>
-      </div></div>`;
-  }
-
-  function col(arr){
-    return `<div style="position:relative;width:${MW}px;flex-shrink:0;height:${H}px">
-      ${arr.map(({fn,cy})=>mkPredBox(fn,cy,false)).join('')}</div>`;
-  }
-  function conn(fromArr,toArr,side){
-    const w=CW,xF=side==='right'?w:0,xT=side==='right'?0:w,xM=w/2;
-    const s='rgba(212,175,55,0.35)',sw=1.5,lns=[];
-    for(let i=0;i<toArr.length;i++){
-      const to=toArr[i],f1=fromArr[i*2],f2=fromArr[i*2+1];
-      if(!f1)continue;
-      if(f2){
-        lns.push(
-          `<line x1="${xF}" y1="${f1.cy}" x2="${xM}" y2="${f1.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xF}" y1="${f2.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xM}" y1="${f1.cy}" x2="${xM}" y2="${f2.cy}" stroke="${s}" stroke-width="${sw}"/>`,
-          `<line x1="${xM}" y1="${to.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`
-        );
-      }else{
-        lns.push(`<line x1="${xF}" y1="${f1.cy}" x2="${xT}" y2="${to.cy}" stroke="${s}" stroke-width="${sw}"/>`);
-      }
-    }
-    return `<div style="position:relative;width:${w}px;flex-shrink:0;height:${H}px">
-      <svg width="${w}" height="${H}" style="overflow:visible">${lns.join('')}</svg></div>`;
-  }
-
-  const cW=MW+24;
-  const ctr=`<div style="position:relative;width:${cW}px;flex-shrink:0;height:${H}px">
-    <div style="position:absolute;top:${Math.round(FC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">🏆 ${t('bracket_final')}</div>
-    ${mkPredBox(104,FC.cy,true)}
-    <div style="position:absolute;top:${Math.round(BC.cy-MH/2-16)}px;left:0;right:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px">🥉 ${t('bracket_bronze')}</div>
-    ${mkPredBox(103,BC.cy,false)}
-  </div>`;
-
-  const h=(txt,w)=>`<div style="width:${w}px;flex-shrink:0;text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;padding-bottom:5px">${txt}</div>`;
-  const sp=w=>`<div style="width:${w}px;flex-shrink:0"></div>`;
-  const rdL=[t('bracket_round32'),t('bracket_round16'),t('bracket_qf'),t('bracket_sf')];
-  const hdrRow=`<div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:4px">
-    ${rdL.map(l=>h(l,MW)+sp(CW)).join('')}${h('🏆',cW)}
-    ${[...rdL].reverse().map(l=>sp(CW)+h(l,MW)).join('')}
-  </div>`;
-
-  return `<div class="bk-desktop"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px">
-    <div style="min-width:${8*MW+8*CW+cW}px">
-      ${hdrRow}
-      <div style="display:flex">
-        ${col(L.r32)}${conn(L.r32,L.r16,'left')}
-        ${col(L.r16)}${conn(L.r16,L.qf,'left')}
-        ${col(L.qf)}${conn(L.qf,L.sf,'left')}
-        ${col(L.sf)}${conn([L.sf[0]],[FC],'left')}
-        ${ctr}
-        ${conn([R.sf[0]],[FC],'right')}${col(R.sf)}
-        ${conn(R.qf,R.sf,'right')}${col(R.qf)}
-        ${conn(R.r16,R.qf,'right')}${col(R.r16)}
-        ${conn(R.r32,R.r16,'right')}${col(R.r32)}
-      </div>
-    </div>
-  </div></div>
-  ${rPredBracketMobile(r32g,cache)}`;}
-
-function rPredBracketMobile(r32g,cache){
+function rBracketMobile(){
   const rounds=[
-    {id:'r32',l:'32-es kör',fns:[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]},
-    {id:'r16',l:'16-os kör',fns:[89,90,91,92,93,94,95,96]},
+    {id:'r32',l:'32-es kör',fns:[74,77,73,75,83,84,81,82,76,78,79,80,86,88,85,87]},
+    {id:'r16',l:'16-os kör',fns:[89,90,93,94,91,92,95,96]},
     {id:'qf',l:'Negyeddöntő',fns:[97,98,99,100]},
     {id:'sf',l:'Elődöntő',fns:[101,102]},
     {id:'final',l:'Döntő + Bronz',fns:[104,103]},
   ];
   const sel=S.bkRound||'r32';
   const cur=rounds.find(r=>r.id===sel)||rounds[0];
+  function mobileBox(fn){
+    const m=byFifaNum(fn);
+    if(!m) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – TBD</div></div>`;
+    const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+    const isTBD=m.tbd&&!ov;
+    const res=getEffectiveResults()[m.id];
+    const win=res?getWinnerSide(m.id,res):null;
+    const venue=KO_VENUE[fn]||'',koLbl=fmtKoTime(m);
+    const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
+    const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
+    return `<div class="bk-mob-card">
+      <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venue:''}</div>
+      <div class="bk-mob-teams">
+        <div class="bk-mob-team${win==='home'?' wk-win':''}">${!isTBD&&home?fImg(home,18):''}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='away'?' wk-win':''}">${!isTBD&&away?fImg(away,18):''}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
+      </div>
+    </div>`;
+  }
   return `<div class="bk-mob">
     <div class="pill-row" style="margin-bottom:14px">
       ${rounds.map(r=>`<button class="pill ${sel===r.id?'on':'off'}" data-bkr="${r.id}">${r.l}</button>`).join('')}
     </div>
-    <div class="bk-mob-grid">
-      ${cur.fns.map(fn=>{
-        const teams=predTeamsForFifaNum(fn,r32g,cache);
-        const pick=S.predKO[fn];
-        const isFinal=fn===104||fn===103;
-        if(!teams) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – várható</div></div>`;
-        return `<div class="bk-mob-card">
-          <div class="wk-hdr">M${fn}${isFinal?` · ${fn===104?'🏆 Döntő':'🥉 Bronz'}`:''}</div>
-          <div class="bk-mob-teams">
-            <button class="bk-mob-team${pick==='home'?' wk-win':''}" data-predko="${fn}|home" style="width:100%;border:none;text-align:left;cursor:pointer;background:none;padding:5px 0">
-              ${fImg(teams.home,18)}<span>${teamName(teams.home)}</span>${pick==='home'?'<b>✓</b>':''}
-            </button>
-            <button class="bk-mob-team${pick==='away'?' wk-win':''}" data-predko="${fn}|away" style="width:100%;border:none;text-align:left;cursor:pointer;background:none;padding:5px 0">
-              ${fImg(teams.away,18)}<span>${teamName(teams.away)}</span>${pick==='away'?'<b>✓</b>':''}
-            </button>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
+    <div class="bk-mob-grid">${cur.fns.map(fn=>mobileBox(fn)).join('')}</div>
   </div>`;
 }
 
+function rPredBracket(r32g,cache){
+  const rounds=[
+    {id:'r32',l:t('bracket_round32'),fns:[74,77,73,75,83,84,81,82,76,78,79,80,86,88,85,87],cols:4},
+    {id:'r16',l:t('bracket_round16'),fns:[89,90,93,94,91,92,95,96],cols:4},
+    {id:'qf', l:t('bracket_qf'),     fns:[97,98,99,100],cols:4},
+    {id:'sf', l:t('bracket_sf'),     fns:[101,102],cols:2},
+    {id:'final',l:'🏆 '+t('bracket_final'),fns:[104,103],cols:2,labels:{104:'🏆 '+t('bracket_final'),103:'🥉 '+t('bracket_bronze')}},
+  ];
+  function predCard(fn,label){
+    const teams=predTeamsForFifaNum(fn,r32g,cache);
+    const pick=S.predKO[fn];
+    if(!teams) return `<div class="bk-mob-card">${label?`<div style="font-size:10px;font-weight:700;color:var(--c-gold);margin-bottom:4px">${label}</div>`:''}<div class="wk-hdr" style="opacity:.4">M${fn} – várható</div></div>`;
+    const hPick=pick==='home',aPick=pick==='away';
+    return `<div class="bk-mob-card${fn===104?' bk-final-card':''}">${label?`<div style="font-size:10px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${label}</div>`:''}<div class="wk-hdr" style="margin-bottom:6px"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span></div><div class="bk-mob-teams"><button class="bk-mob-team${hPick?' wk-win':''}" data-predko="${fn}|home" style="width:100%;border:none;text-align:left;cursor:pointer;background:${hPick?'rgba(0,176,80,.1)':'none'};border-radius:6px;padding:5px 4px">${fImg(teams.home,18)}<span>${teamName(teams.home)}</span>${hPick?'<b style="margin-left:auto;color:#00b050">✓</b>':''}</button><button class="bk-mob-team${aPick?' wk-win':''}" data-predko="${fn}|away" style="width:100%;border:none;text-align:left;cursor:pointer;background:${aPick?'rgba(0,176,80,.1)':'none'};border-radius:6px;padding:5px 4px">${fImg(teams.away,18)}<span>${teamName(teams.away)}</span>${aPick?'<b style="margin-left:auto;color:#00b050">✓</b>':''}</button></div></div>`;
+  }
+  const desktop=rounds.map((rd,ri)=>`<div style="margin-bottom:${ri<rounds.length-1?24:0}px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--c-gold);text-transform:uppercase;letter-spacing:.5px">${rd.l}</div><div style="flex:1;height:1px;background:rgba(212,175,55,.2)"></div>${ri<rounds.length-1?`<div style="font-size:11px;color:rgba(var(--ink-rgb),.3)">→ ${rounds[ri+1].l}</div>`:''}</div><div style="display:grid;grid-template-columns:repeat(${rd.cols},1fr);gap:10px">${rd.fns.map(fn=>predCard(fn,rd.labels?.[fn])).join('')}</div></div>`).join('');
+  const sel=S.bkRound||'r32';
+  const cur=rounds.find(r=>r.id===sel)||rounds[0];
+  const mob=`<div class="bk-mob"><div class="pill-row" style="margin-bottom:14px">${rounds.map(r=>`<button class="pill ${sel===r.id?'on':'off'}" data-bkr="${r.id}">${r.l}</button>`).join('')}</div><div class="bk-mob-grid">${cur.fns.map(fn=>predCard(fn,cur.labels?.[fn])).join('')}</div></div>`;
+  return `<div class="bk-desktop">${desktop}</div>${mob}`;
+}
 function rMyTips(){
   const uid=S.user.id,cfg=DS,eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
