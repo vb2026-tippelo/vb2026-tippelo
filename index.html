@@ -1061,9 +1061,13 @@ async function applyFinishedMatches(apiMatches){
       isFinished=['FINISHED','finished','Ended'].includes(am.status);
     }
     if(!huHome||!huAway)return;
-    const lm=ALL.find(m=>m.stage==='group'&&((m.home===huHome&&m.away===huAway)||(m.home===huAway&&m.away===huHome)));
+    const lm=ALL.find(m=>{
+      const mHome=S.mt[m.id]?.home||m.home;
+      const mAway=S.mt[m.id]?.away||m.away;
+      return (mHome===huHome&&mAway===huAway)||(mHome===huAway&&mAway===huHome);
+    });
     if(!lm)return;
-    const flip=lm.home===huAway;
+    const flip=(S.mt[lm.id]?.home||lm.home)===huAway;
     const h=flip?aGoal:hGoal, a=flip?hGoal:aGoal;
     if(isFinished&&!nr[lm.id]){
       nr[lm.id]={homeGoals:h,awayGoals:a};
