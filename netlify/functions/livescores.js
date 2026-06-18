@@ -30,24 +30,30 @@ const FINISHED_STATUSES = new Set([3,43]);
 exports.handler = async function(event, context) {
   const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
   try {
-    // /wc/draw: összes meccs eredménnyel + /wc/live: élő percszám
-    const [drawResp, liveResp] = await Promise.all([
-      fetch(`https://${WC_HOST}/wc/draw`, {headers: HEADERS}),
+    // Lekérjük a csoport + KO meccseket + élő percszámot párhuzamosan
+    const [groupResp, koResp, liveResp] = await Promise.all([
+      fetch(`https://${WC_HOST}/wc/draw?stage=group`, {headers: HEADERS}),
+      fetch(`https://${WC_HOST}/wc/draw?stage=ko`, {headers: HEADERS}),
       fetch(`https://${WC_HOST}/wc/live`, {headers: HEADERS}),
     ]);
 
-    const drawData = drawResp.ok ? await drawResp.json() : {data:[]};
+    const groupData = groupResp.ok ? await groupResp.json() : {data:[]};
+    const koData = koResp.ok ? await koResp.json() : {data:[]};
     const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
 
     // Percszám matchId alapján
     const minuteMap = {};
     (liveData.data || []).forEach(m => { minuteMap[m.matchId] = m.minute || ''; });
 
-    const matches = (drawData.data || [])
+    // Összes meccs feldolgozása (csoport + KO)
+    const allRaw = [...(groupData.data||[]), ...(koData.data||[])];
+    const matches = allRaw
       .filter(m => m.scoreHome !== null || LIVE_STATUSES.has(m.status))
       .map(m => ({
         home: mapTeam(m.home),
         away: mapTeam(m.away),
+        homeEn: m.home,
+        awayEn: m.away,
         h: m.scoreHome ?? 0,
         a: m.scoreAway ?? 0,
         status: m.statusText,
@@ -56,11 +62,12 @@ exports.handler = async function(event, context) {
         finished: FINISHED_STATUSES.has(m.status),
         kickoff: m.kickoff,
         matchId: m.matchId || null,
+        stage: m.round ? 'ko' : 'group',
       }));
 
     const liveCount = matches.filter(m => m.live).length;
     const finishedCount = matches.filter(m => m.finished).length;
-    console.log(`WC: ${matches.length} meccs (élő: ${liveCount}, befejezett: ${finishedCount})`);
+    console.log(`Meccsek: ${matches.length} (élő: ${liveCount}, befejezett: ${finishedCount})`);
 
     return {
       statusCode: 200, headers,
