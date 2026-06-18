@@ -1144,13 +1144,24 @@ async function fetchLiveScores(){
 async function syncKickoffTimes(apiMatches){
   const koUpdates={};
   apiMatches.forEach(am=>{
-    if(!am.utcDate)return;
-    const huHome=matchTeamByEng(am.home),huAway=matchTeamByEng(am.away);
+    // Új API: kickoff mező; régi API: utcDate mező
+    const kickoff=am.kickoff||am.utcDate;
+    if(!kickoff)return;
+    const huHome=am.home||(am.homeEn?matchTeamByEng(am.homeEn):null);
+    const huAway=am.away||(am.awayEn?matchTeamByEng(am.awayEn):null);
     if(!huHome||!huAway)return;
-    const lm=ALL.find(m=>m.stage==='group'&&((m.home===huHome&&m.away===huAway)||(m.home===huAway&&m.away===huHome)));
+    // Keresés az összes meccsben (group + KO)
+    const lm=ALL.find(m=>{
+      const mHome=S.mt[m.id]?.home||m.home;
+      const mAway=S.mt[m.id]?.away||m.away;
+      return (mHome===huHome&&mAway===huAway)||(mHome===huAway&&mAway===huHome);
+    });
     if(!lm)return;
     const cur=S.ko[lm.id]||lm.koDefault;
-    if(new Date(am.utcDate).getTime()!==new Date(cur).getTime())koUpdates[lm.id]=am.utcDate;
+    if(cur&&new Date(kickoff).getTime()!==new Date(cur).getTime())
+      koUpdates[lm.id]=kickoff;
+    else if(!cur)
+      koUpdates[lm.id]=kickoff;
   });
   const n=Object.keys(koUpdates).length;
   if(n){
