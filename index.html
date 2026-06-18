@@ -914,7 +914,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,lbMode:'live'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -2674,14 +2674,22 @@ function tournamentStarted(){
 }
 function rUserHistory(targetUid,cfg){
   const eff=getEffectiveResults();
-  const tipped=ALL.filter(m=>S.tips[`${targetUid}_${m.id}`]);
+  const tipped=ALL.filter(m=>S.tips[`${targetUid}_${m.id}`])
+    .sort((a,b)=>{
+      const aLive=!!S.live[a.id],bLive=!!S.live[b.id];
+      if(aLive&&!bLive)return -1;
+      if(!aLive&&bLive)return 1;
+      return a.id-b.id;
+    });
   if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('no_tips_yet')}</div>`;
   const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
   return `<div style="padding:8px 4px 2px">${tipped.map(m=>{
     const tip=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null,cat=r?ptsCat(tip,r,m.stage,cfg):null;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
     const hidden=targetUid!==S.user.id&&!isLocked(m);
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+    const isLive=!!S.live[m.id];
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px${isLive?';background:rgba(230,51,41,.05);margin:0 -4px;padding-left:4px;padding-right:4px;border-radius:4px':''}">
+      ${isLive?`<span style="font-size:9px;color:#e63329;font-weight:700">🔴</span>`:''}
       <span style="color:rgba(var(--ink-rgb),.6);min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamName(home)} – ${teamName(away)}</span>
       ${hidden?`<span style="color:rgba(var(--ink-rgb),.35);font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:rgba(var(--ink-rgb),.75)">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
       ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'var(--text-color)'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · <span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span></span>`:`<span style="margin-left:auto;color:rgba(var(--ink-rgb),.4)">${t('expected')}</span>`}`}
@@ -2689,19 +2697,28 @@ function rUserHistory(targetUid,cfg){
   }).join('')}</div>`;
 }
 function rLb(){
-  const uid=S.user.id,eff=getEffectiveResults();
+  const uid=S.user.id;
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
   if(!myLgs.length)return `<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏅</div><p>${t('no_league_member')}</p></div>`;
   const effLg=getEffectiveLgId(),cfg=getLgCfg();
   const fIds=S.leagues.find(l=>l.id===effLg)?.members;
+  const lgN=S.leagues.find(l=>l.id===effLg)?.name||'';
+  const isLiveMode=S.lbMode!=='official';
+  const eff=isLiveMode?getEffectiveResults():S.results;
   const board=S.users.filter(u=>!u.isAdmin&&(!fIds||fIds.includes(u.id))).map(u=>{
     const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);return{...u,...r};
   }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
-  const lgN=S.leagues.find(l=>l.id===effLg)?.name||'';
+  const hasLive=Object.keys(S.live||{}).some(k=>!S.results[k]);
+  const medals=['🥇','🥈','🥉'];
   return `<div>
   <div class="lg-sel-row">
     <span style="font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('league_lbl')}</span>
     ${myLgs.map(l=>`<button class="pill${effLg===l.id?' on':' off'}" data-lbid="${l.id}">${l.name}</button>`).join('')}
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="pill${isLiveMode?' on':' off'}" data-lbmode="live">🔴 Élő tabella</button>
+    <button class="pill${!isLiveMode?' on':' off'}" data-lbmode="official">✓ Lezárt meccsek</button>
+    ${hasLive&&isLiveMode?`<span style="font-size:11px;color:#e63329;font-weight:600">• élő eredmények beleszámítva</span>`:''}
   </div>
   <div class="sect">${t('lb_title')} ${lgN} – ${t('tab_lb').replace('🏅 ','')}</div>
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
@@ -3342,6 +3359,7 @@ function bindMain(hw){
     SS({lgName:document.getElementById('lgNIn')?.value||'',lgSco:sco});createLeague();
   });
   document.getElementById('joinOkBtn')?.addEventListener('click',()=>{SS({lgCode:document.getElementById('lgCIn')?.value||''});joinLeague();});
+  document.querySelectorAll('[data-lbmode]').forEach(b=>b.addEventListener('click',e=>SS({lbMode:e.currentTarget.dataset.lbmode})));
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid,activeLgId:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
   document.getElementById('syncVenuesBtn')?.addEventListener('click',syncVenuesFromAPI);
