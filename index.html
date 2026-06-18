@@ -2117,11 +2117,15 @@ function rBracket(){
     ${col([half.sf],3)}
   </div>`).join('');
 
+  const bkW=5*MW+4*CW, bkH=TH+80;
+  const avW=Math.max(600,(document.getElementById('root')?.clientWidth||window.innerWidth)-24);
+  const avH=Math.max(400,window.innerHeight-220);
+  const zoom=Math.min(1,avW/bkW,avH/bkH).toFixed(3);
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
-    <div class="bk-desktop" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <div style="min-width:${5*MW+4*CW}px">
+    <div class="bk-desktop" style="overflow:visible">
+      <div style="zoom:${zoom};transform-origin:top left">
         ${hdrRow}
         <div style="display:flex">
           <div style="display:flex;flex-direction:column">${leftCols}</div>
@@ -2267,8 +2271,13 @@ function rPredBracket(r32g,cache){
     ${mobRounds.map(r=>`<button class="pill ${sel===r.id?'on':'off'}" data-bkr="${r.id}">${r.l}</button>`).join('')}
   </div><div class="bk-mob-grid">${cur.fns.map(fn=>mobCard(fn)).join('')}</div></div>`;
 
-  return `<div class="bk-desktop" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-    <div style="min-width:${5*MW+4*CW}px">${hdrRow}
+  const bkW=5*MW+4*CW,bkH=TH+80;
+  const avW=Math.max(600,(document.getElementById('root')?.clientWidth||window.innerWidth)-24);
+  const avH=Math.max(400,window.innerHeight-220);
+  const zoom=Math.min(1,avW/bkW,avH/bkH).toFixed(3);
+
+  return `<div class="bk-desktop" style="overflow:visible">
+    <div style="zoom:${zoom};transform-origin:top left">${hdrRow}
       <div style="display:flex">
         <div style="display:flex;flex-direction:column">${leftCols}</div>
         ${rightCol}
