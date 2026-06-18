@@ -903,15 +903,15 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},lineups:{},stats:{},expandLineup:null,expandStats:null
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
 
 async function init(){
-  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds]=await Promise.all([
+  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds,wcVenues]=await Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
-    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true)
+    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true),sG('wc_venues',true)
   ]);
   let ul=users||[];
   if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:'admin123',isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
@@ -930,7 +930,7 @@ async function init(){
     await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{}});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   if(cu){
@@ -1303,6 +1303,22 @@ function getLbBoard(){
   return {board,lgN};
 }
 
+async function syncVenuesFromAPI(){
+  SS({venuesLoading:true});
+  try{
+    const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
+    const r=await fetch(`${base}/.netlify/functions/venues`);
+    const d=await r.json();
+    if(d.venues&&d.count>0){
+      // wcVenues: matchId → venue name
+      await sS('wc_venues',d.venues,true);
+      SS({wcVenues:d.venues,venuesSynced:d.count,venuesLoading:false});
+    }else{
+      SS({venuesLoading:false});
+    }
+  }catch(e){SS({venuesLoading:false});}
+}
+
 function exportLbCsv(){
   const {board,lgN}=getLbBoard();
   if(!board.length)return;
@@ -1582,7 +1598,9 @@ function rCard(m){
   const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
-  const venue=m.stage==='group'?GROUP_VENUE[m.id]:KO_VENUE[fifaNumOf(m)]||null;
+  const wcId=S.wcIds?.[m.id];
+  const apiVenue=wcId?S.wcVenues?.[wcId]?.venue:null;
+  const venue=apiVenue||(m.stage==='group'?GROUP_VENUE[m.id]:KO_VENUE[fifaNumOf(m)])||null;
   const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
   const wx=isToday&&venue?S.weather?.[venue]:null;
   const mOdds=isToday?S.odds?.[m.id]:null;
@@ -3042,6 +3060,16 @@ function rAdmin(){
       ${S.liveFound.map(f=>`<div style="font-size:13px;color:rgba(var(--ink-rgb),.7);padding:4px 0">${fImg(f.home,16)} ${f.home} ${f.h}–${f.a} ${f.away} ${fImg(f.away,16)}</div>`).join('')}
     </div>`:''}
   </div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:13px;font-weight:600">📍 Helyszínek szinkronizálása API-ból</div>
+        <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs helyszínét a World Cup API-ból és elmenti. Egyszer kell futtatni.</div>
+        ${S.venuesSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.venuesSynced} helyszín szinkronizálva</div>`:''}
+      </div>
+      <button class="btn-sm" id="syncVenuesBtn" style="background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:#4a9eff">${S.venuesLoading?'⏳ Folyamatban...':'📍 Helyszínek szinkronizálása'}</button>
+    </div>
+  </div>
   <div class="pill-row">${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
   <div>${ms.map(m=>{
     const r=S.results[m.id],ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
@@ -3305,6 +3333,7 @@ function bindMain(hw){
   document.getElementById('joinOkBtn')?.addEventListener('click',()=>{SS({lgCode:document.getElementById('lgCIn')?.value||''});joinLeague();});
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid,activeLgId:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
+  document.getElementById('syncVenuesBtn')?.addEventListener('click',syncVenuesFromAPI);
   document.getElementById('exportCsvBtn')?.addEventListener('click',()=>exportLbCsv());
   document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
