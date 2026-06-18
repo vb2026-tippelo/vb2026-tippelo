@@ -1632,18 +1632,52 @@ function rCard(m){
           if(S.expandStats!==m.id)return '';
           const st=S.stats?.[m.id];
           if(!st)return `<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`;
+          const STAT_HU={
+            'Expected goals (xG)':'Várható gólok (xG)',
+            'Ball possession':'Labdabirtoklás',
+            'Total shots':'Összes lövés',
+            'Shots on target':'Kapura lövés',
+            'Shots off target':'Kapu mellé',
+            'Blocked shots':'Blokkolt lövés',
+            'Corner kicks':'Szögletek',
+            'Offsides':'Lesek',
+            'Fouls':'Szabálytalanságok',
+            'Yellow cards':'Sárga lapok',
+            'Red cards':'Piros lapok',
+            'Free kicks':'Szabadrúgások',
+            'Goal kicks':'Kapusrúgások',
+            'Throw-ins':'Bedobások',
+            'Passes':'Passz',
+            'Long passes':'Hosszú passz',
+            'Crosses':'Centerezések',
+            'Dribbles':'Cselezések',
+            'Tackles':'Szerelések',
+            'Interceptions':'Elfogások',
+            'Clearances':'Mentések',
+            'Saves':'Védések',
+            'Goals prevented':'Megakadályozott gól',
+            'High claims':'Magas labda fogás',
+            'Punches':'Kiütések',
+            'Aerials won':'Légi párbaj nyert',
+            'Pass accuracy':'Passz pontosság',
+            'Shot accuracy':'Lövés pontosság',
+            'Dribble success':'Csel siker',
+            'Tackle success':'Szerelés siker',
+          };
+          const GRPHU={'Top stats':'Főbb statisztikák','Shots':'Lövések','Attack':'Támadás','Passes':'Passz','Defense':'Védekezés','Goalkeeping':'Kapus'};
           const matchSection=st.find(s=>s.section==='Match')||st[0];
           if(!matchSection)return '';
           return `<div style="padding:8px 14px 12px;border-top:1px solid rgba(var(--ink-rgb),.06)">
             ${matchSection.groups.map(g=>`
-              <div style="font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">${g.group}</div>
+              <div style="font-size:10px;font-weight:700;color:rgba(var(--ink-rgb),.35);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">${S.lang==='hu'?(GRPHU[g.group]||g.group):g.group}</div>
               ${g.stats.map(s=>{
+                const label=S.lang==='hu'?(STAT_HU[s.name]||s.name):s.name;
                 const hVal=parseFloat(s.home)||0,aVal=parseFloat(s.away)||0,tot=hVal+aVal;
                 const hPct=tot>0?Math.round(hVal/tot*100):50;
                 return `<div style="margin-bottom:6px">
                   <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
                     <span style="font-weight:700;color:var(--text-color)">${s.home}</span>
-                    <span style="color:rgba(var(--ink-rgb),.4);font-size:10px">${s.name}</span>
+                    <span style="color:rgba(var(--ink-rgb),.4);font-size:10px">${label}</span>
                     <span style="font-weight:700;color:var(--text-color)">${s.away}</span>
                   </div>
                   <div style="display:flex;height:4px;border-radius:2px;overflow:hidden;gap:1px">
