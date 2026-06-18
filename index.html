@@ -1281,6 +1281,75 @@ function exportLbImage(){
     setTimeout(()=>URL.revokeObjectURL(url),3000);
   });
 }
+
+function getLbBoard(){
+  const cfg=getLgCfg(),eff=getEffectiveResults(),effLg=getEffectiveLgId();
+  const fIds=effLg?S.leagues.find(l=>l.id===effLg)?.members:null;
+  const lgN=effLg?S.leagues.find(l=>l.id===effLg)?.name:'Összesített';
+  const board=S.users.filter(u=>!u.isAdmin&&(!fIds||fIds.includes(u.id))).map(u=>{
+    const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);return{...u,...r};
+  }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
+  return {board,lgN};
+}
+
+function exportLbCsv(){
+  const {board,lgN}=getLbBoard();
+  if(!board.length)return;
+  const now=new Date().toLocaleDateString('hu-HU');
+  const rows=[
+    [`VB 2026 Tippelő – ${lgN} – ${now}`],
+    [],
+    ['Helyezés','Játékos','Pont','Telitalálat','Gólkülönbség','Helyes eredmény','Megközelítő','Tippek száma'],
+    ...board.map((u,i)=>[i+1,u.dn,u.pts,u.pf,u.rgd,u.res3,u.og,u.tipped])
+  ];
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`vb2026_${lgN.replace(/\s+/g,'_')}_ranglista.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+function exportLbPdf(){
+  const {board,lgN}=getLbBoard();
+  if(!board.length)return;
+  const now=new Date().toLocaleDateString('hu-HU');
+  const medals=['🥇','🥈','🥉'];
+  const rows=board.map((u,i)=>`
+    <tr style="background:${i%2===0?'#f8f9fa':'#fff'}${u.id===S.user.id?';font-weight:bold;background:#fffbe6':''}">
+      <td style="padding:8px 12px;text-align:center;font-size:18px">${i<3?medals[i]:`${i+1}.`}</td>
+      <td style="padding:8px 12px">${u.av||'⚽'} ${u.dn}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:#c9a84c;font-size:18px">${u.pts}p</td>
+      <td style="padding:8px 12px;text-align:center">⭐ ${u.pf}</td>
+      <td style="padding:8px 12px;text-align:center">🎯 ${u.rgd}</td>
+      <td style="padding:8px 12px;text-align:center">✓ ${u.res3}</td>
+      <td style="padding:8px 12px;text-align:center">~ ${u.og}</td>
+      <td style="padding:8px 12px;text-align:center;color:#888">${u.tipped}</td>
+    </tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>VB 2026 – ${lgN} Ranglista</title>
+    <style>body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#222}
+    h1{color:#c9a84c;margin-bottom:4px}h2{color:#666;font-weight:400;font-size:16px;margin:0 0 20px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th{background:#011524;color:#c9a84c;padding:10px 12px;text-align:left}
+    td{border-bottom:1px solid #eee}
+    .footer{margin-top:20px;color:#aaa;font-size:12px;text-align:center}
+    @media print{body{margin:0}}</style>
+  </head><body>
+    <h1>🏆 VB 2026 Tippelő</h1>
+    <h2>${lgN} – Ranglista · ${now}</h2>
+    <table><thead><tr>
+      <th>#</th><th>Játékos</th><th>Pont</th>
+      <th>Telitalálat</th><th>Gólkülönbség</th><th>Helyes eredmény</th><th>Megközelítő</th><th>Tippek</th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <div class="footer">vb26tipp.forma1fitnesz.hu · ${now}</div>
+    <script>window.onload=()=>window.print();<\/script>
+  </body></html>`;
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
 function teamSelect(id,current,cls='inp-light'){
   return `<select class="${cls}" id="${id}"><option value="">${t('select_team_ph')}</option>${TEAMS.map(t=>`<option value="${t}"${t===current?' selected':''}>${t}</option>`).join('')}</select>`;
 }
@@ -2595,7 +2664,11 @@ function rLb(){
     ${myLgs.map(l=>`<button class="pill${effLg===l.id?' on':' off'}" data-lbid="${l.id}">${l.name}</button>`).join('')}
   </div>
   <div class="sect">${t('lb_title')} ${lgN} – ${t('tab_lb').replace('🏅 ','')}</div>
-  ${board.length?`<button class="btn-sm gold" id="shareLbBtn" style="margin-bottom:14px">${t('lb_share')}</button>`:''}
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    ${board.length?`<button class="btn-sm gold" id="shareLbBtn">${t('lb_share')}</button>`:''}
+    ${board.length?`<button class="btn-sm" id="exportCsvBtn" style="background:rgba(0,176,80,.15);border:1px solid rgba(0,176,80,.3);color:#00b050">⬇ Excel (CSV)</button>`:''}
+    ${board.length?`<button class="btn-sm" id="exportPdfBtn" style="background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:#4a9eff">⬇ PDF</button>`:''}
+  </div>
   ${!board.length?`<div class="empty"><div style="font-size:44px;margin-bottom:12px">🏅</div><p>${t('no_players')}</p></div>`:''}
   ${board.map((u,i)=>{
     const exp=S.expandLb===u.id;
@@ -3221,6 +3294,8 @@ function bindMain(hw){
   document.getElementById('joinOkBtn')?.addEventListener('click',()=>{SS({lgCode:document.getElementById('lgCIn')?.value||''});joinLeague();});
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid,activeLgId:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
+  document.getElementById('exportCsvBtn')?.addEventListener('click',()=>exportLbCsv());
+  document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
   document.getElementById('notifToggleBtn')?.addEventListener('click',togglePushNotif);
   document.getElementById('h2hSel')?.addEventListener('change',e=>SS({h2hOpp:e.target.value||null}));
