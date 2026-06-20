@@ -22,11 +22,13 @@ const EN_TEAM = {
   'Croatia':'Horvátország','Ghana':'Ghána','Panama':'Panama'
 };
 
-function mapTeam(en){ return EN_TEAM[en] || en; }
-function fmtMinute(val){
-  if(val === null || val === undefined) return '';
+const mapTeam = en => EN_TEAM[en] || en;
+
+function fmtMinute(val) {
+  if (val === null || val === undefined) return '';
   const s = String(val).trim();
-  return s === '0' ? '1\'' : s ? (s.includes('\'') ? s : s + '\'') : '';
+  if (!s || s === '0') return '';
+  return s.includes('\'') ? s : s + '\'';
 }
 
 const LIVE_STATUSES = new Set([2,6,7,8,9,10,37,38]);
@@ -45,15 +47,25 @@ exports.handler = async function(event, context) {
     const koData = koResp.ok ? await koResp.json() : {data:[]};
     const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
 
-    // Live meccsek: matchId → {minute, scoreHome, scoreAway, status}
-    const liveMap = {};
+    // Live meccsek: matchId → info + csapatnév → info
+    const liveById = {};
+    const liveByTeams = {};
     (liveData.data || []).forEach(m => {
-      liveMap[m.matchId] = {
+      const info = {
         minute: fmtMinute(m.minute),
         scoreHome: m.scoreHome,
         scoreAway: m.scoreAway,
         status: m.status,
+        matchId: m.matchId,
       };
+      if (m.matchId) liveById[m.matchId] = info;
+      // Csapatnév alapú index (mindkét irányban)
+      const hKey = (m.home||'').toLowerCase().trim();
+      const aKey = (m.away||'').toLowerCase().trim();
+      if (hKey && aKey) {
+        liveByTeams[`${hKey}|${aKey}`] = info;
+        liveByTeams[`${aKey}|${hKey}`] = info;
+      }
     });
 
     const allRaw = [...(groupData.data||[]), ...(koData.data||[])];
@@ -61,11 +73,17 @@ exports.handler = async function(event, context) {
     const matches = allRaw
       .filter(m => m.matchId || m.scoreHome !== null || LIVE_STATUSES.has(m.status))
       .map(m => {
-        // Ha a /wc/live is tartalmazza ezt a meccset, az az igazság
-        const liveInfo = m.matchId ? liveMap[m.matchId] : null;
+        // Live info keresés: matchId alapján először, utána csapatnév alapján
+        let liveInfo = (m.matchId && liveById[m.matchId]) || null;
+        if (!liveInfo) {
+          const hKey = (m.home||'').toLowerCase().trim();
+          const aKey = (m.away||'').toLowerCase().trim();
+          liveInfo = liveByTeams[`${hKey}|${aKey}`] || null;
+        }
+
         const isLive = LIVE_STATUSES.has(m.status) || (liveInfo && LIVE_STATUSES.has(liveInfo.status));
         const isFinished = FINISHED_STATUSES.has(m.status);
-        // Pontszám: live adatból ha elérhető és élő meccs
+
         const scoreH = liveInfo && isLive ? (liveInfo.scoreHome ?? m.scoreHome ?? 0) : (m.scoreHome ?? 0);
         const scoreA = liveInfo && isLive ? (liveInfo.scoreAway ?? m.scoreAway ?? 0) : (m.scoreAway ?? 0);
 
@@ -82,9 +100,11 @@ exports.handler = async function(event, context) {
           finished: isFinished,
           scheduled: m.status === 1,
           kickoff: m.kickoff,
-          matchId: m.matchId || null,
+          matchId: liveInfo?.matchId || m.matchId || null,
         };
       });
+
+    console.log(`Live meccsek: ${Object.keys(liveById).length}, draw total: ${allRaw.length}`);
 
     return {
       statusCode: 200, headers,
@@ -93,7 +113,7 @@ exports.handler = async function(event, context) {
         updatedAt: new Date().toISOString(),
         source: 'wc2026api',
         wcCount: matches.length,
-        liveCount: matches.filter(m=>m.live).length,
+        liveCount: matches.filter(m => m.live).length,
       })
     };
   } catch(err) {
