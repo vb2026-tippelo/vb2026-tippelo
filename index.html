@@ -244,6 +244,16 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .sml-st-v{font-size:16px;font-weight:800;color:rgba(var(--chrome-ink),.92);font-family:var(--font-bc)}
 .sml-st-v.sml-pts{color:#C8A84B}
 .sml-st-v.muted{color:rgba(var(--chrome-ink),.22)}
+.n24-list .sml-item{padding:9px 0;border-bottom:1px solid rgba(var(--ink-rgb),.08)}
+.n24-list .sml-item:last-child{border-bottom:none}
+.n24-list .sml-item.active{padding-left:9px}
+.n24-list .sml-time{color:rgba(var(--ink-rgb),.42);min-width:52px}
+.n24-list .sml-t{color:var(--text-color)}
+.n24-list .sml-st-cell{background:rgba(var(--ink-rgb),.06)}
+.n24-list .sml-st-l{color:rgba(var(--ink-rgb),.4)}
+.n24-list .sml-st-v{color:var(--text-color)}
+.n24-list .sml-st-v.sml-pts{color:#C8A84B}
+.n24-list .sml-st-v.muted{color:rgba(var(--ink-rgb),.25)}
 .sb-seg{font-family:var(--font-bc);font-weight:700;font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border:1px solid rgba(var(--chrome-ink),.15);background:none;color:rgba(var(--chrome-ink),.4);cursor:pointer;border-radius:5px}
 .sb-seg.on{border-color:#C8A84B;color:#C8A84B;background:rgba(200,168,75,.12)}
 
@@ -2135,18 +2145,26 @@ function rNext24h(){
         ${missing.length?`<span style="background:#e63329;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px">${missing.length} ${t('missing_tips')}</span>`:`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t('all_tipped')}</span>`}
       </div>
     </div>
-    ${ms.map(m=>{
+    <div class="n24-list">${ms.map(m=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
       const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString(S.lang==='en'?'en-GB':'hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
       const navSel=m.group||(m.stage==='bronze'?'final':m.stage);
-      return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.06);font-size:13px;cursor:pointer">
-        <span style="color:rgba(var(--ink-rgb),.4);min-width:74px;font-size:11.5px">${koLbl}</span>
-        <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-color)">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</span>
-        ${tip?`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${tip.homeGoals}-${tip.awayGoals}</span>`:`<span style="color:#e63329;font-size:12px;font-weight:700">${t('no_tip')}</span>`}
-        <span style="color:rgba(var(--ink-rgb),.3);font-size:13px">›</span>
+      return `<div class="sml-item" data-gomatch="${m.id}" data-grp="${navSel}">
+        <div class="sml-top">
+          <div class="sml-time">${koLbl}</div>
+          <div class="sml-teams">
+            <div class="sml-t">${teamFlag(home)} ${teamName(home)}</div>
+            <div class="sml-t">${teamFlag(away)} ${teamName(away)}</div>
+          </div>
+        </div>
+        <div class="sml-stat">
+          <div class="sml-st-cell"><span class="sml-st-l">${t('tip_label')}</span><span class="sml-st-v" style="color:${tip?'#00b050':'#e63329'}">${tip?`${tip.homeGoals}-${tip.awayGoals}`:t('no_tip')}</span></div>
+          <div class="sml-st-cell"><span class="sml-st-l">Ered</span><span class="sml-st-v muted">–</span></div>
+          <div class="sml-st-cell"><span class="sml-st-l">Pont</span><span class="sml-st-v sml-pts muted">–</span></div>
+        </div>
       </div>`;
-    }).join('')}
+    }).join('')}</div>
   </div>`;
 }
 function rMatches(){
