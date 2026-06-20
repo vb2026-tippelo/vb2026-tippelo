@@ -54,6 +54,10 @@
   --c-green:#2E9E5A;
   --text-color:#0A0A0A;
   --ink-rgb:10,10,10;
+  --chrome-bg:#FFFFFF;
+  --chrome-elev:#F4F2EC;
+  --chrome-ink:10,10,10;
+  --chrome-line:rgba(10,10,10,.08);
   --font-bc:'Barlow Condensed',sans-serif;
   --font-b:'Barlow',sans-serif;
   --std-adv:rgba(46,158,90,.15);
@@ -72,6 +76,10 @@ body.dark-mode{
   --border:rgba(255,255,255,.08);
   --text-color:#F0EDE6;
   --ink-rgb:240,237,230;
+  --chrome-bg:#0A0A0A;
+  --chrome-elev:#161616;
+  --chrome-ink:255,255,255;
+  --chrome-line:rgba(255,255,255,.07);
   --std-adv:rgba(46,158,90,.2);
   --std-play:rgba(200,168,75,.15);
   --std-out:rgba(204,41,41,.1);
@@ -94,7 +102,7 @@ body.dark-mode [style*="background:var(--bg-page)"]{
 }
 body.dark-mode [style*="color:#0A0A0A"]{color:var(--text-color) !important}
 body.dark-mode [style*="color:rgba(10,10,10"]{color:var(--text-color) !important}
-body.dark-mode .sbox{background:#1C1C1C;border-color:rgba(255,255,255,.2);color:var(--text-color)}
+body.dark-mode .sbox{background:#1C1C1C}
 body.dark-mode .inp,.dark-mode .inp-light{background:#1C1C1C;border-color:rgba(255,255,255,.12);color:var(--text-color)}
 body.dark-mode .mcard{background:#1C1C1C}
 body.dark-mode .mc-inp{background:#161616;border-top-color:rgba(255,255,255,.08)}
@@ -154,9 +162,9 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 
 /* ===== BROADCAST TOP BAR ===== */
 .bc-topbar{
-  background:#0A0A0A;height:54px;display:flex;align-items:stretch;
-  position:sticky;top:0;z-index:100;
-  background-image:repeating-linear-gradient(-45deg,transparent,transparent 8px,rgba(255,255,255,.015) 8px,rgba(255,255,255,.015) 9px);
+  background:var(--chrome-bg);height:54px;display:flex;align-items:stretch;
+  position:sticky;top:0;z-index:100;border-bottom:1px solid var(--chrome-line);
+  background-image:repeating-linear-gradient(-45deg,transparent,transparent 8px,rgba(var(--chrome-ink),.022) 8px,rgba(var(--chrome-ink),.022) 9px);
 }
 .bc-logo{
   background:#C8A84B;display:flex;align-items:center;gap:10px;
@@ -171,14 +179,14 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .bc-navlink{
   display:flex;align-items:center;gap:6px;padding:0 14px;
   font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;
-  color:rgba(255,255,255,.35);cursor:pointer;border-bottom:3px solid transparent;
+  color:rgba(var(--chrome-ink),.45);cursor:pointer;border-bottom:3px solid transparent;
   white-space:nowrap;transition:color .15s;
 }
 .bc-navlink.on{color:#C8A84B;border-bottom-color:#C8A84B}
-.bc-navlink:hover:not(.on){color:rgba(255,255,255,.65)}
+.bc-navlink:hover:not(.on){color:rgba(var(--chrome-ink),.75)}
 .bc-navlink svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.8;fill:none;flex-shrink:0}
 .bc-user{display:flex;align-items:center;gap:10px;padding:0 18px;flex-shrink:0}
-.bc-uinfo{font-family:var(--font-bc);font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.5px;text-align:right;line-height:1.3}
+.bc-uinfo{font-family:var(--font-bc);font-size:11px;color:rgba(var(--chrome-ink),.5);letter-spacing:.5px;text-align:right;line-height:1.3}
 .bc-av{width:32px;height:32px;background:#C8A84B;display:flex;align-items:center;justify-content:center;font-family:var(--font-bc);font-weight:700;font-size:13px;color:#0A0A0A;flex-shrink:0}
 
 /* ===== LIVE TICKER ===== */
@@ -196,25 +204,25 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .bc-ticker-sep{color:rgba(0,0,0,.3);margin:0 2px}
 
 /* ===== 3-COLUMN DESKTOP LAYOUT ===== */
-.bc-layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 54px)}
+.bc-layout{display:grid;grid-template-columns:330px 1fr;min-height:calc(100vh - 54px)}
 @media(max-width:900px){.bc-layout{grid-template-columns:1fr}.bc-sidebar-l,.bc-sidebar-r{display:none}}
 
 /* ===== LEFT SIDEBAR ===== */
-.bc-sidebar-l{background:#0A0A0A;border-right:1px solid rgba(255,255,255,.06);overflow-y:auto}
+.bc-sidebar-l{background:var(--chrome-bg);border-right:1px solid var(--chrome-line);overflow-y:auto}
 .bc-sidebar-r{background:#fff;border-left:1px solid #E5E3DE;overflow-y:auto;padding:18px}
 
 /* LIVE HERO */
-.live-hero{padding:18px;border-bottom:1px solid rgba(255,255,255,.06)}
+.live-hero{padding:18px;border-bottom:1px solid var(--chrome-line)}
 .lh-badge{background:#C8A84B;color:#0A0A0A;font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:2px;padding:3px 10px;display:inline-flex;align-items:center;gap:5px;margin-bottom:14px}
-.lh-meta{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;float:right;margin-top:-24px}
+.lh-meta{font-size:10px;color:rgba(var(--chrome-ink),.35);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;float:right;margin-top:-24px}
 .lh-match{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
 .lh-team{display:flex;flex-direction:column;align-items:center;gap:5px;width:85px}
 .lh-flag{font-size:26px;line-height:1}
-.lh-tname{font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(255,255,255,.8);letter-spacing:.8px;text-transform:uppercase;text-align:center}
+.lh-tname{font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.8);letter-spacing:.8px;text-transform:uppercase;text-align:center}
 .lh-score{text-align:center}
-.lh-nums{font-family:var(--font-bc);font-weight:900;font-size:48px;color:#fff;line-height:1;letter-spacing:-3px;display:flex;align-items:center;gap:2px}
-.lh-dash{font-weight:300;color:rgba(255,255,255,.55);font-size:34px;margin:0 7px}
-.lh-min{font-size:9px;color:rgba(255,255,255,.3);text-align:center;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
+.lh-nums{font-family:var(--font-bc);font-weight:900;font-size:48px;color:rgb(var(--chrome-ink));line-height:1;letter-spacing:-3px;display:flex;align-items:center;gap:2px}
+.lh-dash{font-weight:300;color:rgba(var(--chrome-ink),.45);font-size:34px;margin:0 7px}
+.lh-min{font-size:9px;color:rgba(var(--chrome-ink),.35);text-align:center;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
 .lh-tip{background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.15);padding:9px 12px;display:flex;align-items:center;justify-content:space-between}
 .lht-lbl{font-size:8px;font-weight:600;color:rgba(200,168,75,.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px}
 .lht-val{font-family:var(--font-bc);font-weight:700;font-size:15px;color:#C8A84B}
@@ -222,21 +230,23 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .lht-pl{font-size:9px;color:rgba(62,173,106,.6);font-weight:400;font-family:var(--font-b)}
 
 /* SIDEBAR MATCH LIST */
-.sml-hdr{padding:9px 18px 6px;display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.05)}
-.sml-title{font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase}
+.sml-hdr{padding:9px 18px 6px;display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid rgba(var(--chrome-ink),.05)}
+.sml-title{font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase}
 .sml-all{font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:700;letter-spacing:.8px;cursor:pointer}
-.sml-item{border-bottom:1px solid rgba(255,255,255,.04);padding:9px 18px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.sml-item{border-bottom:1px solid rgba(var(--chrome-ink),.04);padding:10px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:stretch;gap:7px}
 .sml-item.active{background:rgba(200,168,75,.06);border-left:3px solid #C8A84B;padding-left:15px}
-.sml-time{font-family:var(--font-bc);font-weight:600;font-size:11px;color:rgba(255,255,255,.25);min-width:32px;flex-shrink:0}
+.sml-top{display:flex;align-items:center;gap:8px}
+.sml-time{font-family:var(--font-bc);font-weight:600;font-size:11px;color:rgba(var(--chrome-ink),.25);min-width:32px;flex-shrink:0}
 .sml-teams{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.sml-t{font-family:var(--font-bc);font-weight:600;font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sml-tip{font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:600;letter-spacing:.3px;flex-shrink:0}
-.sml-stat{display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:50px}
-.sml-st-row{display:flex;align-items:center;justify-content:flex-end;gap:5px;font-family:var(--font-bc);line-height:1.2}
-.sml-st-l{font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.28);font-weight:700;width:9px;text-align:left}
-.sml-st-v{font-size:11px;font-weight:700;color:rgba(255,255,255,.82);min-width:28px;text-align:right}
+.sml-t{font-family:var(--font-bc);font-weight:600;font-size:12.5px;color:rgba(var(--chrome-ink),.72);display:flex;align-items:center;gap:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sml-stat{display:flex;gap:6px}
+.sml-st-cell{flex:1;display:flex;align-items:baseline;justify-content:center;gap:5px;background:rgba(var(--chrome-ink),.04);border-radius:7px;padding:5px 4px}
+.sml-st-l{font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:rgba(var(--chrome-ink),.32);font-weight:700;font-family:var(--font-bc)}
+.sml-st-v{font-size:16px;font-weight:800;color:rgba(var(--chrome-ink),.92);font-family:var(--font-bc)}
 .sml-st-v.sml-pts{color:#C8A84B}
-.sml-st-v.muted{color:rgba(255,255,255,.22)}
+.sml-st-v.muted{color:rgba(var(--chrome-ink),.22)}
+.sb-seg{font-family:var(--font-bc);font-weight:700;font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border:1px solid rgba(var(--chrome-ink),.15);background:none;color:rgba(var(--chrome-ink),.4);cursor:pointer;border-radius:5px}
+.sb-seg.on{border-color:#C8A84B;color:#C8A84B;background:rgba(200,168,75,.12)}
 
 /* ===== CENTER MAIN ===== */
 .bc-center{background:#F2F0EB;padding:22px 26px;overflow-y:auto}
@@ -254,6 +264,11 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 body.dark-mode .match-grid .mcard{border-color:rgba(255,255,255,.08)}
 @media(max-width:1100px){.match-grid{grid-template-columns:1fr;gap:0}.match-grid .mcard{border-radius:0;border:none;border-left:3px solid transparent;border-bottom:1px solid var(--border)}}
 .grp-mini-std{margin-bottom:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.grp-mini-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;align-items:start}
+.grp-mini-wrap .grp-mini-std{margin-bottom:0}
+@media(max-width:1100px){.grp-mini-wrap{grid-template-columns:1fr}}
+.gms-row-pred{grid-template-columns:26px 1fr !important}
+.gms-empty{padding:16px 10px;font-family:var(--font-bc);font-size:12px;color:rgba(var(--ink-rgb),.35);text-align:center}
 .gms-row{display:grid;grid-template-columns:26px 1fr 28px 28px 28px 28px 40px 34px;align-items:center;gap:4px;padding:6px 10px;font-family:var(--font-bc);font-weight:600;font-size:13px;color:var(--text-color)}
 .gms-row+.gms-row{border-top:1px solid rgba(var(--ink-rgb),.06)}
 .gms-head{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.45);font-weight:700;background:rgba(var(--ink-rgb),.03)}
@@ -291,11 +306,13 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 
 /* Tip inputs */
 .mc-inp{background:#FFFBF2;border-top:1px solid #E5E3DE;padding:8px 14px;display:flex;align-items:center;gap:8px}
-.sbox{width:44px;height:36px;border:1.5px solid #0A0A0A;text-align:center;font-family:var(--font-bc);font-weight:700;font-size:18px;color:#0A0A0A;background:#F2F0EB;outline:none}
-.sbox:focus{border-color:#C8A84B;background:#fff}
-.sbox.filled{background:#fff}
-.sbox:disabled{opacity:.4;cursor:not-allowed}
-.sdash{font-family:var(--font-bc);font-size:20px;color:#ccc;font-weight:300}
+.sbox{width:54px;height:52px;border:2px solid rgba(var(--ink-rgb),.18);border-radius:13px;text-align:center;font-family:var(--font-bc);font-weight:800;font-size:25px;color:var(--text-color);background:var(--bg-card);outline:none;transition:border-color .12s,box-shadow .12s;-webkit-appearance:none;-moz-appearance:textfield;appearance:none}
+.sbox::-webkit-outer-spin-button,.sbox::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sbox::placeholder{color:rgba(var(--ink-rgb),.25);font-weight:400}
+.sbox:focus{border-color:#C8A84B;box-shadow:0 0 0 3px rgba(200,168,75,.25)}
+.sbox.filled{border-color:#C8A84B}
+.sbox:disabled{opacity:.45;cursor:not-allowed}
+.sdash{font-family:var(--font-bc);font-size:24px;color:rgba(var(--ink-rgb),.3);font-weight:300}
 .btn-gold{flex:1;height:36px;background:#0A0A0A;color:#C8A84B;border:none;font-family:var(--font-bc);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;max-width:200px}
 .mc-saved{font-size:11px;color:#3EAD6A;font-family:var(--font-bc);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .mc-date{font-size:10px;color:rgba(10,10,10,.35);display:flex;align-items:center;gap:5px;padding:4px 14px;background:#F7F5F0;border-top:1px solid #E5E3DE;font-family:var(--font-bc);letter-spacing:.3px}
@@ -316,7 +333,13 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .team-b{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
 .tname{font-family:var(--font-bc);font-weight:700;font-size:13px;text-align:center;text-transform:uppercase;letter-spacing:.3px;color:#0A0A0A}
 .score-b{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:80px}
-.sinputs{display:flex;align-items:center;gap:6px}
+.sinputs{display:flex;align-items:center;gap:10px}
+.mc-actions{display:flex;gap:8px;flex-wrap:wrap;padding:8px 14px}
+.mc-actbtn{background:none;border:1px solid rgba(var(--ink-rgb),.2);padding:6px 14px;font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:rgba(var(--ink-rgb),.7);cursor:pointer;border-radius:7px}
+.mc-actbtn:hover{border-color:rgba(200,168,75,.5);color:var(--text-color)}
+.mc-tipsum{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 16px 12px;margin-top:-2px}
+.mc-tipsum-lbl{font-family:var(--font-bc);font-weight:700;font-size:15px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.6)}
+.mc-tipsum-none{font-size:13px;color:rgba(var(--ink-rgb),.4)}
 
 /* Tip categories */
 .ptag{font-family:var(--font-bc);font-size:11px;font-weight:700;padding:1px 7px;letter-spacing:.3px}
@@ -434,7 +457,8 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .pred-grp-tag{font-family:var(--font-bc);font-weight:700;font-size:10px;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:1px 5px;margin-left:4px}
 .divider{height:1px;background:rgba(var(--ink-rgb),.12);margin:20px 0}
 /* ===== PREDIKCIÓ FÜL ===== */
-.pred-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:8px}
+.pred-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:8px}
+@media(max-width:560px){.pred-group-grid{grid-template-columns:1fr}}
 .pred-group-card{background:var(--bg-card);border:1px solid var(--border)}
 .pred-group-card.done{border-color:rgba(200,168,75,.4)}
 .pred-group-h{background:#0A0A0A;font-family:var(--font-bc);font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#C8A84B;padding:7px 12px}
@@ -1245,11 +1269,8 @@ async function syncKickoffTimes(apiMatches){
       return (mHome===huHome&&mAway===huAway)||(mHome===huAway&&mAway===huHome);
     });
     if(!lm)return;
-    // CDT korrekció: az API CDT időzónát UTC-ként kezeli → -1h
-    const venue=GROUP_VENUE[lm.id]||'';
-    if(CDT_VENUES.has(venue)){
-      const dt=new Date(kickoff); dt.setHours(dt.getHours()-1); kickoff=dt.toISOString();
-    }
+    // Egységes -1h korrekció: az API minden (észak-amerikai) helyszínre 1 órával késő időt ad
+    { const dt=new Date(kickoff); dt.setHours(dt.getHours()-1); kickoff=dt.toISOString(); }
     const cur=S.ko[lm.id]||lm.koDefault;
     if(cur&&new Date(kickoff).getTime()!==new Date(cur).getTime())
       koUpdates[lm.id]=kickoff;
@@ -1416,13 +1437,8 @@ async function syncKickoffsFromAPI(){
       });
       if(!lm)return;
       let kickoff=am.kickoff;
-      // CDT korrekció: ha CDT helyszín, vonjunk le 1 órát az API hibás UTC-jéből
-      const venue=GROUP_VENUE[lm.id]||'';
-      if(CDT_VENUES.has(venue)){
-        const dt=new Date(kickoff);
-        dt.setHours(dt.getHours()-1);
-        kickoff=dt.toISOString();
-      }
+      // Egységes -1h korrekció: az API minden (észak-amerikai) helyszínre 1 órával késő időt ad
+      { const dt=new Date(kickoff); dt.setHours(dt.getHours()-1); kickoff=dt.toISOString(); }
       newKo[lm.id]=kickoff;
       updated++;
     });
@@ -1642,8 +1658,8 @@ function rMain(hw){
     </div>
     <div class="bc-user">
       ${langSwitcher()}
-      <button onclick="toggleTheme()" title="${t('theme_toggle_title')}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${S.theme==='light'?'🌙':'☀️'}</button>
-      <div class="bc-uinfo"><div>${S.user.dn}</div><div style="color:rgba(255,255,255,.25);font-size:9px">🏅 ${S.view==='leaderboard'?'ranglista':'tippelő'}</div></div>
+      <button onclick="toggleTheme()" title="${t('theme_toggle_title')}" style="background:rgba(var(--chrome-ink),.06);border:1px solid rgba(var(--chrome-ink),.14);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${S.theme==='light'?'🌙':'☀️'}</button>
+      <div class="bc-uinfo"><div>${S.user.dn}</div><div style="color:rgba(var(--chrome-ink),.3);font-size:9px">🏅 ${S.view==='leaderboard'?'ranglista':'tippelő'}</div></div>
       <div class="bc-av">${initials}</div>
     </div>
   </div>
@@ -1677,7 +1693,7 @@ function rSidebarLeft(){
     return `<div class="live-hero">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="lh-badge"><div class="bc-ticker-dot" style="background:#0A0A0A"></div>ÉLŐ${sc.minute?' · '+sc.minute:''}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.8px;text-transform:uppercase">${m.group?m.group+' csop.':''} · ${GROUP_VENUE[m.id]||''}</div>
+        <div style="font-size:9px;color:rgba(var(--chrome-ink),.3);letter-spacing:.8px;text-transform:uppercase">${m.group?m.group+' csop.':''} · ${GROUP_VENUE[m.id]||''}</div>
       </div>
       <div class="lh-match">
         <div class="lh-team"><div class="lh-flag">${teamFlag(h)}</div><div class="lh-tname">${teamName(h)}</div></div>
@@ -1701,24 +1717,26 @@ function rSidebarLeft(){
     const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}):'';
     const navGrp=m.group||(m.stage==='bronze'?'sf':m.stage)||'A';
     return `<div class="sml-item${isLive?' active':''}" data-v="matches" data-gomatch="${m.id}" data-grp="${navGrp}">
-      <div class="sml-time">${isLive?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:700;letter-spacing:1px"><span class="bc-ticker-dot" style="background:#C8A84B;width:5px;height:5px"></span>ÉLŐ</span>`:timeStr}</div>
-      <div class="sml-teams">
-        <div class="sml-t">${teamFlag(h)} ${teamName(h)}</div>
-        <div class="sml-t">${teamFlag(a)} ${teamName(a)}</div>
+      <div class="sml-top">
+        <div class="sml-time">${isLive?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:700;letter-spacing:1px"><span class="bc-ticker-dot" style="background:#C8A84B;width:5px;height:5px"></span>ÉLŐ</span>`:timeStr}</div>
+        <div class="sml-teams">
+          <div class="sml-t">${teamFlag(h)} ${teamName(h)}</div>
+          <div class="sml-t">${teamFlag(a)} ${teamName(a)}</div>
+        </div>
       </div>
       <div class="sml-stat">
-        <div class="sml-st-row"><span class="sml-st-l">T</span><span class="sml-st-v${tip?'':' muted'}">${tip?`${tip.homeGoals}-${tip.awayGoals}`:'–'}</span></div>
-        <div class="sml-st-row"><span class="sml-st-l">E</span><span class="sml-st-v${res?'':' muted'}">${res?`${res.homeGoals}:${res.awayGoals}`:'–'}</span></div>
-        <div class="sml-st-row"><span class="sml-st-l">P</span><span class="sml-st-v sml-pts${(res&&tip)?'':' muted'}">${(res&&tip)?'+'+(calcPts(tip,res,m.stage)||0):'–'}</span></div>
+        <div class="sml-st-cell"><span class="sml-st-l">Tipp</span><span class="sml-st-v${tip?'':' muted'}">${tip?`${tip.homeGoals}-${tip.awayGoals}`:'–'}</span></div>
+        <div class="sml-st-cell"><span class="sml-st-l">Ered</span><span class="sml-st-v${res?'':' muted'}">${res?`${res.homeGoals}:${res.awayGoals}`:'–'}</span></div>
+        <div class="sml-st-cell"><span class="sml-st-l">Pont</span><span class="sml-st-v sml-pts${(res&&tip)?'':' muted'}">${(res&&tip)?'+'+(calcPts(tip,res,m.stage)||0):'–'}</span></div>
       </div>
     </div>`;
   }).join('');
 
-  return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches">Mind →</div></div><div style="padding:3px 18px 5px;display:flex;justify-content:flex-end;gap:7px;font-family:var(--font-bc);font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.05)"><span>T·tipp</span><span>E·ered.</span><span>P·pont</span></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(255,255,255,.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
+  return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches">Mind →</div></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(var(--chrome-ink),.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
 }
 
 function rSidebarStats(){
-  const uid=S.user.id,eff=getEffectiveResults(),cfg=getLgCfg();
+  const uid=S.user.id,eff=(S.lbMode==='official'?S.results:getEffectiveResults()),cfg=getLgCfg();
   const r=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);
   const effLg=getEffectiveLgId();
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
@@ -1734,30 +1752,30 @@ function rSidebarStats(){
   else{const set=new Set([0]);for(let k=myIdx-2;k<=myIdx+2;k++){if(k>=0&&k<boardFull.length)set.add(k);}idxs=[...set].sort((a,b)=>a-b);}
   let rows='',prev=-1;
   idxs.forEach(i=>{
-    if(prev>=0&&i>prev+1)rows+=`<div style="text-align:center;color:rgba(255,255,255,.25);font-size:12px;padding:1px 0;letter-spacing:2px">⋯</div>`;
+    if(prev>=0&&i>prev+1)rows+=`<div style="text-align:center;color:rgba(var(--chrome-ink),.25);font-size:12px;padding:1px 0;letter-spacing:2px">⋯</div>`;
     const u=boardFull[i],me=u.id===uid;
-    rows+=`<div data-v="leaderboard" style="background:${me?'rgba(200,168,75,.12)':'#161616'};display:flex;align-items:center;gap:8px;padding:8px 10px;border-left:3px solid ${me?'#C8A84B':'transparent'};cursor:pointer">
-      <div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:${i===0?'#C8A84B':'rgba(255,255,255,.4)'};min-width:20px;text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.'}</div>
+    rows+=`<div data-v="leaderboard" style="background:${me?'rgba(200,168,75,.12)':'var(--chrome-elev)'};display:flex;align-items:center;gap:8px;padding:8px 10px;border-left:3px solid ${me?'#C8A84B':'transparent'};cursor:pointer">
+      <div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:${i===0?'#C8A84B':'rgba(var(--chrome-ink),.4)'};min-width:20px;text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.'}</div>
       <div style="font-size:15px">${u.av||'⚽'}</div>
-      <div style="flex:1;font-family:var(--font-bc);font-weight:600;font-size:13px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.dn}${me?'<span style="font-size:8px;color:#C8A84B;font-weight:700;letter-spacing:1px;margin-left:4px">ÉN</span>':''}</div>
-      <div style="font-family:var(--font-bc);font-weight:900;font-size:15px;color:#fff">${u.pts}</div>
+      <div style="flex:1;font-family:var(--font-bc);font-weight:600;font-size:13px;color:rgba(var(--chrome-ink),.85);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.dn}${me?'<span style="font-size:8px;color:#C8A84B;font-weight:700;letter-spacing:1px;margin-left:4px">ÉN</span>':''}</div>
+      <div style="font-family:var(--font-bc);font-weight:900;font-size:15px;color:rgb(var(--chrome-ink))">${u.pts}</div>
     </div>`;
     prev=i;
   });
   const lgSwitch=myLgs.length>1?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
-    ${myLgs.map(l=>`<button data-lbid="${l.id}" style="font-family:var(--font-bc);font-weight:700;font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;cursor:pointer;border:1px solid ${effLg===l.id?'#C8A84B':'rgba(255,255,255,.15)'};background:${effLg===l.id?'rgba(200,168,75,.15)':'transparent'};color:${effLg===l.id?'#C8A84B':'rgba(255,255,255,.5)'}">${l.name}</button>`).join('')}
+    ${myLgs.map(l=>`<button data-lbid="${l.id}" style="font-family:var(--font-bc);font-weight:700;font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;cursor:pointer;border:1px solid ${effLg===l.id?'#C8A84B':'rgba(var(--chrome-ink),.15)'};background:${effLg===l.id?'rgba(200,168,75,.15)':'transparent'};color:${effLg===l.id?'#C8A84B':'rgba(var(--chrome-ink),.5)'}">${l.name}</button>`).join('')}
   </div>`:'';
-  return `<div style="padding:16px 18px;border-top:1px solid rgba(255,255,255,.06)">
-    <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Saját pontjaim${myLgs.length>1?` · <span style="color:#C8A84B">${lgName}</span>`:''}</div>
+  return `<div style="padding:16px 18px;border-top:1px solid rgba(var(--chrome-ink),.06)">
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Saját pontjaim${myLgs.length>1?` · <span style="color:#C8A84B">${lgName}</span>`:''}</div>
     ${lgSwitch}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.06);margin-bottom:16px">
-      <div style="background:#161616;padding:10px;text-align:center"><div style="font-family:var(--font-bc);font-weight:900;font-size:24px;color:#fff;line-height:1">${r.pts}</div><div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">pont</div></div>
-      <div style="background:#161616;padding:10px;text-align:center"><div style="font-family:var(--font-bc);font-weight:900;font-size:24px;color:#C8A84B;line-height:1">${myPos||'–'}</div><div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">helyezés</div></div>
-      <div style="background:#161616;padding:10px;text-align:center"><div style="font-size:13px;margin-bottom:2px">⭐</div><div style="font-family:var(--font-bc);font-weight:700;font-size:17px;color:#fff;line-height:1">${r.pf}</div><div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase">telitalálat</div></div>
-      <div style="background:#161616;padding:10px;text-align:center"><div style="font-size:13px;margin-bottom:2px">🎯</div><div style="font-family:var(--font-bc);font-weight:700;font-size:17px;color:#fff;line-height:1">${r.rgd}</div><div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase">gólkülönbség</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(var(--chrome-ink),.06);margin-bottom:16px">
+      <div style="background:var(--chrome-elev);padding:10px;text-align:center"><div style="font-family:var(--font-bc);font-weight:900;font-size:24px;color:rgb(var(--chrome-ink));line-height:1">${r.pts}</div><div style="font-size:9px;color:rgba(var(--chrome-ink),.4);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">pont</div></div>
+      <div style="background:var(--chrome-elev);padding:10px;text-align:center"><div style="font-family:var(--font-bc);font-weight:900;font-size:24px;color:#C8A84B;line-height:1">${myPos||'–'}</div><div style="font-size:9px;color:rgba(var(--chrome-ink),.4);letter-spacing:.8px;text-transform:uppercase;margin-top:2px">helyezés</div></div>
+      <div style="background:var(--chrome-elev);padding:10px;text-align:center"><div style="font-size:13px;margin-bottom:2px">⭐</div><div style="font-family:var(--font-bc);font-weight:700;font-size:17px;color:rgb(var(--chrome-ink));line-height:1">${r.pf}</div><div style="font-size:9px;color:rgba(var(--chrome-ink),.4);letter-spacing:.8px;text-transform:uppercase">telitalálat</div></div>
+      <div style="background:var(--chrome-elev);padding:10px;text-align:center"><div style="font-size:13px;margin-bottom:2px">🎯</div><div style="font-family:var(--font-bc);font-weight:700;font-size:17px;color:rgb(var(--chrome-ink));line-height:1">${r.rgd}</div><div style="font-size:9px;color:rgba(var(--chrome-ink),.4);letter-spacing:.8px;text-transform:uppercase">gólkülönbség</div></div>
     </div>
-    <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline"><span>Ranglista</span><span class="sml-all" data-v="leaderboard" style="color:#C8A84B;cursor:pointer;font-size:10px">Teljes →</span></div>
-    <div style="display:flex;flex-direction:column;gap:1px;background:rgba(255,255,255,.06)">${rows||'<div style="padding:10px;font-size:11px;color:rgba(255,255,255,.25)">Nincs adat</div>'}</div>
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>Ranglista</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;gap:3px"><button class="sb-seg${S.lbMode!=='official'?' on':''}" data-lbmode="live">Élő</button><button class="sb-seg${S.lbMode==='official'?' on':''}" data-lbmode="official">Lezárt</button></div><span class="sml-all" data-v="leaderboard" style="color:#C8A84B;cursor:pointer;font-size:10px">Teljes →</span></div></div>
+    <div style="display:flex;flex-direction:column;gap:1px;background:rgba(var(--chrome-ink),.06)">${rows||'<div style="padding:10px;font-size:11px;color:rgba(var(--chrome-ink),.25)">Nincs adat</div>'}</div>
   </div>`;
 }
 
@@ -1874,13 +1892,20 @@ function rMatches(){
   </div>
   <div class="pill-row">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
   ${grp?(()=>{
-    const eff=getEffectiveResults();
+    const eff=(S.stMode==='official'?S.results:getEffectiveResults());
     const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
     const tc=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e63329';
-    return `<div class="grp-mini-std">
+    const liveTable=`<div class="grp-mini-std">
       <div class="gms-row gms-head"><span class="gms-pos">#</span><span class="gms-team">${S.lang==='en'?'Group '+grp.id:grp.id+'. csoport'}</span><span>M</span><span>GY</span><span>D</span><span>V</span><span>GK</span><span>P</span></div>
       ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span></span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
     </div>`;
+    const pred=S.predGroups?.[grp.id]||[];
+    const predCol=`<div class="grp-mini-std">
+      <div class="gms-row gms-head gms-row-pred"><span class="gms-pos">#</span><span class="gms-team">🔮 ${S.lang==='en'?'My prediction':'Az én predikcióm'}</span></div>
+      ${pred.length?pred.map((tm,i)=>`<div class="gms-row gms-row-pred"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(tm,16)}<span class="gms-tnm">${teamName(tm)}</span></span></div>`).join(''):`<div class="gms-empty">${S.lang==='en'?'No prediction yet':'Nincs még predikciód erre a csoportra'}</div>`}
+    </div>`;
+    return `<div class="pill-row" style="margin-bottom:10px"><button class="pill${S.stMode!=='official'?' on':' off'}" data-stmode="live">🔴 ${S.lang==='en'?'Live table':'Élő tabella'}</button><button class="pill${S.stMode==='official'?' on':' off'}" data-stmode="official">✓ ${S.lang==='en'?'Played only':'Lejátszott meccsek'}</button></div>
+    <div class="grp-mini-wrap">${liveTable}${predCol}</div>`;
   })():''}
   <div class="match-grid">${vis.map(m=>rCard(m)).join('')}</div>`;
 }
@@ -1934,8 +1959,25 @@ function rCard(m){
       </div>
       <div style="display:flex;align-items:center;gap:12px;justify-content:flex-end;min-width:0"><span style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(away)}</span>${fImg(away,38)}</div>
     </div>
-    ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 14px"><button id="stb_${m.id}" data-mid="${m.id}" style="font-family:var(--font-bc);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;background:#C8A84B;color:#0A0A0A;border:none;padding:9px 28px;cursor:pointer">💾 ${t('save_tip')}</button></div>`:''}
+    ${((res&&tip)||(live&&tip))?(()=>{
+      const r=res||{homeGoals:live.h,awayGoals:live.a};
+      const p=calcPts(tip,r,m.stage),c=ptsCat(tip,r,m.stage);
+      return `<div class="mc-tipsum"><span class="mc-tipsum-lbl">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${c||'p0'}">${catLbl[c]||''} ${p}p${isKO?' (×2)':''}${live?' · '+t('live_badge'):''}</span></div>`;
+    })():res?`<div class="mc-tipsum mc-tipsum-none">${t('no_tip_match')}</div>`:''}
+    ${!res&&!isPast&&!live&&!isTBD?`<div style="text-align:center;padding:0 16px 14px"><button id="stb_${m.id}" data-mid="${m.id}" style="font-family:var(--font-bc);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;background:#C8A84B;color:#0A0A0A;border:none;padding:9px 28px;cursor:pointer">${t('save_tip')}</button></div>`:''}
     ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span></div>`:''}
+    ${(()=>{
+      const allU=S.users.filter(u=>!u.isAdmin);
+      const tipsCount=allU.map(u=>S.tips[`${u.id}_${m.id}`]).filter(Boolean).length;
+      const wcId=S.wcIds?.[m.id];
+      const btns=[];
+      if(tipsCount>=2)btns.push(`<button class="mc-actbtn" data-exptips="${m.id}">👥 ${S.expandTips===m.id?'Bezár ▴':'Mindenki tippje ▾'}</button>`);
+      if(wcId){
+        btns.push(`<button class="mc-actbtn" data-explineup="${m.id}" data-wcid="${wcId}">${S.expandLineup===m.id?'Bezár ▴':'👕 Felállás'}</button>`);
+        btns.push(`<button class="mc-actbtn" data-expstats="${m.id}" data-wcid="${wcId}">${S.expandStats===m.id?'Bezár ▴':'📊 Statisztika'}</button>`);
+      }
+      return btns.length?`<div class="mc-actions">${btns.join('')}</div>`:'';
+    })()}
     ${(()=>{
       const allU=S.users.filter(u=>!u.isAdmin);
       const tips=allU.map(u=>S.tips[`${u.id}_${m.id}`]).filter(Boolean);
@@ -1973,9 +2015,6 @@ function rCard(m){
         }).join('')}
       </div>`:'';
       return `<div>
-        <div style="padding:6px 14px 8px">
-          <button data-exptips="${m.id}" style="font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;background:none;border:1px solid rgba(var(--ink-rgb),.2);color:rgba(var(--ink-rgb),.7);cursor:pointer;padding:5px 12px">👥 ${isExp?'Bezár ▴':'Mindenki tippje ▾'}</button>
-        </div>
         ${isExp?`<div style="padding:0 14px 6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:10px;color:rgba(var(--ink-rgb),.35);font-weight:600">👥 ${tot} tipp</span>
           <div style="display:flex;gap:2px;flex:1;min-width:100px;height:6px;border-radius:3px;overflow:hidden">${hW?`<div style="width:${pct(hW)}%;background:#4a9eff"></div>`:''}${dr?`<div style="width:${pct(dr)}%;background:#c9a84c"></div>`:''}${aW?`<div style="width:${pct(aW)}%;background:#e8212a"></div>`:''}</div>
@@ -1985,7 +2024,6 @@ function rCard(m){
         ${expHtml}
       </div>`;
     })()}
-    ${res&&tip?`<div class="mc-res"><span style="color:rgba(var(--ink-rgb),.45)">${t('your_tip')} ${tip.homeGoals}–${tip.awayGoals}</span><span class="ptag ${cat||'p0'}">${catLbl[cat]||''} ${pts}p${isKO?' (×2)':''}</span></div>`:res?`<div class="mc-res" style="justify-content:center;color:rgba(var(--ink-rgb),.4);font-size:12px">${t('no_tip_match')}</div>`:''}
     ${(()=>{
       const wcId=S.wcIds?.[m.id];
       if(!wcId)return '';
@@ -2018,10 +2056,6 @@ function rCard(m){
         </div>
       </div>`:isExp&&!lu?`<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`:'';
       return `<div>
-        <div style="padding:4px 14px 8px;display:flex;gap:6px">
-          <button data-explineup="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.2);padding:5px 12px;font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:rgba(var(--ink-rgb),.7);cursor:pointer">${isExp?'Bezár ▴':'👕 Felállás'}</button>
-          <button data-expstats="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.2);padding:5px 12px;font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:rgba(var(--ink-rgb),.7);cursor:pointer">${S.expandStats===m.id?'Bezár ▴':'📊 Statisztika'}</button>
-        </div>
         ${expHtml}
         ${(()=>{
           if(S.expandStats!==m.id)return '';
@@ -2217,9 +2251,9 @@ function rGroupForecast(){
   });
   return `<div class="std-card" style="margin-top:16px">
     <div class="std-head"><span class="std-glbl">🔮 Csoport előrejelzés</span><span class="std-t" style="font-size:11px;color:rgba(var(--ink-rgb),.4)">(tippek alapján)</span></div>
-    <div style="display:flex;flex-wrap:nowrap;gap:10px;padding:4px 0 8px;overflow-x:auto">
+    <div style="display:flex;flex-wrap:nowrap;gap:8px;padding:4px 0 8px">
       ${forecastData.map(({g,sorted,counts})=>`
-        <div style="flex:0 0 190px;background:rgba(var(--ink-rgb),.04);border-radius:10px;padding:10px">
+        <div style="flex:1 1 0;min-width:0;background:rgba(var(--ink-rgb),.04);border-radius:10px;padding:9px 8px">
           <div style="font-size:11px;font-weight:700;color:var(--c-gold);margin-bottom:7px">${g}. csoport</div>
           ${sorted.map((tm,i)=>{
             const bar=Math.round((counts[tm]._pts||0)/Math.max(...sorted.map(t=>counts[t]._pts||1))*100);
