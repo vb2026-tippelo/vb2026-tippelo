@@ -340,6 +340,16 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .mc-tipsum{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 16px 12px;margin-top:-2px}
 .mc-tipsum-lbl{font-family:var(--font-bc);font-weight:700;font-size:15px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.6)}
 .mc-tipsum-none{font-size:13px;color:rgba(var(--ink-rgb),.4)}
+.mc-tbd-main{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:22px 18px}
+.mc-tbd-slot{font-family:var(--font-bc);font-weight:700;font-size:15px;letter-spacing:.3px;text-transform:uppercase;color:rgba(var(--ink-rgb),.72);text-align:center;line-height:1.25}
+.mc-tbd-vs{font-family:var(--font-bc);font-weight:700;font-size:12px;letter-spacing:1px;color:rgba(var(--ink-rgb),.3);text-transform:uppercase}
+.site-footer{margin-top:34px;padding:18px 4px 28px;border-top:1px solid var(--border)}
+.foot-links{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.foot-link{background:none;border:none;cursor:pointer;font-family:var(--font-bc);font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.5);padding:2px 4px}
+.foot-link:hover{color:#C8A84B}
+.foot-sep{color:rgba(var(--ink-rgb),.25)}
+.foot-copy{text-align:center;margin-top:10px;font-size:11px;color:rgba(var(--ink-rgb),.35);font-family:var(--font-bc);letter-spacing:.5px}
+@media(max-width:900px){.site-footer{padding-bottom:84px}}
 
 /* Tip categories */
 .ptag{font-family:var(--font-bc);font-size:11px;font-weight:700;padding:1px 7px;letter-spacing:.3px}
@@ -389,7 +399,12 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 /* ===== PILLS ===== */
 .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .pill-row-nav{flex-wrap:nowrap;gap:4px;overflow:hidden}
-.pill-row-nav .pill{flex:1 1 auto;min-width:0;text-align:center;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill-row-nav .pill{flex:1 1 auto;min-width:0;text-align:center;padding:7px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--border);background:rgba(var(--ink-rgb),.05);color:rgba(var(--ink-rgb),.7);border-radius:8px}
+.pill-row-nav .pill.off{opacity:1}
+.pill-row-nav .pill.on{border-color:#C8A84B;background:rgba(200,168,75,.16);color:#C8A84B}
+.pill-row-nav .pill:hover{border-color:var(--border-gold)}
+.lbhist-pill{font-family:var(--font-bc);font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border:1px solid var(--border);background:rgba(var(--ink-rgb),.04);color:rgba(var(--ink-rgb),.6);border-radius:6px;cursor:pointer}
+.lbhist-pill.on{border-color:#C8A84B;background:rgba(200,168,75,.15);color:#C8A84B}
 .pill{padding:5px 14px;font-family:var(--font-bc);font-weight:600;font-size:12px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;border:1.5px solid rgba(10,10,10,.15);color:rgba(10,10,10,.45);background:transparent;transition:all .12s}
 .pill.on{border-color:#0A0A0A;color:#0A0A0A;background:transparent}
 .pill.off{opacity:.6}
@@ -433,6 +448,8 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .wk-sep{height:1px;background:#eee}
 .wk-score{font-family:var(--font-bc);font-weight:900;font-size:13px;color:#0A0A0A;min-width:20px;text-align:right;margin-left:auto}
 .wk-win{font-weight:900;color:#0A0A0A}
+button[data-predko].wk-win{color:#2E9E5A!important;background:rgba(46,158,90,.13)!important}
+button[data-predko].wk-win .wk-tnm{color:#2E9E5A!important}
 .bk-mob-card{background:#fff;border:1px solid #ddd;border-left:3px solid transparent;padding:10px 12px;margin-bottom:6px;cursor:pointer}
 .bk-mob-teams{display:flex;align-items:center;gap:10px}
 .bk-mob-team{flex:1;font-family:var(--font-bc);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.3px;color:#0A0A0A}
@@ -1017,7 +1034,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all'
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1410,6 +1427,60 @@ function exportLbImage(){
   });
 }
 
+function _imgOut(blob,fname){
+  const file=new File([blob],fname,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'VB 2026 Tippelő'}).catch(()=>{}); return;
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  if(typeof showMsg==='function')showMsg('imgDone','✓ Kép elkészült');
+}
+function exportTipsImage(){
+  const uid=S.user.id,cfg=getLgCfg(),eff=getEffectiveResults();
+  const r=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);
+  const board=S.users.filter(u=>!u.isAdmin).map(u=>({id:u.id,...calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg)})).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd);
+  const rank=board.findIndex(u=>u.id===uid)+1;
+  const uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
+  const w=640,h=360,pad=30;
+  const c=document.createElement('canvas');c.width=w*2;c.height=h*2;
+  const ctx=c.getContext('2d');ctx.scale(2,2);
+  const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,'#0A0A0A');grad.addColorStop(1,'#191919');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#C8A84B';ctx.fillRect(0,0,w,6);
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#C8A84B';ctx.font='bold 23px sans-serif';ctx.fillText('🏆 VB 2026 Tippelő',pad,52);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='13px sans-serif';ctx.fillText(S.lang==='en'?'My tips':'A tippjeim',pad,74);
+  ctx.fillStyle='#fff';ctx.font='bold 32px sans-serif';ctx.fillText(S.user.dn,pad,118);
+  // two big boxes
+  const boxY=140,boxH=78,gap=14,boxW=(w-2*pad-gap)/2;
+  const box=(x,val,lbl,col)=>{
+    ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(x,boxY,boxW,boxH);
+    ctx.fillStyle=col;ctx.font='bold 38px sans-serif';ctx.textAlign='center';ctx.fillText(val,x+boxW/2,boxY+46);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='12px sans-serif';ctx.fillText(lbl,x+boxW/2,boxY+66);
+    ctx.textAlign='left';
+  };
+  box(pad,String(r.pts),S.lang==='en'?'POINTS':'PONT','#C8A84B');
+  box(pad+boxW+gap,rank?('#'+rank):'–',S.lang==='en'?'RANK':'HELYEZÉS','#fff');
+  // stat strip
+  const sy=boxY+boxH+34;
+  const stats=[['⭐',r.pf,S.lang==='en'?'perfect':'telitalálat'],['🎯',r.rgd,S.lang==='en'?'GD':'gólkül.'],['✓',r.res3,S.lang==='en'?'outcome':'eredmény'],['📝',r.tipped,'tipp']];
+  const sw=(w-2*pad)/stats.length;
+  stats.forEach((s,i)=>{
+    const x=pad+i*sw+sw/2;
+    ctx.textAlign='center';
+    ctx.fillStyle='#fff';ctx.font='bold 22px sans-serif';ctx.fillText(s[0]+' '+s[1],x,sy);
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='11px sans-serif';ctx.fillText(s[2],x,sy+20);
+    ctx.textAlign='left';
+  });
+  let fy=sy+54;
+  if(uw){ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='14px sans-serif';ctx.fillText('🏆 '+(S.lang==='en'?'Winner: ':'Győztes: ')+teamName(uw),pad,fy);fy+=24;}
+  if(ut){ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='14px sans-serif';ctx.fillText('⚽ '+(S.lang==='en'?'Top scorer: ':'Gólkirály: ')+ut,pad,fy);}
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px sans-serif';
+  ctx.fillText(new Date().toLocaleDateString('hu-HU')+'  ·  '+location.href.split('?')[0].replace(/^https?:\/\//,''),pad,h-18);
+  c.toBlob(blob=>{ if(blob)_imgOut(blob,'vb2026_tippjeim.png'); });
+}
 function getLbBoard(){
   const cfg=getLgCfg(),effLg=getEffectiveLgId();
   const eff=(S.lbMode==='official')?S.results:getEffectiveResults();
@@ -1692,7 +1763,7 @@ function rMain(hw){
   </div>
   <div class="bc-layout">
     <div class="bc-sidebar-l">${sidebarL}</div>
-    <div class="bc-center">${vc}</div>
+    <div class="bc-center">${vc}${rFooter()}</div>
   </div>
   <nav class="mobile-nav">
     ${tabs.slice(0,5).map(tb=>`<div class="mn-item${S.view===tb.id?' on':''}" data-v="${tb.id}">${tb.icon}<span>${tb.l}</span></div>`).join('')}
@@ -1964,7 +2035,22 @@ function rCard(m){
   const live=!res?S.live[m.id]:null;
   const hl=S.highlightMatch===m.id;
 
-  if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
+  if(isTBD){
+    const hLbl=slotLabel(m.id,0),aLbl=slotLabel(m.id,1);
+    return `<div class="mcard locked" id="match-${m.id}">
+    <div class="mc-top" style="display:flex;align-items:center;gap:10px;padding:9px 14px;flex-wrap:wrap">
+      <span style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:2px 8px">${grpLbl}</span>
+      <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span>
+      ${isKO?'<span style="font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:.5px;background:rgba(var(--ink-rgb),.06);border:1px solid rgba(200,168,75,.4);color:#C8A84B;padding:2px 7px">×2 KO</span>':''}
+      ${venue?`<span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4)">📍 ${venue}</span>`:''}
+    </div>
+    <div class="mc-tbd-main">
+      <div class="mc-tbd-slot">${hLbl}</div>
+      <div class="mc-tbd-vs">vs</div>
+      <div class="mc-tbd-slot">${aLbl}</div>
+    </div>
+  </div>`;
+  }
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
     <div class="mc-top" style="display:flex;align-items:center;gap:10px;padding:9px 14px;flex-wrap:wrap">
@@ -1978,9 +2064,9 @@ function rCard(m){
       <div style="display:flex;align-items:center;gap:12px;min-width:0">${fImg(home,38)}<span style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(home)}</span></div>
       <div style="text-align:center">
         ${res?`<div style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:var(--text-color);display:flex;align-items:center;gap:8px;justify-content:center"><span>${res.homeGoals}</span><span style="color:rgba(var(--ink-rgb),.2);font-weight:300;font-size:30px">:</span><span>${res.awayGoals}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Result':'Eredmény'}</div>`:live?`<div style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:#CC2929;display:flex;align-items:center;gap:8px;justify-content:center"><span>${live.h}</span><span style="color:rgba(var(--ink-rgb),.25);font-weight:300;font-size:30px">:</span><span>${live.a}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Live':'Élő'}</div>`:`<div class="sinputs" style="justify-content:center">
-          <input type="number" class="sbox${(th!=='')?(' filled'):''}" id="sh_${m.id}" min="0" max="20" value="${th}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
+          <input type="text" inputmode="numeric" class="sbox${(th!=='')?(' filled'):''}" id="sh_${m.id}" value="${th}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
           <span class="sdash">–</span>
-          <input type="number" class="sbox${(ta!=='')?(' filled'):''}" id="sa_${m.id}" min="0" max="20" value="${ta}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
+          <input type="text" inputmode="numeric" class="sbox${(ta!=='')?(' filled'):''}" id="sa_${m.id}" value="${ta}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
         </div>`}
         <div class="mc-saved" id="sv_${m.id}" style="text-align:center">${saved?t('saved'):''}</div>
       </div>
@@ -2398,6 +2484,13 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <p>Írj e-mailt: <a href="mailto:info@forma1fitnesz.hu">info@forma1fitnesz.hu</a></p>`
   }
 };
+function rFooter(){
+  const links=[['aszf',S.lang==='en'?'Terms':'ÁSZF'],['adatkezeles',S.lang==='en'?'Privacy':'Adatkezelés'],['gyik','GYIK'],['impresszum',S.lang==='en'?'Imprint':'Impresszum'],['cookie','Cookie']];
+  return `<div class="site-footer">
+    <div class="foot-links">${links.map(([k,l])=>`<button class="foot-link" data-legal="${k}">${l}</button>`).join('<span class="foot-sep">·</span>')}</div>
+    <div class="foot-copy">© 2026 VB 2026 Tippelő</div>
+  </div>`;
+}
 function rLegal(){
   const pg=LEGAL[S.legalModal];
   if(!pg)return '';
@@ -3049,7 +3142,10 @@ function rMyTips(){
   return `<div>
     <div style="border-bottom:2px solid #0A0A0A;padding-bottom:6px;margin-bottom:16px;display:flex;align-items:flex-end;justify-content:space-between">
       <div style="font-family:var(--font-bc);font-weight:700;font-size:20px;color:var(--text-color);letter-spacing:.5px;text-transform:uppercase;line-height:1">Saját tippjeim</div>
-      <button id="shareTipsBtn" class="btn-sm gold" style="font-size:11px">Megosztás →</button>
+      <div style="display:flex;gap:6px">
+        <button id="shareTipsImgBtn" class="btn-sm" style="font-size:11px">📷 ${S.lang==='en'?'Image':'Kép'}</button>
+        <button id="shareTipsBtn" class="btn-sm gold" style="font-size:11px">${S.lang==='en'?'Share':'Megosztás'} →</button>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(var(--ink-rgb),.1);margin-bottom:20px">
       ${statCells.map(x=>`<div style="background:var(--bg-card);padding:12px 10px;text-align:center">
@@ -3065,7 +3161,7 @@ function rMyTips(){
         ${ut?`<div><div style="font-size:9px;color:rgba(var(--ink-rgb),.4);font-family:var(--font-bc);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Gólkirály</div><div style="font-family:var(--font-bc);font-weight:700;font-size:15px;color:var(--text-color)">${ut}${tPts?` <span style="color:#2E9E5A">+${tPts}p ✓</span>`:S.adminSpec?.top?` <span style="color:#CC2929">✗</span>`:''}</div></div>`:''}
       </div>
     </div>`:''}
-    <div class="pill-row">
+    <div class="pill-row pill-row-nav">
       <button class="pill ${fg==='all'?'on':'off'}" data-tg="all">${S.lang==='en'?'All':'Mind'}</button>
       ${grpKeys.map(k=>`<button class="pill ${fg===k?'on':'off'}" data-tg="${k}">${GD.some(g=>g.id===k)?(S.lang==='en'?'Group '+k:k):(stageLabel(k)||k)}</button>`).join('')}
     </div>
@@ -3103,8 +3199,13 @@ function rUserHistory(targetUid,cfg){
       return a.id-b.id;
     });
   if(!tipped.length)return `<div style="padding:10px 4px;font-size:12.5px;color:rgba(var(--ink-rgb),.5)">${t('no_tips_yet')}</div>`;
+  const fHist=S.lbHist||'all';
+  const hasLiveT=tipped.some(m=>!!S.live[m.id]);
+  const keys=[...new Set(tipped.map(m=>m.group||m.stage))];
+  const filtered=fHist==='all'?tipped:fHist==='live'?tipped.filter(m=>!!S.live[m.id]):tipped.filter(m=>(m.group||m.stage)===fHist);
   const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
-  return `<div style="padding:8px 4px 2px">${tipped.map(m=>{
+  const filtRow=`<div style="display:flex;flex-wrap:wrap;gap:4px;padding:8px 0 6px"><button class="lbhist-pill${fHist==='all'?' on':''}" data-lbhist="all">${S.lang==='en'?'All':'Mind'}</button>${hasLiveT?`<button class="lbhist-pill${fHist==='live'?' on':''}" data-lbhist="live">🔴 ${S.lang==='en'?'Live':'Élő'}</button>`:''}${keys.map(k=>`<button class="lbhist-pill${fHist===k?' on':''}" data-lbhist="${k}">${k.length===1?(S.lang==='en'?'Gr '+k:k):stageLabel(k)}</button>`).join('')}</div>`;
+  return `<div style="padding:4px 4px 2px" onclick="event.stopPropagation()">${filtRow}${filtered.length?filtered.map(m=>{
     const tip=S.tips[`${targetUid}_${m.id}`],r=eff[m.id],p=r?calcPts(tip,r,m.stage,cfg):null,cat=r?ptsCat(tip,r,m.stage,cfg):null;
     const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
     const hidden=targetUid!==S.user.id&&!isLocked(m);
@@ -3115,7 +3216,7 @@ function rUserHistory(targetUid,cfg){
       ${hidden?`<span style="color:rgba(var(--ink-rgb),.35);font-style:italic">${t('hidden_tip')}</span>`:`<span style="color:rgba(var(--ink-rgb),.75)">${t('your_tip')} ${tip.homeGoals}-${tip.awayGoals}</span>
       ${r?`<span style="margin-left:auto;font-weight:700;color:${r.live?'#e63329':'var(--text-color)'}">${r.live?'🔴 ':''}${r.homeGoals}-${r.awayGoals} · <span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span></span>`:`<span style="margin-left:auto;color:rgba(var(--ink-rgb),.4)">${t('expected')}</span>`}`}
     </div>`;
-  }).join('')}</div>`;
+  }).join(''):`<div style="padding:10px 4px;font-size:12px;color:rgba(var(--ink-rgb),.4)">${S.lang==='en'?'No matches for this filter':'Nincs meccs ehhez a szűrőhöz'}</div>`}</div>`;
 }
 function rLb(){
   const uid=S.user.id;
@@ -3708,6 +3809,7 @@ function bindMain(hw){
     const id=inp.id;if(!id)return;
     const mid=parseInt(id.replace('sh_','').replace('sa_',''));
     if(isNaN(mid))return;
+    inp.addEventListener('input',()=>{const c=inp.value.replace(/[^0-9]/g,'').slice(0,2);if(c!==inp.value)inp.value=c;});
     inp.addEventListener('blur',()=>autoSave(mid));
     inp.addEventListener('keydown',e=>{if(e.key==='Enter')autoSave(mid);});
   });
@@ -3839,6 +3941,7 @@ function bindMain(hw){
   document.getElementById('exportCsvBtn')?.addEventListener('click',()=>exportLbCsv());
   document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
+  document.getElementById('shareTipsImgBtn')?.addEventListener('click',exportTipsImage);
   document.getElementById('notifToggleBtn')?.addEventListener('click',togglePushNotif);
   document.getElementById('h2hSel')?.addEventListener('change',e=>SS({h2hOpp:e.target.value||null}));
   document.querySelectorAll('[data-exptips]').forEach(b=>b.addEventListener('click',e=>{
@@ -3857,6 +3960,9 @@ function bindMain(hw){
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
     const tid=e.currentTarget.dataset.explb;
     SS({expandLb:S.expandLb===tid?null:tid});
+  }));
+  document.querySelectorAll('[data-lbhist]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();SS({lbHist:e.currentTarget.dataset.lbhist});
   }));
   document.querySelectorAll('[data-editlg]').forEach(b=>b.addEventListener('click',e=>{
     const lid=e.currentTarget.dataset.editlg;
