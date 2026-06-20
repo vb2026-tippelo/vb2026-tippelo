@@ -1584,7 +1584,7 @@ function rLiveNow(){
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.08);font-size:13px;cursor:pointer">
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-color)">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</span>
         <span style="font-weight:800;color:#e63329;font-size:15px">${sc.h}–${sc.a}</span>
-        ${sc.minute?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;min-width:28px;text-align:center">${sc.minute}</span>`:''}
+        ${sc.minute!==undefined&&sc.minute!==''?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;min-width:28px;text-align:center">${sc.minute}</span>`:''}
         ${tip?`<span style="color:rgba(var(--ink-rgb),.5);font-size:11px">${t('tip_label')}: ${tip.homeGoals}-${tip.awayGoals}</span>`:''}
         <span style="color:rgba(var(--ink-rgb),.3);font-size:13px">›</span>
       </div>`;
@@ -1670,7 +1670,7 @@ function rCard(m){
   if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
-    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}${live.minute?' '+live.minute:''}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span class="mc-venue-info">📍 ${venue}${localTime?` · ⏰ ${localTime}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.35)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''} ${wx?`<span class="mc-wx">${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
+    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}${live.minute!==undefined&&live.minute!==''?' '+live.minute:''}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span class="mc-venue-info">📍 ${venue}${localTime?` · ⏰ ${localTime}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.35)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''} ${wx?`<span class="mc-wx">${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
     <div class="mc-main">
       <div class="team-b home">${fImg(home,40)}<span class="tname">${teamName(home)}</span></div>
       <div class="score-b">
