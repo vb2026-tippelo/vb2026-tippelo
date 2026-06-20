@@ -350,6 +350,17 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .foot-sep{color:rgba(var(--ink-rgb),.25)}
 .foot-copy{text-align:center;margin-top:10px;font-size:11px;color:rgba(var(--ink-rgb),.35);font-family:var(--font-bc);letter-spacing:.5px}
 @media(max-width:900px){.site-footer{padding-bottom:84px}}
+.legal-overlay{position:fixed;inset:0;background:var(--bg-modal);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.legal-box{background:var(--bg-card);color:var(--text-color);max-width:640px;width:100%;max-height:85vh;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.legal-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.legal-hdr h2{margin:0;font-family:var(--font-bc);font-weight:700;font-size:20px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-color)}
+.legal-close{background:rgba(var(--ink-rgb),.06);border:1px solid var(--border);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text-color);flex-shrink:0}
+.legal-close:hover{border-color:var(--border-gold)}
+.legal-body{padding:18px 20px 24px;overflow-y:auto;font-size:13.5px;line-height:1.55;color:rgba(var(--ink-rgb),.82)}
+.legal-body h3{font-family:var(--font-bc);font-weight:700;font-size:15px;letter-spacing:.3px;margin:16px 0 6px;color:var(--text-color)}
+.legal-body h3:first-child{margin-top:0}
+.legal-body p{margin:0 0 10px}
+.legal-body a{color:#C8A84B;cursor:pointer;text-decoration:underline}
 
 /* Tip categories */
 .ptag{font-family:var(--font-bc);font-size:11px;font-weight:700;padding:1px 7px;letter-spacing:.3px}
@@ -405,6 +416,8 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .pill-row-nav .pill:hover{border-color:var(--border-gold)}
 .lbhist-pill{font-family:var(--font-bc);font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border:1px solid var(--border);background:rgba(var(--ink-rgb),.04);color:rgba(var(--ink-rgb),.6);border-radius:6px;cursor:pointer}
 .lbhist-pill.on{border-color:#C8A84B;background:rgba(200,168,75,.15);color:#C8A84B}
+.tiprow-share{background:none;border:none;cursor:pointer;font-size:14px;opacity:.45;padding:2px;line-height:1}
+.tiprow-share:hover{opacity:1}
 .pill{padding:5px 14px;font-family:var(--font-bc);font-weight:600;font-size:12px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;border:1.5px solid rgba(10,10,10,.15);color:rgba(10,10,10,.45);background:transparent;transition:all .12s}
 .pill.on{border-color:#0A0A0A;color:#0A0A0A;background:transparent}
 .pill.off{opacity:.6}
@@ -1480,6 +1493,90 @@ function exportTipsImage(){
   ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px sans-serif';
   ctx.fillText(new Date().toLocaleDateString('hu-HU')+'  ·  '+location.href.split('?')[0].replace(/^https?:\/\//,''),pad,h-18);
   c.toBlob(blob=>{ if(blob)_imgOut(blob,'vb2026_tippjeim.png'); });
+}
+function exportPredImage(){
+  const W=1200,pad=36;
+  const gCols=4,gRows=3,gGap=16;
+  const cardW=(W-2*pad-(gCols-1)*gGap)/gCols;
+  const cardH=156;
+  const groupsTop=118;
+  const groupsH=gRows*cardH+(gRows-1)*gGap;
+  const bracketTop=groupsTop+groupsH+64;
+  const third8Done=S.predThird8.length===8;
+  let r32=null; if(third8Done){try{r32=resolvePredR32();}catch(e){r32=null;}}
+  const cache={};
+  const rounds=[
+    {fns:Array.from({length:16},(_,i)=>73+i)},
+    {fns:Array.from({length:8},(_,i)=>89+i)},
+    {fns:Array.from({length:4},(_,i)=>97+i)},
+    {fns:[101,102]},
+    {fns:[104]},
+  ];
+  const bracketH=r32?940:50;
+  const H=bracketTop+bracketH+(r32?70:40)+30;
+  const c=document.createElement('canvas');c.width=W*2;c.height=H*2;
+  const ctx=c.getContext('2d');ctx.scale(2,2);
+  const grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,'#0A0A0A');grad.addColorStop(1,'#171717');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#C8A84B';ctx.fillRect(0,0,W,6);
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#C8A84B';ctx.font='bold 26px sans-serif';ctx.fillText('🏆 VB 2026 Tippelő – Predikció',pad,52);
+  ctx.fillStyle='rgba(255,255,255,.55)';ctx.font='14px sans-serif';ctx.fillText(S.user.dn,pad,78);
+  ctx.fillStyle='#fff';ctx.font='bold 16px sans-serif';ctx.fillText(S.lang==='en'?'Group predictions':'Csoport-végeredmények',pad,groupsTop-14);
+  const tierCol=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e85d5d';
+  GD.forEach((g,gi)=>{
+    const col=gi%gCols,row=Math.floor(gi/gCols);
+    const x=pad+col*(cardW+gGap),y=groupsTop+row*(cardH+gGap);
+    ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(x,y,cardW,cardH);
+    ctx.fillStyle='#C8A84B';ctx.font='bold 14px sans-serif';ctx.fillText((S.lang==='en'?'Group '+g.id:g.id+'. csoport'),x+12,y+24);
+    const order=S.predGroups[g.id]||[];
+    if(order.length){
+      order.forEach((tm,i)=>{
+        const ty=y+48+i*26;
+        ctx.fillStyle=tierCol(i);ctx.font='bold 13px sans-serif';ctx.fillText((i+1)+'.',x+12,ty);
+        ctx.fillStyle='#fff';ctx.font='13px sans-serif';
+        let nm=teamFlag(tm)+' '+teamName(tm);
+        while(ctx.measureText(nm).width>cardW-44&&nm.length>4){nm=nm.slice(0,-1);}
+        ctx.fillText(nm,x+34,ty);
+      });
+    } else {ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='12px sans-serif';ctx.fillText(S.lang==='en'?'no prediction':'nincs tipp',x+12,y+58);}
+  });
+  ctx.fillStyle='#fff';ctx.font='bold 16px sans-serif';ctx.fillText(S.lang==='en'?'Knockout bracket':'Kieséses ágrajz',pad,bracketTop-14);
+  if(!r32){
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='14px sans-serif';ctx.fillText(S.lang==='en'?'Bracket prediction incomplete':'Az ágrajz-predikció még hiányos.',pad,bracketTop+22);
+  } else {
+    const colW=(W-2*pad)/5;
+    const labels=S.lang==='en'?['R32','R16','QF','SF','Final']:['32 között','16 között','Negyeddöntő','Elődöntő','Döntő'];
+    rounds.forEach((rd,ri)=>{
+      const cx=pad+ri*colW;
+      ctx.fillStyle='#C8A84B';ctx.font='bold 12px sans-serif';ctx.fillText(labels[ri],cx+6,bracketTop+12);
+      const N=rd.fns.length,slot=bracketH/N,bw=colW-12;
+      rd.fns.forEach((fn,i)=>{
+        const teams=predTeamsForFifaNum(fn,r32,cache);
+        const cyc=bracketTop+28+i*slot+slot/2,boxY=cyc-19;
+        ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(cx+6,boxY,bw,38);
+        if(teams){
+          const pick=S.predKO[fn];
+          const drawTeam=(tm,side,yy)=>{
+            const picked=pick===side;
+            ctx.fillStyle=picked?'#3ec46f':'rgba(255,255,255,.5)';
+            ctx.font=(picked?'bold ':'')+'11px sans-serif';
+            let nm=teamFlag(tm)+' '+teamName(tm);
+            while(ctx.measureText(nm).width>bw-14&&nm.length>4){nm=nm.slice(0,-1);}
+            ctx.fillText(nm,cx+13,yy);
+          };
+          drawTeam(teams.home,'home',cyc-3);
+          drawTeam(teams.away,'away',cyc+14);
+        } else {ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='11px sans-serif';ctx.fillText('?',cx+13,cyc+4);}
+      });
+    });
+    const finalTeams=predTeamsForFifaNum(104,r32,cache),finalPick=S.predKO[104];
+    const champ=finalTeams&&finalPick?(finalPick==='home'?finalTeams.home:finalTeams.away):null;
+    if(champ){ctx.fillStyle='#C8A84B';ctx.font='bold 18px sans-serif';ctx.fillText('🏆 '+(S.lang==='en'?'Champion: ':'Bajnok: ')+teamFlag(champ)+' '+teamName(champ),pad,bracketTop+bracketH+46);}
+  }
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='11px sans-serif';
+  ctx.fillText(new Date().toLocaleDateString('hu-HU')+'  ·  '+location.href.split('?')[0].replace(/^https?:\/\//,''),pad,H-16);
+  c.toBlob(blob=>{ if(blob)_imgOut(blob,'vb2026_predikcio.png'); });
 }
 function getLbBoard(){
   const cfg=getLgCfg(),effLg=getEffectiveLgId();
@@ -3062,7 +3159,10 @@ function rPredict(){
   return `<div>
     <div class="sect">${t('predict_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.5);font-size:13px;margin-bottom:14px">${t('predict_intro')}</p>
-    <button class="btn-sm red" id="resetPredBtn" style="margin-bottom:16px">🔄 ${t('pred_reset_btn')}</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn-sm" id="sharePredImgBtn">📷 ${S.lang==='en'?'Share as image':'Megosztás képként'}</button>
+      <button class="btn-sm red" id="resetPredBtn">🔄 ${t('pred_reset_btn')}</button>
+    </div>
     <div class="pred-group-grid">${groupCards}</div>
     ${thirdSection}
     ${bracketSection}
@@ -3072,22 +3172,10 @@ function rPredict(){
 function rMyTips(){
   const uid=S.user.id,cfg=DS,eff=getEffectiveResults();
   const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]).sort((a,b)=>a.id-b.id);
-  let tp=0,fin=0,pf=0,rgd=0,r3=0,og=0;
-  tipped.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!r)return;fin++;const p=calcPts(tip,r,m.stage,cfg)||0;tp+=p;const cat=ptsCat(tip,r,m.stage,cfg);if(cat==='p8')pf++;else if(cat==='p5')rgd++;else if(cat==='p3')r3++;else if(cat==='p1')og++;});
   const uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
   const wPts=S.adminSpec?.winner&&uw===S.adminSpec.winner?cfg.winner:0;
   const tPts=S.adminSpec?.top&&ut&&ut.toLowerCase().trim()===S.adminSpec.top?.toLowerCase().trim()?cfg.topScorer:0;
-  const totPts=tp+wPts+tPts;
   if(!tipped.length&&!uw&&!ut) return `<div class="empty" style="padding:60px 20px;text-align:center"><div style="font-family:var(--font-bc);font-size:14px;color:rgba(var(--ink-rgb),.3);letter-spacing:1px;text-transform:uppercase">Még nincs leadott tipp</div></div>`;
-
-  const statCells=[
-    {l:'Leadott tipp',v:tipped.length,ico:'📝'},
-    {l:'Értékelt',v:fin,ico:'✅'},
-    {l:'Telitalálat',v:pf,ico:'⭐'},
-    {l:'Gólkülönbség',v:rgd,ico:'🎯'},
-    {l:'Helyes eredmény',v:r3,ico:'✓'},
-    {l:'Összes pont',v:totPts,ico:'🏅',big:true},
-  ];
 
   const catS={p8:'⭐',p5:'🎯',p3:'✓',p1:'~',p0:'✗'};
   const catLabel={p8:'Telitalálat',p5:'Gólkülönbség',p3:'Helyes eredmény',p1:'Megközelítő',p0:'Nem stimmel'};
@@ -3107,6 +3195,28 @@ function rMyTips(){
     return ka-kb;
   });
   const fg=(S.tipFilterG&&byGroup[S.tipFilterG])?S.tipFilterG:'all';
+
+  // Szűrőhöz igazodó összegzés (Mind / adott csoport)
+  const fset=tipped.filter(m=>fg==='all'||(m.group||m.stage||'ko')===fg);
+  let tpF=0,finF=0,pfF=0,rgdF=0,r3F=0,maxF=0;
+  fset.forEach(m=>{
+    const isKOm=KO.includes(m.stage);
+    maxF+=(cfg.perfect||8)*(isKOm?(cfg.ko||2):1);
+    const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];
+    if(!r)return;finF++;
+    tpF+=calcPts(tip,r,m.stage,cfg)||0;
+    const cat=ptsCat(tip,r,m.stage,cfg);
+    if(cat==='p8')pfF++;else if(cat==='p5')rgdF++;else if(cat==='p3')r3F++;
+  });
+  const filtLbl=fg==='all'?(S.lang==='en'?'Összes':'Mind'):grpLabel(fg);
+  const statCells=[
+    {l:'Leadott tipp',v:fset.length,ico:'📝'},
+    {l:'Telitalálat',v:pfF,ico:'⭐'},
+    {l:'Gólkülönbség',v:rgdF,ico:'🎯'},
+    {l:'Helyes eredmény',v:r3F,ico:'✓'},
+    {l:'Megszerezhető',v:maxF,ico:'🏆'},
+    {l:'Megszerzett pont',v:tpF,ico:'🏅',big:true},
+  ];
   const tipRows=grpKeys.filter(grp=>fg==='all'||grp===fg).map(grp=>{
     const ms=byGroup[grp];
     const grpPts=ms.reduce((s,m)=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];return r?s+(calcPts(tip,r,m.stage,cfg)||0):s;},0);
@@ -3122,7 +3232,7 @@ function rMyTips(){
         const isLive=!!S.live[m.id];
         const koT=S.ko[m.id]||m.koDefault;
         const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}):'';
-        return `<div style="display:grid;grid-template-columns:48px 1fr 72px 72px 90px;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(var(--ink-rgb),.06);background:var(--bg-card)">
+        return `<div style="display:grid;grid-template-columns:48px 1fr 72px 72px 90px 36px;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(var(--ink-rgb),.06);background:var(--bg-card)">
           <div style="font-family:var(--font-bc);font-size:10px;color:rgba(var(--ink-rgb),.3);line-height:1.4">${fd(m.date)}<br>${timeStr}</div>
           <div style="display:flex;align-items:center;gap:8px;padding:0 8px">
             <span>${teamFlag(home)}</span>
@@ -3134,6 +3244,7 @@ function rMyTips(){
           <div style="font-family:var(--font-bc);font-weight:700;font-size:16px;color:#C8A84B;text-align:center;letter-spacing:1px">${tip.homeGoals}<span style="color:rgba(var(--ink-rgb),.2);margin:0 2px">:</span>${tip.awayGoals}</div>
           <div style="text-align:center">${r?`<div style="font-family:var(--font-bc);font-weight:700;font-size:16px;color:${isLive?'#CC2929':'var(--text-color)'};">${r.homeGoals}<span style="color:rgba(var(--ink-rgb),.2);margin:0 2px">:</span>${r.awayGoals}</div>`:`<div style="font-size:10px;color:rgba(var(--ink-rgb),.25);font-family:var(--font-bc)">Várjuk</div>`}</div>
           <div style="text-align:right">${p!==null?`<span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span><div style="font-size:9px;color:rgba(var(--ink-rgb),.3);font-family:var(--font-bc);letter-spacing:.3px;margin-top:2px">${catLabel[cat]||''}</div>`:`<div style="font-size:10px;color:rgba(var(--ink-rgb),.2);font-family:var(--font-bc)">–</div>`}</div>
+          <div style="text-align:center"><button class="tiprow-share" data-sharetip="${m.id}" title="${S.lang==='en'?'Share':'Megosztás'}">📤</button></div>
         </div>`;
       }).join('')}
     </div>`;
@@ -3147,6 +3258,7 @@ function rMyTips(){
         <button id="shareTipsBtn" class="btn-sm gold" style="font-size:11px">${S.lang==='en'?'Share':'Megosztás'} →</button>
       </div>
     </div>
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:rgba(var(--ink-rgb),.45);margin-bottom:8px">${S.lang==='en'?'Summary':'Összegzés'} · <span style="color:#C8A84B">${filtLbl}</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(var(--ink-rgb),.1);margin-bottom:20px">
       ${statCells.map(x=>`<div style="background:var(--bg-card);padding:12px 10px;text-align:center">
         <div style="font-size:18px;margin-bottom:4px">${x.ico}</div>
@@ -3165,7 +3277,7 @@ function rMyTips(){
       <button class="pill ${fg==='all'?'on':'off'}" data-tg="all">${S.lang==='en'?'All':'Mind'}</button>
       ${grpKeys.map(k=>`<button class="pill ${fg===k?'on':'off'}" data-tg="${k}">${GD.some(g=>g.id===k)?(S.lang==='en'?'Group '+k:k):(stageLabel(k)||k)}</button>`).join('')}
     </div>
-    <div style="background:#0A0A0A;padding:7px 14px;display:grid;grid-template-columns:48px 1fr 72px 72px 90px;align-items:center;gap:0;margin-bottom:1px">
+    <div style="background:#0A0A0A;padding:7px 14px;display:grid;grid-template-columns:48px 1fr 72px 72px 90px 36px;align-items:center;gap:0;margin-bottom:1px">
       <div style="font-family:var(--font-bc);font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;text-transform:uppercase">Dátum</div>
       <div style="font-family:var(--font-bc);font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;text-transform:uppercase;padding-left:8px">Meccs</div>
       <div style="font-family:var(--font-bc);font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;text-transform:uppercase;text-align:center">Tippem</div>
@@ -3865,6 +3977,7 @@ function bindMain(hw){
   document.getElementById('createLgBtn')?.addEventListener('click',()=>SS({lgModal:'create',lgErr:'',lgName:'',lgSco:{...DS}}));
 
   document.getElementById('resetPredBtn')?.addEventListener('click',()=>{if(confirm(t('confirm_reset_predict')))resetPredict();});
+  document.getElementById('sharePredImgBtn')?.addEventListener('click',exportPredImage);
   document.querySelectorAll('[data-predteam]').forEach(b=>b.addEventListener('click',e=>{
     const[gid,team]=e.currentTarget.dataset.predteam.split('|');
     togglePredTeam(gid,team);
@@ -3942,6 +4055,7 @@ function bindMain(hw){
   document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
   document.getElementById('shareTipsImgBtn')?.addEventListener('click',exportTipsImage);
+  document.querySelectorAll('[data-sharetip]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();shareTipMatch(parseInt(e.currentTarget.dataset.sharetip));}));
   document.getElementById('notifToggleBtn')?.addEventListener('click',togglePushNotif);
   document.getElementById('h2hSel')?.addEventListener('change',e=>SS({h2hOpp:e.target.value||null}));
   document.querySelectorAll('[data-exptips]').forEach(b=>b.addEventListener('click',e=>{
@@ -4008,19 +4122,44 @@ function copyShare(text){
     navigator.clipboard.writeText(text).then(()=>showMsg('shareDone','\u2713 V\u00e1g\u00f3lapra m\u00e1solva!')).catch(()=>fallbackCopy(text));
   } else fallbackCopy(text);
 }
+function doShare(title,text){
+  const url=location.href.split('?')[0];
+  if(navigator.share){
+    navigator.share({title,text,url}).catch(err=>{ if(err&&err.name==='AbortError')return; copyShare(text); });
+  } else copyShare(text);
+}
+function tipText(mid){
+  const uid=S.user.id,eff=getEffectiveResults(),cfg=DS;
+  const m=ALL.find(x=>x.id===mid);if(!m)return '';
+  const tip=S.tips[`${uid}_${m.id}`];if(!tip)return '';
+  const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
+  const r=eff[m.id],p=r!=null?calcPts(tip,r,m.stage,DS):null;
+  return `${teamName(home)} ${tip.homeGoals}-${tip.awayGoals} ${teamName(away)}${r!=null?` (${r.homeGoals}-${r.awayGoals}, ${p}p)`:''}`;
+}
+function shareTipMatch(mid){
+  const txt=tipText(mid);if(!txt)return;
+  doShare('VB 2026 Tippelő',`\u{1F3C6} VB 2026 Tippel\u0151 \u00b7 ${S.user.dn}\n${txt}\n${location.href.split('?')[0]}`);
+}
 function shareTips(){
   const uid=S.user.id,eff=getEffectiveResults(),cfg=DS;
+  const url=location.href.split('?')[0];
+  const fg=(S.tipFilterG&&S.tipFilterG!=='all')?S.tipFilterG:null;
+  if(fg){
+    const ms=ALL.filter(m=>(m.group||m.stage||'ko')===fg&&S.tips[`${uid}_${m.id}`]).sort((a,b)=>a.id-b.id);
+    if(ms.length){
+      const lbl=GD.some(g=>g.id===fg)?(fg+'. csoport'):(stageLabel(fg)||fg);
+      let gp=0;ms.forEach(m=>{const r=eff[m.id];if(r)gp+=calcPts(S.tips[`${uid}_${m.id}`],r,m.stage,cfg)||0;});
+      const lines=ms.map(m=>'\u2022 '+tipText(m.id)).join('\n');
+      doShare('VB 2026 Tippelő',`\u{1F3C6} VB 2026 Tippel\u0151 \u00b7 ${S.user.dn}\n\u{1F4CB} ${lbl} \u2013 ${gp} pont\n${lines}\n${url}`);
+      return;
+    }
+  }
   const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
   let tp=0;
   tipped.forEach(m=>{const r=eff[m.id];if(r)tp+=calcPts(S.tips[`${uid}_${m.id}`],r,m.stage,cfg)||0;});
   const uw=S.special?.[`${uid}_w`],ut=S.special?.[`${uid}_t`];
-  const url=location.href.split('?')[0];
-  const text=`🏆 VB 2026 Tippelő\n👤 ${S.user.dn}\n📊 ${tipped.length} tipp · ${tp} pont${uw?'\n🏆 Győztes: '+teamName(uw):''}${ut?'\n⚽ Gólkirály: '+ut:''}\n${url}`;
-  if(navigator.share){
-    navigator.share({title:'VB 2026 Tippelő',text,url}).catch(err=>{ if(err&&err.name==='AbortError')return; copyShare(text); });
-  } else {
-    copyShare(text);
-  }
+  const text=`\u{1F3C6} VB 2026 Tippel\u0151\n\u{1F464} ${S.user.dn}\n\u{1F4CA} ${tipped.length} tipp \u00b7 ${tp} pont${uw?'\n\u{1F3C6} Gy\u0151ztes: '+teamName(uw):''}${ut?'\n\u26bd G\u00f3lkir\u00e1ly: '+ut:''}\n${url}`;
+  doShare('VB 2026 Tippelő',text);
 }
 
 // Push értesítések
