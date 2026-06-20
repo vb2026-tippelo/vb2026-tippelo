@@ -1124,8 +1124,11 @@ async function init(){
     Object.entries(IMP_FRA_SEN).forEach(([un,p])=>{const k=`${un}_49`;if(!nt[k])nt={...nt,[k]:{homeGoals:p[0],awayGoals:p[1]}};});
     await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
-  let nko=ko||{};
-  try{ const sv=await sG('wc_sched_ver',true); if(sv!==SCHED_VER){ nko={}; await sS('wc_ko',{},true); await sS('wc_sched_ver',SCHED_VER,true); } }catch(e){}
+  // A beépített menetrend (koDefault, Excel) az EGYETLEN forrás a kezdési időkre.
+  // A wc_ko-t szándékosan figyelmen kívül hagyjuk, hogy a Firestore-ban esetleg beragadt
+  // (régi, hibás) idők soha ne írhassák felül a helyes menetrendet.
+  let nko={};
+  try{ if(ko && Object.keys(ko).length){ await sS('wc_ko',{},true); await sS('wc_sched_ver',SCHED_VER,true); } }catch(e){}
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
   SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
   refreshLiveIfStale();
@@ -4301,8 +4304,8 @@ setInterval(()=>{
 setInterval(async()=>{
   if(!S.user)return;
   try{
-    const[r,t,sp,lg,mt,ko,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true),sG('wc_ko',true),sG('wc_live',true)]);
-    SS({results:r||S.results,tips:t||S.tips,special:sp||S.special,leagues:lg||S.leagues,mt:mt||S.mt,ko:ko||S.ko,live:live?.scores||S.live,liveUpdatedAt:live?.updatedAt||S.liveUpdatedAt});
+    const[r,t,sp,lg,mt,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true),sG('wc_live',true)]);
+    SS({results:r||S.results,tips:t||S.tips,special:sp||S.special,leagues:lg||S.leagues,mt:mt||S.mt,live:live?.scores||S.live,liveUpdatedAt:live?.updatedAt||S.liveUpdatedAt});
     refreshLiveIfStale();
     if(S.user?.isAdmin)autoFillKnockoutTeams();
   }catch(e){}
