@@ -586,7 +586,8 @@ button[data-predko].wk-win .wk-tnm{color:#2E9E5A!important}
 .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 
 /* ===== MOBILE NAV (hidden on desktop) ===== */
-.mobile-nav{display:none;background:var(--chrome-bg);border-bottom:3px solid #C8A84B;position:sticky;top:54px;z-index:90}
+.mobile-nav{display:none;background:var(--chrome-bg);border-top:3px solid #C8A84B;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:90;box-shadow:0 -4px 16px rgba(0,0,0,.12);transition:none}
+.mobile-nav.mn-top{top:54px;bottom:auto;border-top:none;border-bottom:3px solid #C8A84B;box-shadow:0 4px 16px rgba(0,0,0,.12)}
 @media(max-width:900px){
   .mobile-nav{display:flex}
   .bc-topbar .bc-nav{display:none}
@@ -602,6 +603,20 @@ button[data-predko].wk-win .wk-tnm{color:#2E9E5A!important}
 .mn-item.on svg{stroke:#C8A84B}
 .mn-item.on span{color:#C8A84B}
 .mn-item.on::before{content:'';display:block;width:4px;height:4px;border-radius:50%;background:#C8A84B;margin-bottom:2px}
+
+/* off-canvas "Több" drawer */
+.oc-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;justify-content:flex-end;animation:ocFade .15s ease}
+.oc-panel{background:var(--chrome-bg);width:min(280px,82vw);height:100%;box-shadow:-8px 0 28px rgba(0,0,0,.35);animation:ocSlide .2s ease;overflow-y:auto;border-left:3px solid #C8A84B}
+@keyframes ocFade{from{opacity:0}to{opacity:1}}
+@keyframes ocSlide{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.oc-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--chrome-line);font-family:var(--font-bc);font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:var(--text-color)}
+.oc-x{background:none;border:none;font-size:18px;color:rgba(var(--chrome-ink),.5);cursor:pointer;line-height:1;padding:2px 4px}
+.oc-item{width:100%;display:flex;align-items:center;gap:12px;padding:15px 18px;background:none;border:none;border-bottom:1px solid rgba(var(--chrome-ink),.06);font-family:var(--font-bc);font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:rgba(var(--chrome-ink),.72);cursor:pointer;text-align:left}
+.oc-item svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;flex-shrink:0}
+.oc-item.on{color:#C8A84B}
+.oc-item:active{background:rgba(var(--chrome-ink),.06)}
+.oc-badge{margin-left:auto;background:#CC2929;color:#fff;font-size:9px;font-family:var(--font-bc);font-weight:700;padding:1px 6px;border-radius:8px}
+@media(max-width:900px){.bc-center{padding-bottom:74px}}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
@@ -1805,11 +1820,19 @@ function render(){
     bindBracketResize();
     fitBrackets();
     requestAnimationFrame(fitBrackets);
+    applyNavPos();
+    if(!window.__navScrollBound){window.__navScrollBound=true;window.addEventListener('scroll',applyNavPos,{passive:true});}
   }catch(e){
     console.error('render hiba:',e);
     const root=document.getElementById('root');
     if(root)root.innerHTML=`<div style="padding:32px;color:#e63329;font-size:14px">⚠️ Hiba: ${e.message}<br><br><button onclick="SS({view:'matches'})" style="background:#c9a84c;color:#000;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;margin-top:10px">↩ Meccsek</button></div>`;
   }
+}
+
+function applyNavPos(){
+  const nav=document.querySelector('.mobile-nav');
+  if(!nav)return;
+  nav.classList.toggle('mn-top', window.scrollY>120);
 }
 
 function rAuth(){
@@ -1912,6 +1935,12 @@ function rMain(hw){
     <div class="bc-sidebar-l">${sidebarL}</div>
     <div class="bc-center">${vc}${rFooter()}</div>
   </div>
+  ${S.moreMenu?`<div class="oc-backdrop" data-occlose="1">
+    <div class="oc-panel">
+      <div class="oc-head"><span>${S.lang==='en'?'More':'Több'}</span><button class="oc-x" data-occlose="1" aria-label="Bezár">✕</button></div>
+      ${tabs.filter(tb=>['leagues','pre-tips','predict','fun','profile','admin'].includes(tb.id)).map(tb=>`<button class="oc-item${S.view===tb.id?' on':''}" data-v="${tb.id}">${tb.icon}<span>${tb.l}</span>${tb.id==='pre-tips'&&hw?'<span class="oc-badge">!</span>':''}</button>`).join('')}
+    </div>
+  </div>`:''}
   ${S.preModal?rPM():''}
   ${S.legalModal?rLegal():''}
   ${S.cookieBanner?rCookieBanner():''}
@@ -3965,13 +3994,10 @@ function bindMain(hw){
   // lang buttons inline onclick
   document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',e=>{
     const v=e.currentTarget.dataset.v;
-    if(v)SS({view:v});
+    if(v)SS({view:v,moreMenu:false});
   }));
-  document.querySelector('[data-vmenu="more"]')?.addEventListener('click',()=>{
-    const menu=['leagues','pre-tips','predict','fun','profile',...(S.user.isAdmin?['admin']:[])];
-    const cur=menu.indexOf(S.view);
-    SS({view:menu[(cur+1)%menu.length]});
-  });
+  document.querySelector('[data-vmenu="more"]')?.addEventListener('click',()=>SS({moreMenu:true}));
+  document.querySelectorAll('[data-occlose]').forEach(el=>el.addEventListener('click',e=>{if(e.target===e.currentTarget)SS({moreMenu:false});}));
 
   document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',e=>SS({sg:e.currentTarget.dataset.g})));
   document.querySelectorAll('[data-as]').forEach(b=>b.addEventListener('click',e=>SS({aStage:e.currentTarget.dataset.as,editRId:null,editTId:null})));
