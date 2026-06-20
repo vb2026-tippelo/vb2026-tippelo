@@ -914,7 +914,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,lbMode:'live'
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1314,6 +1314,29 @@ function getLbBoard(){
   return {board,lgN};
 }
 
+async function syncKickoffsFromAPI(){
+  SS({kickoffLoading:true});
+  try{
+    const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
+    const r=await fetch(`${base}/.netlify/functions/kickoffs`);
+    const d=await r.json();
+    if(!d.matches||!d.count){SS({kickoffLoading:false});return;}
+    const newKo={...S.ko};
+    let updated=0;
+    d.matches.forEach(am=>{
+      if(!am.kickoff||!am.home||!am.away)return;
+      const lm=ALL.find(m=>{
+        const mH=S.mt[m.id]?.home||m.home, mA=S.mt[m.id]?.away||m.away;
+        return (mH===am.home&&mA===am.away)||(mH===am.away&&mA===am.home);
+      });
+      if(!lm)return;
+      newKo[lm.id]=am.kickoff;
+      updated++;
+    });
+    await sS('wc_ko',newKo,true);
+    SS({ko:newKo,kickoffSynced:updated,kickoffLoading:false});
+  }catch(e){SS({kickoffLoading:false});}
+}
 async function syncVenuesFromAPI(){
   SS({venuesLoading:true});
   try{
@@ -3091,6 +3114,16 @@ function rAdmin(){
   <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
       <div>
+        <div style="font-size:13px;font-weight:600">🕐 Kickoff idők szinkronizálása API-ból</div>
+        <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs pontos kezdési idejét az API-ból és elmenti. Ha valamelyik időpont rossznak tűnik, futtatsd ezt.</div>
+        ${S.kickoffsSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.kickoffsSynced} meccs kezdési ideje szinkronizálva</div>`:''}
+      </div>
+      <button class="btn-sm" id="syncKickoffsBtn" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:#c9a84c">${S.kickoffsLoading?'⏳ Folyamatban...':'🕐 Kickoff idők szinkronizálása'}</button>
+    </div>
+  </div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
         <div style="font-size:13px;font-weight:600">📍 Helyszínek szinkronizálása API-ból</div>
         <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs helyszínét a World Cup API-ból és elmenti. Egyszer kell futtatni.</div>
         ${S.venuesSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.venuesSynced} helyszín szinkronizálva</div>`:''}
@@ -3098,7 +3131,16 @@ function rAdmin(){
       <button class="btn-sm" id="syncVenuesBtn" style="background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:#4a9eff">${S.venuesLoading?'⏳ Folyamatban...':'📍 Helyszínek szinkronizálása'}</button>
     </div>
   </div>
-  <div class="pill-row">${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:13px;font-weight:600">🕐 Kickoff időpontok szinkronizálása API-ból</div>
+        <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs pontos kezdési időpontját az API-ból és felülírja a becsült időket.</div>
+        ${S.kickoffSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.kickoffSynced} meccs időpontja szinkronizálva</div>`:''}
+      </div>
+      <button class="btn-sm" id="syncKickoffsBtn" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:#c9a84c" ${S.kickoffLoading?'disabled':''}>${S.kickoffLoading?'⏳ Folyamatban...':'🕐 Időpontok szinkronizálása'}</button>
+    </div>
+  </div>${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
   <div>${ms.map(m=>{
     const r=S.results[m.id],ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
     const iER=S.editRId===m.id,iET=S.editTId===m.id,iEK=S.editKoId===m.id;
@@ -3362,6 +3404,7 @@ function bindMain(hw){
   document.querySelectorAll('[data-lbmode]').forEach(b=>b.addEventListener('click',e=>SS({lbMode:e.currentTarget.dataset.lbmode})));
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid,activeLgId:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
+  document.getElementById('syncKickoffsBtn')?.addEventListener('click',syncKickoffsFromAPI);
   document.getElementById('syncVenuesBtn')?.addEventListener('click',syncVenuesFromAPI);
   document.getElementById('exportCsvBtn')?.addEventListener('click',()=>exportLbCsv());
   document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
