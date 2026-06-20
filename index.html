@@ -3076,16 +3076,7 @@ function rAdmin(){
       ${S.liveFound.map(f=>`<div style="font-size:13px;color:rgba(var(--ink-rgb),.7);padding:4px 0">${fImg(f.home,16)} ${f.home} ${f.h}–${f.a} ${f.away} ${fImg(f.away,16)}</div>`).join('')}
     </div>`:''}
   </div>
-  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:13px;font-weight:600">🕐 Kickoff idők szinkronizálása API-ból</div>
-        <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs pontos kezdési idejét az API-ból és elmenti. Ha valamelyik időpont rossznak tűnik, futtatsd ezt.</div>
-        ${S.kickoffsSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.kickoffsSynced} meccs kezdési ideje szinkronizálva</div>`:''}
-      </div>
-      <button class="btn-sm" id="syncKickoffsBtn" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:#c9a84c">${S.kickoffsLoading?'⏳ Folyamatban...':'🕐 Kickoff idők szinkronizálása'}</button>
-    </div>
-  </div>
+
   <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
       <div>
@@ -3348,7 +3339,7 @@ function bindMain(hw){
   document.getElementById('saveOddsKeyBtn')?.addEventListener('click',async()=>{
     const key=document.getElementById('oddsKeyIn')?.value?.trim()||'';
     const asp={...S.adminSpec,oddsKey:key||undefined};
-    await sS('wc_adminSpec',asp,true);
+    await sS('wc_asp',asp,true);
     SS({adminSpec:asp});
     showMsg('oddsKeySaved','✓ Odds API kulcs mentve');
   });
