@@ -418,6 +418,14 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .lbhist-pill.on{border-color:#C8A84B;background:rgba(200,168,75,.15);color:#C8A84B}
 .tiprow-share{background:none;border:none;cursor:pointer;font-size:14px;opacity:.45;padding:2px;line-height:1}
 .tiprow-share:hover{opacity:1}
+.ko-pred-panel{background:rgba(var(--ink-rgb),.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px}
+.ko-pred-h{font-family:var(--font-bc);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;margin-bottom:10px}
+.ko-pred-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px}
+.ko-pred-row{display:flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:var(--font-bc);font-size:12px}
+.ko-pred-team{flex:1;min-width:0;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(var(--ink-rgb),.55);text-transform:uppercase;letter-spacing:.3px}
+.ko-pred-team:last-child{justify-content:flex-end;text-align:right}
+.ko-pred-team.adv{color:#2E9E5A;font-weight:700}
+.ko-pred-vs{color:rgba(var(--ink-rgb),.3);flex-shrink:0}
 .pill{padding:5px 14px;font-family:var(--font-bc);font-weight:600;font-size:12px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;border:1.5px solid rgba(10,10,10,.15);color:rgba(10,10,10,.45);background:transparent;transition:all .12s}
 .pill.on{border-color:#0A0A0A;color:#0A0A0A;background:transparent}
 .pill.off{opacity:.6}
@@ -1910,7 +1918,7 @@ function rSidebarLeft(){
     const res=eff[m.id],isLive=!!S.live[m.id],tip=S.tips[`${uid}_${m.id}`];
     const koT=S.ko[m.id]||m.koDefault;
     const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}):'';
-    const navGrp=m.group||(m.stage==='bronze'?'sf':m.stage)||'A';
+    const navGrp=m.group||(m.stage==='bronze'?'final':m.stage)||'A';
     return `<div class="sml-item${isLive?' active':''}" data-v="matches" data-gomatch="${m.id}" data-grp="${navGrp}">
       <div class="sml-top">
         <div class="sml-time">${isLive?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#CC2929;font-family:var(--font-bc);font-weight:700;letter-spacing:1px"><span class="bc-ticker-dot" style="background:#CC2929;width:5px;height:5px"></span>ÉLŐ</span>`:timeStr}</div>
@@ -2031,7 +2039,7 @@ function rLiveNow(){
     ${liveMatches.map(({m,sc})=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
-      const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
+      const navSel=m.group||(m.stage==='bronze'?'final':m.stage);
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.08);font-size:13px;cursor:pointer">
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-color)">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</span>
         <span style="font-weight:800;color:#e63329;font-size:15px">${sc.h}–${sc.a}</span>
@@ -2064,7 +2072,7 @@ function rNext24h(){
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
       const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString(S.lang==='en'?'en-GB':'hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
-      const navSel=m.group||(m.stage==='bronze'?'sf':m.stage);
+      const navSel=m.group||(m.stage==='bronze'?'final':m.stage);
       return `<div data-gomatch="${m.id}" data-grp="${navSel}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(var(--ink-rgb),.06);font-size:13px;cursor:pointer">
         <span style="color:rgba(var(--ink-rgb),.4);min-width:74px;font-size:11.5px">${koLbl}</span>
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-color)">${fImg(home,18)} ${teamName(home)} – ${teamName(away)} ${fImg(away,18)}</span>
@@ -2077,7 +2085,7 @@ function rNext24h(){
 function rMatches(){
   const gTabs=[...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
-  const vis=ALL.filter(m=>sel.length===1?m.group===sel:sel==='sf'?m.stage==='sf'||m.stage==='bronze':m.stage===sel);
+  const vis=ALL.filter(m=>sel.length===1?m.group===sel:sel==='final'?m.stage==='final'||m.stage==='bronze':m.stage===sel);
   const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
   const lastUpd=S.liveUpdatedAt?new Date(S.liveUpdatedAt).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'}):'–';
   return `<div class="center-live-mob">${rLiveNow()}${rNext24h()}</div>${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">${t('pretips_banner_t')}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">${t('pretips_banner_s')}</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
@@ -2102,6 +2110,24 @@ function rMatches(){
     return `<div class="pill-row" style="margin-bottom:10px"><button class="pill${S.stMode!=='official'?' on':' off'}" data-stmode="live">🔴 ${S.lang==='en'?'Live table':'Élő tabella'}</button><button class="pill${S.stMode==='official'?' on':' off'}" data-stmode="official">✓ ${S.lang==='en'?'Played only':'Lejátszott meccsek'}</button></div>
     <div class="grp-mini-wrap">${liveTable}${predCol}</div>`;
   })():''}
+  ${(()=>{
+    const koStages=['r32','r16','qf','sf','final'];
+    if(!koStages.includes(sel))return '';
+    const third8Done=S.predThird8.length===8;
+    let r32=null;if(third8Done){try{r32=resolvePredR32();}catch(e){r32=null;}}
+    if(!r32)return '';
+    const cache={};
+    const fnMap={r32:Array.from({length:16},(_,i)=>73+i),r16:Array.from({length:8},(_,i)=>89+i),qf:[97,98,99,100],sf:[101,102],final:[104,103]};
+    const rows=(fnMap[sel]||[]).map(fn=>{
+      const teams=predTeamsForFifaNum(fn,r32,cache);
+      if(!teams)return '';
+      const pick=S.predKO[fn];
+      const icon=fn===104?'🏆':fn===103?'🥉':'';
+      return `<div class="ko-pred-row">${icon?`<span style="flex-shrink:0;font-size:12px">${icon}</span>`:''}<span class="ko-pred-team${pick==='home'?' adv':''}">${fImg(teams.home,16)} ${teamName(teams.home)}</span><span class="ko-pred-vs">–</span><span class="ko-pred-team${pick==='away'?' adv':''}">${fImg(teams.away,16)} ${teamName(teams.away)}</span></div>`;
+    }).join('');
+    if(!rows)return '';
+    return `<div class="ko-pred-panel"><div class="ko-pred-h">🔮 ${S.lang==='en'?'My prediction':'Az én predikcióm'} · ${stageLabel(sel)}</div><div class="ko-pred-grid">${rows}</div></div>`;
+  })()}
   <div class="match-grid">${vis.map(m=>rCard(m)).join('')}</div>`;
 }
 
@@ -2113,7 +2139,7 @@ function rCard(m){
   const isKO=KO.includes(m.stage),isPast=Date.now()>=lockMs,locked=isPast||!!res||!!S.live[m.id],isTBD=m.tbd&&!ov;
   const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}).replace(/\./g,':'):'';  const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
-  const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
+  const grpLbl=m.group?`${m.group} ${t('group_word')}`:(m.stage==='bronze'?'🥉 ':m.stage==='final'?'🏆 ':'')+stageLabel(m.stage);
   const wcId=S.wcIds?.[m.id];
   const apiVenue=wcId?S.wcVenues?.[wcId]?.venue:null;
   const venue=apiVenue||(m.stage==='group'?GROUP_VENUE[m.id]:KO_VENUE[fifaNumOf(m)])||null;
