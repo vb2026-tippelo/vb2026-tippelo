@@ -65,30 +65,41 @@
 
 /* ===== DARK MODE ===== */
 body.dark-mode{
-  --bg-page:#0F0F0F;
-  --bg-page-grad:#0F0F0F;
-  --bg-card:#1A1A1A;
-  --bg-main:#0F0F0F;
+  --bg-page:#111111;
+  --bg-page-grad:#111111;
+  --bg-card:#1C1C1C;
+  --bg-main:#111111;
   --border:rgba(255,255,255,.08);
-  --text-color:#FFFFFF;
-  --ink-rgb:255,255,255;
+  --text-color:#F0EDE6;
+  --ink-rgb:240,237,230;
   --std-adv:rgba(46,158,90,.2);
   --std-play:rgba(200,168,75,.15);
   --std-out:rgba(204,41,41,.1);
 }
-body.dark-mode .bc-center{background:#0F0F0F}
-body.dark-mode .bc-sidebar-r{background:#141414;border-left-color:rgba(255,255,255,.06)}
-body.dark-mode .bc-center .mcard,.bc-center .mcard .mc-top{background:#1A1A1A}
-body.dark-mode .mcard .mc-top,.dark-mode .mcard{background:#1A1A1A}
-body.dark-mode .bc-center .mcard.tipable{background:#1E1C14}
-body.dark-mode .mc-inp{background:#141414;border-top-color:rgba(255,255,255,.08)}
-body.dark-mode .sbox{background:#0F0F0F;border-color:rgba(255,255,255,.2);color:#fff}
-body.dark-mode .inp,.dark-mode .inp-light{background:#1A1A1A;border-color:rgba(255,255,255,.12);color:#fff}
-body.dark-mode .sg-group,.dark-mode .lb-card,.dark-mode .fun-card,.dark-mode .pre-card,.dark-mode .lg-card{background:#1A1A1A}
-body.dark-mode .sg-row,.dark-mode .bc-sec,.dark-mode .sect,.dark-mode .c-sec{border-color:rgba(255,255,255,.1)}
-body.dark-mode .podium>div,.dark-mode .lb-rest>div{background:#1A1A1A}
-body.dark-mode .modal-box{background:#1A1A1A;border-color:rgba(255,255,255,.15)}
-body.dark-mode .bc-sidebar-r>div,.dark-mode .bc-sidebar-r *{color:rgba(255,255,255,.85)}
+body.dark-mode .bc-center{background:#111111}
+body.dark-mode .bc-sidebar-r{background:#161616;border-left-color:rgba(255,255,255,.06)}
+body.dark-mode .bc-center,
+body.dark-mode .bc-center *:not([style*="color:#C8A84B"]):not([style*="color:#2E9E5A"]):not([style*="color:#CC2929"]):not([style*="color:#3EAD6A"]):not(.ptag){
+  color:var(--text-color);
+}
+body.dark-mode [style*="background:#fff"],
+body.dark-mode [style*="background:#FFFFFF"],
+body.dark-mode [style*="background:#F2F0EB"],
+body.dark-mode [style*="background:#FFFBF2"],
+body.dark-mode [style*="background:#F7F5F0"],
+body.dark-mode [style*="background:#FFFBF0"],
+body.dark-mode [style*="background:var(--bg-card)"],
+body.dark-mode [style*="background:var(--bg-page)"]{
+  background:var(--bg-card) !important;
+}
+body.dark-mode [style*="color:#0A0A0A"]{color:var(--text-color) !important}
+body.dark-mode [style*="color:rgba(10,10,10"]{color:var(--text-color) !important}
+body.dark-mode .sbox{background:#1C1C1C;border-color:rgba(255,255,255,.2);color:var(--text-color)}
+body.dark-mode .inp,.dark-mode .inp-light{background:#1C1C1C;border-color:rgba(255,255,255,.12);color:var(--text-color)}
+body.dark-mode .mcard{background:#1C1C1C}
+body.dark-mode .mc-inp{background:#161616;border-top-color:rgba(255,255,255,.08)}
+body.dark-mode .modal-box{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
+body.dark-mode .lg-card,.dark-mode .fun-card,.dark-mode .pre-card{background:#1C1C1C}
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b),system-ui,sans-serif;min-height:100vh}
@@ -1421,7 +1432,6 @@ async function setLang(l){
 }
 function render(){
   try{
-    document.body.classList.toggle('light-theme',S.theme==='light');
     document.body.classList.toggle('dark-mode',S.theme==='dark');
     const root=document.getElementById('root');
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
@@ -3444,7 +3454,7 @@ function bindMain(hw){
     const cur=menu.indexOf(S.view);
     SS({view:menu[(cur+1)%menu.length]});
   });
-  document.getElementById('lout')?.addEventListener('click',logout);
+
   document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',e=>SS({sg:e.currentTarget.dataset.g})));
   document.querySelectorAll('[data-as]').forEach(b=>b.addEventListener('click',e=>SS({aStage:e.currentTarget.dataset.as,editRId:null,editTId:null})));
   document.getElementById('preBanner')?.addEventListener('click',()=>SS({preModal:true}));
