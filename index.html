@@ -897,39 +897,17 @@ const GROUP_VENUE={
   // L csoport: Anglia, Horvátország, Ghána, Panama
   67:'Arlington',68:'Toronto',69:'Foxborough',70:'Toronto',71:'New Jersey',72:'Philadelphia'
 };
-const VENUE_COORDS={
-  'Mexikóváros':[19.433,-99.133],'Zapopan':[20.722,-103.388],'Guadalupe':[25.677,-100.261],
-  'Toronto':[43.641,-79.390],'Vancouver':[49.277,-123.112],
-  'Los Angeles':[34.014,-118.288],'Santa Clara':[37.403,-121.970],'Seattle':[47.595,-122.332],
-  'San Francisco':[37.403,-121.970],
-  'New Jersey':[40.814,-74.074],'Foxborough':[42.091,-71.264],'Philadelphia':[39.901,-75.167],
-  'Atlanta':[33.755,-84.401],'Miami':[25.958,-80.239],'Houston':[29.685,-95.411],
-  'Arlington':[32.748,-97.093],'Kansas City':[39.049,-94.484],'Mexico City':[19.433,-99.133]
-};
+const VENUE_COORDS={'Mexikóváros':[19.433,-99.133],'Guadalajara':[20.682,-103.463],'Monterrey':[25.669,-100.244],'Toronto':[43.633,-79.418],'Vancouver':[49.277,-123.112],'Los Angeles':[33.953,-118.339],'San Francisco':[37.403,-121.970],'Seattle':[47.595,-122.332],'New York':[40.814,-74.074],'Boston':[42.091,-71.264],'Philadelphia':[39.901,-75.167],'Atlanta':[33.755,-84.401],'Miami':[25.958,-80.239],'Houston':[29.685,-95.411],'Dallas':[32.748,-97.093],'Kansas City':[39.049,-94.484]};
 // Helyi időzóna (nyáron)
-const VENUE_TZ={
-  'Mexikóváros':'America/Mexico_City','Mexico City':'America/Mexico_City',
-  'Zapopan':'America/Mexico_City','Guadalupe':'America/Monterrey',
-  'Houston':'America/Chicago','Arlington':'America/Chicago','Kansas City':'America/Chicago',
-  'Atlanta':'America/New_York','Miami':'America/New_York','Philadelphia':'America/New_York',
-  'New Jersey':'America/New_York','Foxborough':'America/New_York','Toronto':'America/Toronto',
-  'Los Angeles':'America/Los_Angeles','Santa Clara':'America/Los_Angeles',
-  'Seattle':'America/Los_Angeles','Vancouver':'America/Vancouver'
-};
+const VENUE_TZ={'Mexikóváros':'America/Mexico_City','Guadalajara':'America/Mexico_City','Monterrey':'America/Monterrey','Toronto':'America/Toronto','Vancouver':'America/Vancouver','Los Angeles':'America/Los_Angeles','San Francisco':'America/Los_Angeles','Seattle':'America/Los_Angeles','New York':'America/New_York','Boston':'America/New_York','Philadelphia':'America/New_York','Atlanta':'America/New_York','Miami':'America/New_York','Houston':'America/Chicago','Dallas':'America/Chicago','Kansas City':'America/Chicago'};
 // Fedett stadion? (🏛️=fedett, 🏟️=nyitott)
-const VENUE_DOME={
-  'Los Angeles':true,    // SoFi Stadium – fedett
-  'Arlington':true,      // AT&T Stadium – visszahúzható tető
-  'Houston':true,        // NRG Stadium – visszahúzható tető
-  'Atlanta':true,        // Mercedes-Benz Stadium – visszahúzható tető
-  'Vancouver':true,      // BC Place – visszahúzható tető
-};
+const VENUE_DOME={'Los Angeles':true,'Vancouver':true,'Atlanta':true,'Houston':true,'Dallas':true};
 const WMO_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
 async function fetchTodayWeather(){
   const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
   const todayMatches=ALL.filter(m=>m.stage==='group'&&m.date===today);
   if(!todayMatches.length)return;
-  const venues=[...new Set(todayMatches.map(m=>GROUP_VENUE[m.id]).filter(Boolean))];
+  const venues=[...new Set(todayMatches.map(m=>m.venue).filter(Boolean))];
   const weather={};
   await Promise.all(venues.map(async venue=>{
     const coords=VENUE_COORDS[venue];
@@ -1006,23 +984,25 @@ async function fetchTodayOdds(){
     SS({odds});
   }catch(e){console.log('Odds hiba:',e);}
 }
-const KO_SCHEDULE={73:['2026-06-28','2026-06-28T19:00:00Z'],74:['2026-06-29','2026-06-29T20:30:00Z'],75:['2026-06-29','2026-06-30T01:00:00Z'],76:['2026-06-29','2026-06-29T17:00:00Z'],77:['2026-06-30','2026-06-30T21:00:00Z'],78:['2026-06-30','2026-06-30T17:00:00Z'],79:['2026-06-30','2026-07-01T01:00:00Z'],80:['2026-07-01','2026-07-01T16:00:00Z'],81:['2026-07-01','2026-07-02T00:00:00Z'],82:['2026-07-01','2026-07-01T20:00:00Z'],83:['2026-07-02','2026-07-02T23:00:00Z'],84:['2026-07-02','2026-07-02T19:00:00Z'],85:['2026-07-02','2026-07-03T03:00:00Z'],86:['2026-07-03','2026-07-03T22:00:00Z'],87:['2026-07-03','2026-07-04T01:30:00Z'],88:['2026-07-03','2026-07-03T18:00:00Z'],89:['2026-07-04','2026-07-04T21:00:00Z'],90:['2026-07-04','2026-07-04T17:00:00Z'],91:['2026-07-05','2026-07-05T20:00:00Z'],92:['2026-07-05','2026-07-06T00:00:00Z'],93:['2026-07-06','2026-07-06T19:00:00Z'],94:['2026-07-06','2026-07-07T00:00:00Z'],95:['2026-07-07','2026-07-07T16:00:00Z'],96:['2026-07-07','2026-07-07T20:00:00Z'],97:['2026-07-09','2026-07-09T20:00:00Z'],98:['2026-07-10','2026-07-10T19:00:00Z'],99:['2026-07-11','2026-07-11T21:00:00Z'],100:['2026-07-11','2026-07-12T01:00:00Z'],101:['2026-07-14','2026-07-14T19:00:00Z'],102:['2026-07-15','2026-07-15T19:00:00Z'],103:['2026-07-18','2026-07-18T21:00:00Z'],104:['2026-07-19','2026-07-19T19:00:00Z']};
+const KO_SCHEDULE={73:["2026-06-28","2026-06-28T19:00:00Z"],74:["2026-06-29","2026-06-29T17:00:00Z"],75:["2026-06-29","2026-06-29T20:30:00Z"],76:["2026-06-30","2026-06-30T01:00:00Z"],77:["2026-06-30","2026-06-30T17:00:00Z"],78:["2026-06-30","2026-06-30T21:00:00Z"],79:["2026-07-01","2026-07-01T01:00:00Z"],80:["2026-07-01","2026-07-01T16:00:00Z"],81:["2026-07-01","2026-07-01T20:00:00Z"],82:["2026-07-02","2026-07-02T00:00:00Z"],83:["2026-07-02","2026-07-02T19:00:00Z"],84:["2026-07-03","2026-07-02T23:00:00Z"],85:["2026-07-03","2026-07-03T03:00:00Z"],86:["2026-07-03","2026-07-03T18:00:00Z"],87:["2026-07-04","2026-07-03T22:00:00Z"],88:["2026-07-04","2026-07-04T01:30:00Z"],89:["2026-07-04","2026-07-04T17:00:00Z"],90:["2026-07-04","2026-07-04T21:00:00Z"],91:["2026-07-05","2026-07-05T20:00:00Z"],92:["2026-07-06","2026-07-06T00:00:00Z"],93:["2026-07-06","2026-07-06T19:00:00Z"],94:["2026-07-07","2026-07-07T00:00:00Z"],95:["2026-07-07","2026-07-07T16:00:00Z"],96:["2026-07-07","2026-07-07T20:00:00Z"],97:["2026-07-09","2026-07-09T20:00:00Z"],98:["2026-07-10","2026-07-10T19:00:00Z"],99:["2026-07-11","2026-07-11T21:00:00Z"],100:["2026-07-12","2026-07-12T01:00:00Z"],101:["2026-07-14","2026-07-14T19:00:00Z"],102:["2026-07-15","2026-07-15T19:00:00Z"],103:["2026-07-18","2026-07-18T21:00:00Z"],104:["2026-07-19","2026-07-19T19:00:00Z"]};
+const KO_VENUE={73:"Los Angeles",74:"Houston",75:"Boston",76:"Monterrey",77:"Dallas",78:"New York",79:"Mexikóváros",80:"Atlanta",81:"Seattle",82:"San Francisco",83:"Los Angeles",84:"Toronto",85:"Vancouver",86:"Dallas",87:"Miami",88:"Kansas City",89:"Houston",90:"Philadelphia",91:"New York",92:"Mexikóváros",93:"Dallas",94:"Seattle",95:"Atlanta",96:"Vancouver",97:"Boston",98:"Los Angeles",99:"Miami",100:"Kansas City",101:"Dallas",102:"Atlanta",103:"Miami",104:"New York"};
+const GROUP_SCHED={"Mexikó|Dél-Afrika":["2026-06-11","2026-06-11T19:00:00Z","Mexikóváros"],"Dél-Korea|Csehország":["2026-06-12","2026-06-12T02:00:00Z","Guadalajara"],"Mexikó|Dél-Korea":["2026-06-19","2026-06-19T01:00:00Z","Guadalajara"],"Dél-Afrika|Csehország":["2026-06-18","2026-06-18T16:00:00Z","Atlanta"],"Mexikó|Csehország":["2026-06-25","2026-06-25T01:00:00Z","Mexikóváros"],"Dél-Afrika|Dél-Korea":["2026-06-25","2026-06-25T01:00:00Z","Monterrey"],"Kanada|Bosznia-Hercegovina":["2026-06-12","2026-06-12T19:00:00Z","Toronto"],"Katar|Svájc":["2026-06-13","2026-06-13T19:00:00Z","San Francisco"],"Kanada|Katar":["2026-06-19","2026-06-18T22:00:00Z","Vancouver"],"Bosznia-Hercegovina|Svájc":["2026-06-18","2026-06-18T19:00:00Z","Los Angeles"],"Kanada|Svájc":["2026-06-24","2026-06-24T19:00:00Z","Vancouver"],"Bosznia-Hercegovina|Katar":["2026-06-24","2026-06-24T19:00:00Z","Seattle"],"Brazília|Marokkó":["2026-06-14","2026-06-13T22:00:00Z","New York"],"Haiti|Skócia":["2026-06-14","2026-06-14T01:00:00Z","Boston"],"Brazília|Haiti":["2026-06-20","2026-06-20T01:00:00Z","Philadelphia"],"Marokkó|Skócia":["2026-06-20","2026-06-19T22:00:00Z","Boston"],"Brazília|Skócia":["2026-06-25","2026-06-24T22:00:00Z","Miami"],"Marokkó|Haiti":["2026-06-25","2026-06-24T22:00:00Z","Atlanta"],"USA|Paraguay":["2026-06-13","2026-06-13T01:00:00Z","Los Angeles"],"Ausztrália|Törökország":["2026-06-14","2026-06-14T04:00:00Z","Vancouver"],"USA|Ausztrália":["2026-06-19","2026-06-19T19:00:00Z","Seattle"],"Paraguay|Törökország":["2026-06-20","2026-06-20T04:00:00Z","San Francisco"],"USA|Törökország":["2026-06-26","2026-06-26T02:00:00Z","Los Angeles"],"Paraguay|Ausztrália":["2026-06-26","2026-06-26T02:00:00Z","San Francisco"],"Németország|Curaçao":["2026-06-14","2026-06-14T17:00:00Z","Houston"],"Elefántcsontpart|Ecuador":["2026-06-15","2026-06-14T23:00:00Z","Philadelphia"],"Németország|Elefántcsontpart":["2026-06-20","2026-06-20T20:00:00Z","Toronto"],"Curaçao|Ecuador":["2026-06-21","2026-06-21T00:00:00Z","Kansas City"],"Németország|Ecuador":["2026-06-25","2026-06-25T20:00:00Z","New York"],"Curaçao|Elefántcsontpart":["2026-06-25","2026-06-25T20:00:00Z","Philadelphia"],"Hollandia|Japán":["2026-06-14","2026-06-14T20:00:00Z","Dallas"],"Svédország|Tunézia":["2026-06-15","2026-06-15T02:00:00Z","Monterrey"],"Hollandia|Svédország":["2026-06-20","2026-06-20T17:00:00Z","Houston"],"Japán|Tunézia":["2026-06-21","2026-06-21T04:00:00Z","Monterrey"],"Hollandia|Tunézia":["2026-06-26","2026-06-25T23:00:00Z","Kansas City"],"Japán|Svédország":["2026-06-26","2026-06-25T23:00:00Z","Dallas"],"Belgium|Egyiptom":["2026-06-15","2026-06-15T19:00:00Z","Seattle"],"Irán|Új-Zéland":["2026-06-16","2026-06-16T01:00:00Z","Los Angeles"],"Belgium|Irán":["2026-06-21","2026-06-21T19:00:00Z","Los Angeles"],"Egyiptom|Új-Zéland":["2026-06-22","2026-06-22T01:00:00Z","Vancouver"],"Belgium|Új-Zéland":["2026-06-27","2026-06-27T03:00:00Z","Vancouver"],"Egyiptom|Irán":["2026-06-27","2026-06-27T03:00:00Z","Seattle"],"Spanyolország|Zöld-foki-sz.":["2026-06-15","2026-06-15T16:00:00Z","Atlanta"],"Szaúd-Arábia|Uruguay":["2026-06-16","2026-06-15T22:00:00Z","Miami"],"Spanyolország|Szaúd-Arábia":["2026-06-21","2026-06-21T16:00:00Z","Atlanta"],"Zöld-foki-sz.|Uruguay":["2026-06-22","2026-06-21T22:00:00Z","Miami"],"Spanyolország|Uruguay":["2026-06-27","2026-06-27T00:00:00Z","Guadalajara"],"Zöld-foki-sz.|Szaúd-Arábia":["2026-06-27","2026-06-27T00:00:00Z","Houston"],"Franciaország|Szenegál":["2026-06-16","2026-06-16T19:00:00Z","New York"],"Irak|Norvégia":["2026-06-17","2026-06-16T22:00:00Z","Boston"],"Franciaország|Irak":["2026-06-22","2026-06-22T21:00:00Z","Philadelphia"],"Szenegál|Norvégia":["2026-06-23","2026-06-23T00:00:00Z","New York"],"Franciaország|Norvégia":["2026-06-26","2026-06-26T19:00:00Z","Boston"],"Szenegál|Irak":["2026-06-26","2026-06-26T19:00:00Z","Toronto"],"Argentína|Algéria":["2026-06-17","2026-06-17T01:00:00Z","Kansas City"],"Ausztria|Jordánia":["2026-06-17","2026-06-17T04:00:00Z","San Francisco"],"Argentína|Ausztria":["2026-06-22","2026-06-22T17:00:00Z","Dallas"],"Algéria|Jordánia":["2026-06-23","2026-06-23T03:00:00Z","San Francisco"],"Argentína|Jordánia":["2026-06-28","2026-06-28T02:00:00Z","Dallas"],"Algéria|Ausztria":["2026-06-28","2026-06-28T02:00:00Z","Kansas City"],"Portugália|DR Kongó":["2026-06-17","2026-06-17T17:00:00Z","Houston"],"Üzbegisztán|Kolumbia":["2026-06-18","2026-06-18T02:00:00Z","Mexikóváros"],"Portugália|Üzbegisztán":["2026-06-23","2026-06-23T17:00:00Z","Houston"],"DR Kongó|Kolumbia":["2026-06-24","2026-06-24T02:00:00Z","Guadalajara"],"Portugália|Kolumbia":["2026-06-28","2026-06-27T23:30:00Z","Miami"],"DR Kongó|Üzbegisztán":["2026-06-28","2026-06-27T23:30:00Z","Atlanta"],"Anglia|Horvátország":["2026-06-17","2026-06-17T20:00:00Z","Dallas"],"Ghána|Panama":["2026-06-18","2026-06-17T23:00:00Z","Toronto"],"Anglia|Ghána":["2026-06-23","2026-06-23T20:00:00Z","Boston"],"Horvátország|Panama":["2026-06-24","2026-06-23T23:00:00Z","Toronto"],"Anglia|Panama":["2026-06-27","2026-06-27T21:00:00Z","New York"],"Horvátország|Ghána":["2026-06-27","2026-06-27T21:00:00Z","Philadelphia"]};
+const SCHED_VER='excel-2026-06-21';
 function genM(){
   const m=[];let id=1;
   GD.forEach((g)=>{
-    const[t0,t1,t2,t3]=g.teams,[d1,d2,d3]=GROUP_DATES[g.id];
-    [[t0,t1,1],[t2,t3,1],[t0,t2,2],[t1,t3,2],[t0,t3,3],[t1,t2,3]].forEach(([h,a,md],idx)=>{
-      const d=md===1?d1:md===2?d2:d3;
-      const slot=['15:00:00','18:00:00','21:00:00','00:00:00'][idx%4];
-      m.push({id:id++,stage:'group',group:g.id,md,home:h,away:a,date:d,koDefault:`${d}T${slot}Z`});
+    const[t0,t1,t2,t3]=g.teams;
+    [[t0,t1,1],[t2,t3,1],[t0,t2,2],[t1,t3,2],[t0,t3,3],[t1,t2,3]].forEach(([h,a,md])=>{
+      const sc=GROUP_SCHED[`${h}|${a}`]||['','',''];
+      m.push({id:id++,stage:'group',group:g.id,md,home:h,away:a,date:sc[0],koDefault:sc[1],venue:sc[2]});
     });
   });
-  for(let i=0;i<16;i++){const[d,ko]=KO_SCHEDULE[73+i];m.push({id:id++,stage:'r32',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,tbd:true});}
-  for(let i=0;i<8;i++){const[d,ko]=KO_SCHEDULE[89+i];m.push({id:id++,stage:'r16',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,tbd:true});}
-  for(let i=0;i<4;i++){const[d,ko]=KO_SCHEDULE[97+i];m.push({id:id++,stage:'qf',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,tbd:true});}
-  for(let i=0;i<2;i++){const[d,ko]=KO_SCHEDULE[101+i];m.push({id:id++,stage:'sf',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,tbd:true});}
-  {const[d,ko]=KO_SCHEDULE[103];m.push({id:id++,stage:'bronze',mn:1,home:'TBD',away:'TBD',date:d,koDefault:ko,tbd:true});}
-  {const[d,ko]=KO_SCHEDULE[104];m.push({id:id++,stage:'final',mn:1,home:'TBD',away:'TBD',date:d,koDefault:ko,tbd:true});}
+  for(let i=0;i<16;i++){const[d,ko]=KO_SCHEDULE[73+i];m.push({id:id++,stage:'r32',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,venue:KO_VENUE[73+i],tbd:true});}
+  for(let i=0;i<8;i++){const[d,ko]=KO_SCHEDULE[89+i];m.push({id:id++,stage:'r16',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,venue:KO_VENUE[89+i],tbd:true});}
+  for(let i=0;i<4;i++){const[d,ko]=KO_SCHEDULE[97+i];m.push({id:id++,stage:'qf',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,venue:KO_VENUE[97+i],tbd:true});}
+  for(let i=0;i<2;i++){const[d,ko]=KO_SCHEDULE[101+i];m.push({id:id++,stage:'sf',mn:i+1,home:'TBD',away:'TBD',date:d,koDefault:ko,venue:KO_VENUE[101+i],tbd:true});}
+  {const[d,ko]=KO_SCHEDULE[103];m.push({id:id++,stage:'bronze',mn:1,home:'TBD',away:'TBD',date:d,koDefault:ko,venue:KO_VENUE[103],tbd:true});}
+  {const[d,ko]=KO_SCHEDULE[104];m.push({id:id++,stage:'final',mn:1,home:'TBD',away:'TBD',date:d,koDefault:ko,venue:KO_VENUE[104],tbd:true});}
   return m;
 }
 const ALL=genM();
@@ -1144,8 +1124,10 @@ async function init(){
     Object.entries(IMP_FRA_SEN).forEach(([un,p])=>{const k=`${un}_49`;if(!nt[k])nt={...nt,[k]:{homeGoals:p[0],awayGoals:p[1]}};});
     await Promise.all([sS('wc_t',nt,true),sS('wc_import_frasen_v1',true,true)]);
   }
+  let nko=ko||{};
+  try{ const sv=await sG('wc_sched_ver',true); if(sv!==SCHED_VER){ nko={}; await sS('wc_ko',{},true); await sS('wc_sched_ver',SCHED_VER,true); } }catch(e){}
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:ko||{},leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   if(cu){
@@ -1350,7 +1332,7 @@ async function fetchLiveScores(){
     const byStatus={};
     (data.matches||[]).forEach(am=>{byStatus[am.status]=(byStatus[am.status]||0)+1;});
     const{applied,results,live}=await applyFinishedMatches(data.matches||[]);
-    const koCount=await syncKickoffTimes(data.matches||[]);
+    const koCount=0; // kickoff auto-szinkron kikapcsolva
     SS({liveLoading:false,liveFound:applied,results,live,liveUpdatedAt:new Date().toISOString(),
       liveDebug:{total:(data.matches||[]).length,byStatus,koSynced:koCount,sample:(data.matches||[]).slice(0,5).map(x=>`${x.home} ${x.homeScore??'-'}:${x.awayScore??'-'} ${x.away} (${x.status})`)},
       liveErr:applied.length?'':'Nincs új, automatikusan rögzíthető befejezett meccs.'});
@@ -1373,8 +1355,7 @@ async function syncKickoffTimes(apiMatches){
       return (mHome===huHome&&mAway===huAway)||(mHome===huAway&&mAway===huHome);
     });
     if(!lm)return;
-    // Egységes -1h korrekció: az API minden (észak-amerikai) helyszínre 1 órával késő időt ad
-    { const dt=new Date(kickoff); dt.setHours(dt.getHours()-1); kickoff=dt.toISOString(); }
+    // Idopontot nem korrigaljuk (Excel menetrend az elsodleges)
     const cur=S.ko[lm.id]||lm.koDefault;
     if(cur&&new Date(kickoff).getTime()!==new Date(cur).getTime())
       koUpdates[lm.id]=kickoff;
@@ -1397,7 +1378,6 @@ async function refreshLiveIfStale(force=false){
     const data=await resp.json();
     if(!resp.ok||data.error||!data.matches)return;
     const{results,live}=await applyFinishedMatches(data.matches);
-    await syncKickoffTimes(data.matches);
     SS({results,live,liveUpdatedAt:new Date().toISOString()});
   }catch(e){}
 }
@@ -1679,8 +1659,7 @@ async function syncKickoffsFromAPI(){
       });
       if(!lm)return;
       let kickoff=am.kickoff;
-      // Egységes -1h korrekció: az API minden (észak-amerikai) helyszínre 1 órával késő időt ad
-      { const dt=new Date(kickoff); dt.setHours(dt.getHours()-1); kickoff=dt.toISOString(); }
+      // Idopontot nem korrigaljuk (Excel menetrend az elsodleges)
       newKo[lm.id]=kickoff;
       updated++;
     });
@@ -1973,7 +1952,7 @@ function rSidebarLeft(){
     return `<div class="live-hero">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="lh-badge"><div class="bc-ticker-dot" style="background:#fff"></div>ÉLŐ${sc.minute?' · '+sc.minute:''}</div>
-        <div style="font-size:9px;color:rgba(var(--chrome-ink),.3);letter-spacing:.8px;text-transform:uppercase">${m.group?m.group+' csop.':''} · ${GROUP_VENUE[m.id]||''}</div>
+        <div style="font-size:9px;color:rgba(var(--chrome-ink),.3);letter-spacing:.8px;text-transform:uppercase">${m.group?m.group+' csop.':''} · ${m.venue||''}</div>
       </div>
       <div class="lh-match">
         <div class="lh-team"><div class="lh-flag">${teamFlag(h)}</div><div class="lh-tname">${teamName(h)}</div></div>
@@ -2227,7 +2206,7 @@ function rCard(m){
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:(m.stage==='bronze'?'🥉 ':m.stage==='final'?'🏆 ':'')+stageLabel(m.stage);
   const wcId=S.wcIds?.[m.id];
   const apiVenue=wcId?S.wcVenues?.[wcId]?.venue:null;
-  const venue=apiVenue||(m.stage==='group'?GROUP_VENUE[m.id]:KO_VENUE[fifaNumOf(m)])||null;
+  const venue=apiVenue||m.venue||null;
   const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
   const wx=isToday&&venue?S.weather?.[venue]:null;
   const mOdds=S.odds?.[m.id]||null;
@@ -2720,7 +2699,6 @@ function rCookieBanner(){
 }
 const LOSER_SOURCES={103:[101,102]};
 const ANNEX_C={EFGHIJKL:"EJIFHGLK",DFGHIJKL:"HGIDJFLK",DEGHIJKL:"EJIDHGLK",DEFHIJKL:"EJIDHFLK",DEFGIJKL:"EGIDJFLK",DEFGHJKL:"EGJDHFLK",DEFGHIKL:"EGIDHFLK",DEFGHIJL:"EGJDHFLI",DEFGHIJK:"EGJDHFIK",CFGHIJKL:"HGICJFLK",CEGHIJKL:"EJICHGLK",CEFHIJKL:"EJICHFLK",CEFGIJKL:"EGICJFLK",CEFGHJKL:"EGJCHFLK",CEFGHIKL:"EGICHFLK",CEFGHIJL:"EGJCHFLI",CEFGHIJK:"EGJCHFIK",CDGHIJKL:"HGICJDLK",CDFHIJKL:"CJIDHFLK",CDFGIJKL:"CGIDJFLK",CDFGHJKL:"CGJDHFLK",CDFGHIKL:"CGIDHFLK",CDFGHIJL:"CGJDHFLI",CDFGHIJK:"CGJDHFIK",CDEHIJKL:"EJICHDLK",CDEGIJKL:"EGICJDLK",CDEGHJKL:"EGJCHDLK",CDEGHIKL:"EGICHDLK",CDEGHIJL:"EGJCHDLI",CDEGHIJK:"EGJCHDIK",CDEFIJKL:"CJEDIFLK",CDEFHJKL:"CJEDHFLK",CDEFHIKL:"CEIDHFLK",CDEFHIJL:"CJEDHFLI",CDEFHIJK:"CJEDHFIK",CDEFGJKL:"CGEDJFLK",CDEFGIKL:"CGEDIFLK",CDEFGIJL:"CGEDJFLI",CDEFGIJK:"CGEDJFIK",CDEFGHKL:"CGEDHFLK",CDEFGHJL:"CGJDHFLE",CDEFGHJK:"CGJDHFEK",CDEFGHIL:"CGEDHFLI",CDEFGHIK:"CGEDHFIK",CDEFGHIJ:"CGJDHFEI",BFGHIJKL:"HJBFIGLK",BEGHIJKL:"EJIBHGLK",BEFHIJKL:"EJBFIHLK",BEFGIJKL:"EJBFIGLK",BEFGHJKL:"EJBFHGLK",BEFGHIKL:"EGBFIHLK",BEFGHIJL:"EJBFHGLI",BEFGHIJK:"EJBFHGIK",BDGHIJKL:"HJBDIGLK",BDFHIJKL:"HJBDIFLK",BDFGIJKL:"IGBDJFLK",BDFGHJKL:"HGBDJFLK",BDFGHIKL:"HGBDIFLK",BDFGHIJL:"HGBDJFLI",BDFGHIJK:"HGBDJFIK",BDEHIJKL:"EJBDIHLK",BDEGIJKL:"EJBDIGLK",BDEGHJKL:"EJBDHGLK",BDEGHIKL:"EGBDIHLK",BDEGHIJL:"EJBDHGLI",BDEGHIJK:"EJBDHGIK",BDEFIJKL:"EJBDIFLK",BDEFHJKL:"EJBDHFLK",BDEFHIKL:"EIBDHFLK",BDEFHIJL:"EJBDHFLI",BDEFHIJK:"EJBDHFIK",BDEFGJKL:"EGBDJFLK",BDEFGIKL:"EGBDIFLK",BDEFGIJL:"EGBDJFLI",BDEFGIJK:"EGBDJFIK",BDEFGHKL:"EGBDHFLK",BDEFGHJL:"HGBDJFLE",BDEFGHJK:"HGBDJFEK",BDEFGHIL:"EGBDHFLI",BDEFGHIK:"EGBDHFIK",BDEFGHIJ:"HGBDJFEI",BCGHIJKL:"HJBCIGLK",BCFHIJKL:"HJBCIFLK",BCFGIJKL:"IGBCJFLK",BCFGHJKL:"HGBCJFLK",BCFGHIKL:"HGBCIFLK",BCFGHIJL:"HGBCJFLI",BCFGHIJK:"HGBCJFIK",BCEHIJKL:"EJBCIHLK",BCEGIJKL:"EJBCIGLK",BCEGHJKL:"EJBCHGLK",BCEGHIKL:"EGBCIHLK",BCEGHIJL:"EJBCHGLI",BCEGHIJK:"EJBCHGIK",BCEFIJKL:"EJBCIFLK",BCEFHJKL:"EJBCHFLK",BCEFHIKL:"EIBCHFLK",BCEFHIJL:"EJBCHFLI",BCEFHIJK:"EJBCHFIK",BCEFGJKL:"EGBCJFLK",BCEFGIKL:"EGBCIFLK",BCEFGIJL:"EGBCJFLI",BCEFGIJK:"EGBCJFIK",BCEFGHKL:"EGBCHFLK",BCEFGHJL:"HGBCJFLE",BCEFGHJK:"HGBCJFEK",BCEFGHIL:"EGBCHFLI",BCEFGHIK:"EGBCHFIK",BCEFGHIJ:"HGBCJFEI",BCDHIJKL:"HJBCIDLK",BCDGIJKL:"IGBCJDLK",BCDGHJKL:"HGBCJDLK",BCDGHIKL:"HGBCIDLK",BCDGHIJL:"HGBCJDLI",BCDGHIJK:"HGBCJDIK",BCDFIJKL:"CJBDIFLK",BCDFHJKL:"CJBDHFLK",BCDFHIKL:"CIBDHFLK",BCDFHIJL:"CJBDHFLI",BCDFHIJK:"CJBDHFIK",BCDFGJKL:"CGBDJFLK",BCDFGIKL:"CGBDIFLK",BCDFGIJL:"CGBDJFLI",BCDFGIJK:"CGBDJFIK",BCDFGHKL:"HGFCADLK",BCDFGHJL:"CGBDHFLJ",BCDFGHJK:"HGJCAFDK",BCDFGHIL:"HGFCADLI",BCDFGHIK:"HGFCADIK",BCDFGHIJ:"HGJCAFDI",BCDEIJKL:"EJICADLK",BCDEHJKL:"HJECADLK",BCDEHIKL:"HEICADLK",BCDEHIJL:"HJECADLI",BCDEHIJK:"HJECADIK",BCDEGJKL:"EGJCADLK",BCDEGIKL:"EGICADLK",BCDEGIJL:"EGJCADLI",BCDEGIJK:"EGJCADIK",BCDEGHKL:"HGECADLK",BCDEGHJL:"HGJCADLE",BCDEGHJK:"HGJCADEK",BCDEGHIL:"HGECADLI",BCDEGHIK:"HGECADIK",BCDEGHIJ:"HGJCADEI",BCDEFJKL:"CJEDAFLK",BCDEFIKL:"CEIDAFLK",BCDEFIJL:"CJEDAFLI",BCDEFIJK:"CJEDAFIK",BCDEFHKL:"HEFCADLK",BCDEFHJL:"HJFCADLE",BCDEFHJK:"HJECAFDK",BCDEFHIL:"HEFCADLI",BCDEFHIK:"HEFCADIK",BCDEFHIJ:"HJECAFDI",BCDEFGKL:"CGEDAFLK",BCDEFGJL:"CGJDAFLE",BCDEFGJK:"CGJDAFEK",BCDEFGIL:"CGEDAFLI",BCDEFGIK:"CGEDAFIK",BCDEFGIJ:"CGJDAFEI",BCDEFGHL:"HGFCADLE",BCDEFGHK:"HGECAFDK",BCDEFGHJ:"HGJCAFDE",BCDEFGHI:"HGECAFDI",AFGHIJKL:"HJIFAGLK",AEGHIJKL:"EJIAHGLK",AEFHIJKL:"EJIFAHLK",AEFGIJKL:"EJIFAGLK",AEFGHJKL:"EGJFAHLK",AEFGHIKL:"EGIFAHLK",AEFGHIJL:"EGJFAHLI",AEFGHIJK:"EGJFAHIK",ADGHIJKL:"HJIDAGLK",ADFHIJKL:"HJIDAFLK",ADFGIJKL:"IGJDAFLK",ADFGHJKL:"HGJDAFLK",ADFGHIKL:"HGIDAFLK",ADFGHIJL:"HGJDAFLI",ADFGHIJK:"HGJDAFIK",ADEHIJKL:"EJIDAHLK",ADEGIJKL:"EJIDAGLK",ADEGHJKL:"EGJDAHLK",ADEGHIKL:"EGIDAHLK",ADEGHIJL:"EGJDAHLI",ADEGHIJK:"EGJDAHIK",ADEFIJKL:"EJIDAFLK",ADEFHJKL:"HJEDAFLK",ADEFHIKL:"HEIDAFLK",ADEFHIJL:"HJEDAFLI",ADEFHIJK:"HJEDAFIK",ADEFGJKL:"EGJDAFLK",ADEFGIKL:"EGIDAFLK",ADEFGIJL:"EGJDAFLI",ADEFGIJK:"EGJDAFIK",ADEFGHKL:"HGEDAFLK",ADEFGHJL:"HGJDAFLE",ADEFGHJK:"HGJDAFEK",ADEFGHIL:"HGEDAFLI",ADEFGHIK:"HGEDAFIK",ADEFGHIJ:"HGJDAFEI",ACGHIJKL:"HJICAGLK",ACFHIJKL:"HJICAFLK",ACFGIJKL:"IGJCAFLK",ACFGHJKL:"HGJCAFLK",ACFGHIKL:"HGICAFLK",ACFGHIJL:"HGJCAFLI",ACFGHIJK:"HGJCAFIK",ACEHIJKL:"EJICAHLK",ACEGIJKL:"EJICAGLK",ACEGHJKL:"EGJCAHLK",ACEGHIKL:"EGICAHLK",ACEGHIJL:"EGJCAHLI",ACEGHIJK:"EGJCAHIK",ACEFIJKL:"EJICAFLK",ACEFHJKL:"HJECAFLK",ACEFHIKL:"HEICAFLK",ACEFHIJL:"HJECAFLI",ACEFHIJK:"HJECAFIK",ACEFGJKL:"EGJCAFLK",ACEFGIKL:"EGICAFLK",ACEFGIJL:"EGJCAFLI",ACEFGIJK:"EGJCAFIK",ACEFGHKL:"HGECAFLK",ACEFGHJL:"HGJCAFLE",ACEFGHJK:"HGJCAFEK",ACEFGHIL:"HGECAFLI",ACEFGHIK:"HGECAFIK",ACEFGHIJ:"HGJCAFEI",ACDHIJKL:"HJICADLK",ACDGIJKL:"IGJCADLK",ACDGHJKL:"HGJCADLK",ACDGHIKL:"HGICADLK",ACDGHIJL:"HGJCADLI",ACDGHIJK:"HGJCADIK",ACDFIJKL:"CJIDAFLK",ACDFHJKL:"HJFCADLK",ACDFHIKL:"HFICADLK",ACDFHIJL:"HJFCADLI",ACDFHIJK:"HJFCADIK",ACDFGJKL:"CGJDAFLK",ACDFGIKL:"CGIDAFLK",ACDFGIJL:"CGJDAFLI",ACDFGIJK:"CGJDAFIK",ACDFGHKL:"HGFCADLK",ACDFGHJL:"CGJDAFLH",ACDFGHJK:"HGJCAFDK",ACDFGHIL:"HGFCADLI",ACDFGHIK:"HGFCADIK",ACDFGHIJ:"HGJCAFDI",ACDEIJKL:"EJICADLK",ACDEHJKL:"HJECADLK",ACDEHIKL:"HEICADLK",ACDEHIJL:"HJECADLI",ACDEHIJK:"HJECADIK",ACDEGJKL:"EGJCADLK",ACDEGIKL:"EGICADLK",ACDEGIJL:"EGJCADLI",ACDEGIJK:"EGJCADIK",ACDEGHKL:"HGECADLK",ACDEGHJL:"HGJCADLE",ACDEGHJK:"HGJCADEK",ACDEGHIL:"HGECADLI",ACDEGHIK:"HGECADIK",ACDEGHIJ:"HGJCADEI",ACDEFJKL:"CJEDAFLK",ACDEFIKL:"CEIDAFLK",ACDEFIJL:"CJEDAFLI",ACDEFIJK:"CJEDAFIK",ACDEFHKL:"HEFCADLK",ACDEFHJL:"HJFCADLE",ACDEFHJK:"HJECAFDK",ACDEFHIL:"HEFCADLI",ACDEFHIK:"HEFCADIK",ACDEFHIJ:"HJECAFDI",ACDEFGKL:"CGEDAFLK",ACDEFGJL:"CGJDAFLE",ACDEFGJK:"CGJDAFEK",ACDEFGIL:"CGEDAFLI",ACDEFGIK:"CGEDAFIK",ACDEFGIJ:"CGJDAFEI",ACDEFGHL:"HGFCADLE",ACDEFGHK:"HGECAFDK",ACDEFGHJ:"HGJCAFDE",ACDEFGHI:"HGECAFDI",ABGHIJKL:"HJBAIGLK",ABFHIJKL:"HJBAIFLK",ABFGIJKL:"IJBFAGLK",ABFGHJKL:"HJBFAGLK",ABFGHIKL:"HGBAIFLK",ABFGHIJL:"HJBFAGLI",ABFGHIJK:"HJBFAGIK",ABEHIJKL:"EJBAIHLK",ABEGIJKL:"EJBAIGLK",ABEGHJKL:"EJBAHGLK",ABEGHIKL:"EGBAIHLK",ABEGHIJL:"EJBAHGLI",ABEGHIJK:"EJBAHGIK",ABEFIJKL:"EJBAIFLK",ABEFHJKL:"EJBFAHLK",ABEFHIKL:"EIBFAHLK",ABEFHIJL:"EJBFAHLI",ABEFHIJK:"EJBFAHIK",ABEFGJKL:"EJBFAGLK",ABEFGIKL:"EGBAIFLK",ABEFGIJL:"EJBFAGLI",ABEFGIJK:"EJBFAGIK",ABEFGHKL:"EGBFAHLK",ABEFGHJL:"HJBFAGLE",ABEFGHJK:"HJBFAGEK",ABEFGHIL:"EGBFAHLI",ABEFGHIK:"EGBFAHIK",ABEFGHIJ:"HJBFAGEI",ABDHIJKL:"IJBDAHLK",ABDGIJKL:"IJBDAGLK",ABDGHJKL:"HJBDAGLK",ABDGHIKL:"IGBDAHLK",ABDGHIJL:"HJBDAGLI",ABDGHIJK:"HJBDAGIK",ABDFIJKL:"IJBDAFLK",ABDFHJKL:"HJBDAFLK",ABDFHIKL:"HIBDAFLK",ABDFHIJL:"HJBDAFLI",ABDFHIJK:"HJBDAFIK",ABDFGJKL:"FJBDAGLK",ABDFGIKL:"IGBDAFLK",ABDFGIJL:"FJBDAGLI",ABDFGIJK:"FJBDAGIK",ABDFGHKL:"HGBDAFLK",ABDFGHJL:"HGBDAFLJ",ABDFGHJK:"HGBDAFJK",ABDFGHIL:"HGBDAFLI",ABDFGHIK:"HGBDAFIK",ABDFGHIJ:"HGBDAFIJ",ABDEIJKL:"EJBAIDLK",ABDEHJKL:"EJBDAHLK",ABDEHIKL:"EIBDAHLK",ABDEHIJL:"EJBDAHLI",ABDEHIJK:"EJBDAHIK",ABDEGJKL:"EJBDAGLK",ABDEGIKL:"EGBAIDLK",ABDEGIJL:"EJBDAGLI",ABDEGIJK:"EJBDAGIK",ABDEGHKL:"EGBDAHLK",ABDEGHJL:"HJBDAGLE",ABDEGHJK:"HJBDAGEK",ABDEGHIL:"EGBDAHLI",ABDEGHIK:"EGBDAHIK",ABDEGHIJ:"HJBDAGEI",ABDEFJKL:"EJBDAFLK",ABDEFIKL:"EIBDAFLK",ABDEFIJL:"EJBDAFLI",ABDEFIJK:"EJBDAFIK",ABDEFHKL:"HEBDAFLK",ABDEFHJL:"HJBDAFLE",ABDEFHJK:"HJBDAFEK",ABDEFHIL:"HEBDAFLI",ABDEFHIK:"HEBDAFIK",ABDEFHIJ:"HJBDAFEI",ABDEFGKL:"EGBDAFLK",ABDEFGJL:"EGBDAFLJ",ABDEFGJK:"EGBDAFJK",ABDEFGIL:"EGBDAFLI",ABDEFGIK:"EGBDAFIK",ABDEFGIJ:"EGBDAFIJ",ABDEFGHL:"HGBDAFLE",ABDEFGHK:"HGBDAFEK",ABDEFGHJ:"HGBDAFEJ",ABDEFGHI:"HGBDAFEI",ABCHIJKL:"IJBCAHLK",ABCGIJKL:"IJBCAGLK",ABCGHJKL:"HJBCAGLK",ABCGHIKL:"IGBCAHLK",ABCGHIJL:"HJBCAGLI",ABCGHIJK:"HJBCAGIK",ABCFIJKL:"IJBCAFLK",ABCFHJKL:"HJBCAFLK",ABCFHIKL:"HIBCAFLK",ABCFHIJL:"HJBCAFLI",ABCFHIJK:"HJBCAFIK",ABCFGJKL:"CJBFAGLK",ABCFGIKL:"IGBCAFLK",ABCFGIJL:"CJBFAGLI",ABCFGIJK:"CJBFAGIK",ABCFGHKL:"HGBCAFLK",ABCFGHJL:"HGBCAFLJ",ABCFGHJK:"HGBCAFJK",ABCFGHIL:"HGBCAFLI",ABCFGHIK:"HGBCAFIK",ABCFGHIJ:"HGBCAFIJ",ABCEIJKL:"EJBAICLK",ABCEHJKL:"EJBCAHLK",ABCEHIKL:"EIBCAHLK",ABCEHIJL:"EJBCAHLI",ABCEHIJK:"EJBCAHIK",ABCEGJKL:"EJBCAGLK",ABCEGIKL:"EGBAICLK",ABCEGIJL:"EJBCAGLI",ABCEGIJK:"EJBCAGIK",ABCEGHKL:"EGBCAHLK",ABCEGHJL:"HJBCAGLE",ABCEGHJK:"HJBCAGEK",ABCEGHIL:"EGBCAHLI",ABCEGHIK:"EGBCAHIK",ABCEGHIJ:"HJBCAGEI",ABCEFJKL:"EJBCAFLK",ABCEFIKL:"EIBCAFLK",ABCEFIJL:"EJBCAFLI",ABCEFIJK:"EJBCAFIK",ABCEFHKL:"HEBCAFLK",ABCEFHJL:"HJBCAFLE",ABCEFHJK:"HJBCAFEK",ABCEFHIL:"HEBCAFLI",ABCEFHIK:"HEBCAFIK",ABCEFHIJ:"HJBCAFEI",ABCEFGKL:"EGBCAFLK",ABCEFGJL:"EGBCAFLJ",ABCEFGJK:"EGBCAFJK",ABCEFGIL:"EGBCAFLI",ABCEFGIK:"EGBCAFIK",ABCEFGIJ:"EGBCAFIJ",ABCEFGHL:"HGBCAFLE",ABCEFGHK:"HGBCAFEK",ABCEFGHJ:"HGBCAFEJ",ABCEFGHI:"HGBCAFEI",ABCDIJKL:"IJBCADLK",ABCDHJKL:"HJBCADLK",ABCDHIKL:"HIBCADLK",ABCDHIJL:"HJBCADLI",ABCDHIJK:"HJBCADIK",ABCDGJKL:"CJBDAGLK",ABCDGIKL:"IGBCADLK",ABCDGIJL:"CJBDAGLI",ABCDGIJK:"CJBDAGIK",ABCDGHKL:"HGBCADLK",ABCDGHJL:"HGBCADLJ",ABCDGHJK:"HGBCADJK",ABCDGHIL:"HGBCADLI",ABCDGHIK:"HGBCADIK",ABCDGHIJ:"HGBCADIJ",ABCDFJKL:"CJBDAFLK",ABCDFIKL:"CIBDAFLK",ABCDFIJL:"CJBDAFLI",ABCDFIJK:"CJBDAFIK",ABCDFHKL:"HFBCADLK",ABCDFHJL:"CJBDAFLH",ABCDFHJK:"HJBCAFDK",ABCDFHIL:"HFBCADLI",ABCDFHIK:"HFBCADIK",ABCDFHIJ:"HJBCAFDI",ABCDFGKL:"CGBDAFLK",ABCDFGJL:"CGBDAFLJ",ABCDFGJK:"CGBDAFJK",ABCDFGIL:"CGBDAFLI",ABCDFGIK:"CGBDAFIK",ABCDFGIJ:"CGBDAFIJ",ABCDFGHL:"CGBDAFLH",ABCDFGHK:"HGBCAFDK",ABCDFGHJ:"HGBCAFDJ",ABCDFGHI:"HGBCAFDI",ABCDEJKL:"EJBCADLK",ABCDEIKL:"EIBCADLK",ABCDEIJL:"EJBCADLI",ABCDEIJK:"EJBCADIK",ABCDEHKL:"HEBCADLK",ABCDEHJL:"HJBCADLE",ABCDEHJK:"HJBCADEK",ABCDEHIL:"HEBCADLI",ABCDEHIK:"HEBCADIK",ABCDEHIJ:"HJBCADEI",ABCDEGKL:"EGBCADLK",ABCDEGJL:"EGBCADLJ",ABCDEGJK:"EGBCADJK",ABCDEGIL:"EGBCADLI",ABCDEGIK:"EGBCADIK",ABCDEGIJ:"EGBCADIJ",ABCDEGHL:"HGBCADLE",ABCDEGHK:"HGBCADEK",ABCDEGHJ:"HGBCADEJ",ABCDEGHI:"HGBCADEI",ABCDEFKL:"CEBDAFLK",ABCDEFJL:"CJBDAFLE",ABCDEFJK:"CJBDAFEK",ABCDEFIL:"CEBDAFLI",ABCDEFIK:"CEBDAFIK",ABCDEFIJ:"CJBDAFEI",ABCDEFHL:"HFBCADLE",ABCDEFHK:"HEBCAFDK",ABCDEFHJ:"HJBCAFDE",ABCDEFHI:"HEBCAFDI",ABCDEFGL:"CGBDAFLE",ABCDEFGK:"CGBDAFEK",ABCDEFGJ:"CGBDAFEJ",ABCDEFGI:"CGBDAFEI",ABCDEFGH:"HGBCAFDE"};
-const KO_VENUE={73:'Los Angeles, USA',74:'Foxborough (Boston), USA',75:'Guadalupe (Monterrey), Mexikó',76:'Houston, USA',77:'New Jersey, USA',78:'Arlington (Dallas), USA',79:'Mexikóváros, Mexikó',80:'Atlanta, USA',81:'Santa Clara (San Francisco), USA',82:'Seattle, USA',83:'Toronto, Kanada',84:'Los Angeles, USA',85:'Vancouver, Kanada',86:'Miami, USA',87:'Kansas City, USA',88:'Arlington (Dallas), USA',89:'Philadelphia, USA',90:'Houston, USA',91:'New Jersey, USA',92:'Mexikóváros, Mexikó',93:'Arlington (Dallas), USA',94:'Seattle, USA',95:'Atlanta, USA',96:'Vancouver, Kanada',97:'Foxborough (Boston), USA',98:'Los Angeles, USA',99:'Miami, USA',100:'Kansas City, USA',101:'Arlington (Dallas), USA',102:'Atlanta, USA',103:'Miami, USA',104:'New Jersey, USA'};
 function fifaMatchObj(n){
   if(n>=73&&n<=88)return ALL.find(m=>m.stage==='r32'&&m.mn===n-72);
   if(n>=89&&n<=96)return ALL.find(m=>m.stage==='r16'&&m.mn===n-88);
