@@ -213,7 +213,7 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 
 /* LIVE HERO */
 .live-hero{padding:18px;border-bottom:1px solid var(--chrome-line)}
-.lh-badge{background:#C8A84B;color:#0A0A0A;font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:2px;padding:3px 10px;display:inline-flex;align-items:center;gap:5px;margin-bottom:14px}
+.lh-badge{background:#CC2929;color:#fff;font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:2px;padding:3px 10px;display:inline-flex;align-items:center;gap:5px;margin-bottom:14px}
 .lh-meta{font-size:10px;color:rgba(var(--chrome-ink),.35);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;float:right;margin-top:-24px}
 .lh-match{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
 .lh-team{display:flex;flex-direction:column;align-items:center;gap:5px;width:85px}
@@ -234,7 +234,7 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .sml-title{font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase}
 .sml-all{font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:700;letter-spacing:.8px;cursor:pointer}
 .sml-item{border-bottom:1px solid rgba(var(--chrome-ink),.04);padding:10px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:stretch;gap:7px}
-.sml-item.active{background:rgba(200,168,75,.06);border-left:3px solid #C8A84B;padding-left:15px}
+.sml-item.active{background:rgba(204,41,41,.07);border-left:3px solid #CC2929;padding-left:15px}
 .sml-top{display:flex;align-items:center;gap:8px}
 .sml-time{font-family:var(--font-bc);font-weight:600;font-size:11px;color:rgba(var(--chrome-ink),.25);min-width:32px;flex-shrink:0}
 .sml-teams{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
@@ -307,7 +307,7 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 /* Tip inputs */
 .mc-inp{background:#FFFBF2;border-top:1px solid #E5E3DE;padding:8px 14px;display:flex;align-items:center;gap:8px}
 .sbox{width:54px;height:52px;border:2px solid rgba(var(--ink-rgb),.18);border-radius:13px;text-align:center;font-family:var(--font-bc);font-weight:800;font-size:25px;color:var(--text-color);background:var(--bg-card);outline:none;transition:border-color .12s,box-shadow .12s;-webkit-appearance:none;-moz-appearance:textfield;appearance:none}
-.sbox::-webkit-outer-spin-button,.sbox::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sbox::-webkit-outer-spin-button,.sbox::-webkit-inner-spin-button{-webkit-appearance:none;appearance:none;margin:0;display:none}
 .sbox::placeholder{color:rgba(var(--ink-rgb),.25);font-weight:400}
 .sbox:focus{border-color:#C8A84B;box-shadow:0 0 0 3px rgba(200,168,75,.25)}
 .sbox.filled{border-color:#C8A84B}
@@ -388,6 +388,8 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 
 /* ===== PILLS ===== */
 .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pill-row-nav{flex-wrap:nowrap;gap:4px;overflow:hidden}
+.pill-row-nav .pill{flex:1 1 auto;min-width:0;text-align:center;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pill{padding:5px 14px;font-family:var(--font-bc);font-weight:600;font-size:12px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;border:1.5px solid rgba(10,10,10,.15);color:rgba(10,10,10,.45);background:transparent;transition:all .12s}
 .pill.on{border-color:#0A0A0A;color:#0A0A0A;background:transparent}
 .pill.off{opacity:.6}
@@ -418,7 +420,7 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 /* ===== ALERT BOXES ===== */
 .err-box{background:rgba(204,41,41,.08);border-left:3px solid #CC2929;padding:10px 14px;font-size:13px;color:#8B1C1C;margin:8px 0;font-family:var(--font-bc);font-weight:600;letter-spacing:.3px}
 .suc-box{background:rgba(62,173,106,.08);border-left:3px solid #3EAD6A;padding:10px 14px;font-size:13px;color:#1e5e35;margin:8px 0;font-family:var(--font-bc);font-weight:600;letter-spacing:.3px}
-.note-bar{background:#0A0A0A;border-left:3px solid #C8A84B;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.6);font-family:var(--font-bc);letter-spacing:.3px}
+.note-bar{background:var(--chrome-elev);border-left:3px solid #C8A84B;padding:10px 14px;font-size:12px;color:rgba(var(--ink-rgb),.65);font-family:var(--font-bc);letter-spacing:.3px}
 
 /* ===== BRACKET ===== */
 .bk-desktop{overflow-x:auto}
@@ -457,7 +459,8 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .pred-grp-tag{font-family:var(--font-bc);font-weight:700;font-size:10px;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:1px 5px;margin-left:4px}
 .divider{height:1px;background:rgba(var(--ink-rgb),.12);margin:20px 0}
 /* ===== PREDIKCIÓ FÜL ===== */
-.pred-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:8px}
+.pred-group-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:10px;margin-bottom:8px}
+@media(max-width:1000px){.pred-group-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:auto;grid-auto-flow:row}}
 @media(max-width:560px){.pred-group-grid{grid-template-columns:1fr}}
 .pred-group-card{background:var(--bg-card);border:1px solid var(--border)}
 .pred-group-card.done{border-color:rgba(200,168,75,.4)}
@@ -1554,6 +1557,27 @@ async function setLang(l){
   SS({lang:l});
   await sS('wc_lang',l,false);
 }
+let _bkResizeBound=false;
+function fitBrackets(){
+  document.querySelectorAll('.bk-scale').forEach(inner=>{
+    const wrap=inner.closest('.bk-desktop');
+    if(!wrap)return;
+    inner.style.transform='none';
+    const natW=Math.max(inner.offsetWidth,inner.scrollWidth);
+    const availW=wrap.clientWidth;
+    if(!natW||!availW){return;}
+    const sc=Math.min(1,availW/natW);
+    inner.style.transformOrigin='top left';
+    inner.style.transform='scale('+sc+')';
+    wrap.style.overflow='hidden';
+    wrap.style.height=(inner.offsetHeight*sc)+'px';
+  });
+}
+function bindBracketResize(){
+  if(_bkResizeBound)return; _bkResizeBound=true;
+  let raf=null;
+  window.addEventListener('resize',()=>{ if(raf)cancelAnimationFrame(raf); raf=requestAnimationFrame(fitBrackets); });
+}
 function render(){
   try{
     document.body.classList.toggle('dark-mode',S.theme==='dark');
@@ -1564,6 +1588,9 @@ function render(){
     root.innerHTML=rMain(hw);
     if(S.preModal)bindPM();else bindMain(hw);
     if(document.getElementById('countdown-display'))startCountdown();
+    bindBracketResize();
+    fitBrackets();
+    requestAnimationFrame(fitBrackets);
   }catch(e){
     console.error('render hiba:',e);
     const root=document.getElementById('root');
@@ -1692,7 +1719,7 @@ function rSidebarLeft(){
     const ov=S.mt[m.id],h=ov?.home||m.home,a=ov?.away||m.away;
     return `<div class="live-hero">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="lh-badge"><div class="bc-ticker-dot" style="background:#0A0A0A"></div>ÉLŐ${sc.minute?' · '+sc.minute:''}</div>
+        <div class="lh-badge"><div class="bc-ticker-dot" style="background:#fff"></div>ÉLŐ${sc.minute?' · '+sc.minute:''}</div>
         <div style="font-size:9px;color:rgba(var(--chrome-ink),.3);letter-spacing:.8px;text-transform:uppercase">${m.group?m.group+' csop.':''} · ${GROUP_VENUE[m.id]||''}</div>
       </div>
       <div class="lh-match">
@@ -1718,7 +1745,7 @@ function rSidebarLeft(){
     const navGrp=m.group||(m.stage==='bronze'?'sf':m.stage)||'A';
     return `<div class="sml-item${isLive?' active':''}" data-v="matches" data-gomatch="${m.id}" data-grp="${navGrp}">
       <div class="sml-top">
-        <div class="sml-time">${isLive?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:700;letter-spacing:1px"><span class="bc-ticker-dot" style="background:#C8A84B;width:5px;height:5px"></span>ÉLŐ</span>`:timeStr}</div>
+        <div class="sml-time">${isLive?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#CC2929;font-family:var(--font-bc);font-weight:700;letter-spacing:1px"><span class="bc-ticker-dot" style="background:#CC2929;width:5px;height:5px"></span>ÉLŐ</span>`:timeStr}</div>
         <div class="sml-teams">
           <div class="sml-t">${teamFlag(h)} ${teamName(h)}</div>
           <div class="sml-t">${teamFlag(a)} ${teamName(a)}</div>
@@ -1890,7 +1917,7 @@ function rMatches(){
     <span>${t('note_bar')}</span>
     <button id="liveRefreshBtn" onclick="refreshLiveIfStale(true).then(()=>render())" style="flex-shrink:0;background:rgba(var(--ink-rgb),.08);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:rgba(var(--ink-rgb),.6);font-size:11px;cursor:pointer;white-space:nowrap">🔄 ${lastUpd}</button>
   </div>
-  <div class="pill-row">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
+  <div class="pill-row pill-row-nav">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
   ${grp?(()=>{
     const eff=(S.stMode==='official'?S.results:getEffectiveResults());
     const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
@@ -1915,7 +1942,7 @@ function rCard(m){
   const home=ov?.home||m.home,away=ov?.away||m.away;
   const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
   const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
-  const isKO=KO.includes(m.stage),isPast=Date.now()>=lockMs,locked=isPast||!!res,isTBD=m.tbd&&!ov;
+  const isKO=KO.includes(m.stage),isPast=Date.now()>=lockMs,locked=isPast||!!res||!!S.live[m.id],isTBD=m.tbd&&!ov;
   const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}).replace(/\./g,':'):'';  const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
@@ -2710,8 +2737,8 @@ function rBracket(){
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
-    <div class="bk-desktop" style="overflow:visible">
-      <div style="zoom:${zoom};transform-origin:top left">
+    <div class="bk-desktop" style="overflow:hidden">
+      <div class="bk-scale" style="display:inline-block;transform-origin:top left">
         ${hdrRow}
         <div style="display:flex">
           <div style="display:flex;flex-direction:column">${leftCols}</div>
@@ -2864,8 +2891,8 @@ function rPredBracket(r32g,cache){
   const avH=Math.max(400,window.innerHeight-220);
   const zoom=Math.min(1,_cw/bkW).toFixed(3);
 
-  return `<div class="bk-desktop" style="overflow:visible">
-    <div style="zoom:${zoom};transform-origin:top left">${hdrRow}
+  return `<div class="bk-desktop" style="overflow:hidden">
+    <div class="bk-scale" style="display:inline-block;transform-origin:top left">${hdrRow}
       <div style="display:flex">
         <div style="display:flex;flex-direction:column">${leftCols}</div>
         ${rightCol}
@@ -3858,6 +3885,23 @@ function bindMain(hw){
   }
 }
 
+function showMsg(id,text){
+  let el=document.getElementById('globalToast');
+  if(!el){el=document.createElement('div');el.id='globalToast';el.style.cssText='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#0A0A0A;color:#fff;font-family:var(--font-bc);font-weight:600;font-size:13px;letter-spacing:.5px;padding:10px 18px;border-radius:10px;z-index:99999;opacity:0;transition:opacity .2s;box-shadow:0 6px 24px rgba(0,0,0,.35);pointer-events:none';document.body.appendChild(el);}
+  el.textContent=text;
+  requestAnimationFrame(()=>{el.style.opacity='1';});
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.style.opacity='0';},2200);
+}
+function fallbackCopy(text){
+  try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');document.body.removeChild(ta);showMsg('shareDone','\u2713 V\u00e1g\u00f3lapra m\u00e1solva!');}
+  catch(e){showMsg('shareErr','A megoszt\u00e1s nem siker\u00fclt');}
+}
+function copyShare(text){
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(text).then(()=>showMsg('shareDone','\u2713 V\u00e1g\u00f3lapra m\u00e1solva!')).catch(()=>fallbackCopy(text));
+  } else fallbackCopy(text);
+}
 function shareTips(){
   const uid=S.user.id,eff=getEffectiveResults(),cfg=DS;
   const tipped=ALL.filter(m=>S.tips[`${uid}_${m.id}`]);
@@ -3867,9 +3911,9 @@ function shareTips(){
   const url=location.href.split('?')[0];
   const text=`🏆 VB 2026 Tippelő\n👤 ${S.user.dn}\n📊 ${tipped.length} tipp · ${tp} pont${uw?'\n🏆 Győztes: '+teamName(uw):''}${ut?'\n⚽ Gólkirály: '+ut:''}\n${url}`;
   if(navigator.share){
-    navigator.share({title:'VB 2026 Tippelő',text,url}).catch(()=>{});
+    navigator.share({title:'VB 2026 Tippelő',text,url}).catch(err=>{ if(err&&err.name==='AbortError')return; copyShare(text); });
   } else {
-    navigator.clipboard?.writeText(text).then(()=>showMsg('shareDone','✓ Vágólapra másolva!'));
+    copyShare(text);
   }
 }
 
