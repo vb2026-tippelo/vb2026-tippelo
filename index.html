@@ -100,6 +100,39 @@ body.dark-mode .mcard{background:#1C1C1C}
 body.dark-mode .mc-inp{background:#161616;border-top-color:rgba(255,255,255,.08)}
 body.dark-mode .modal-box{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
 body.dark-mode .lg-card,.dark-mode .fun-card,.dark-mode .pre-card{background:#1C1C1C}
+/* dark-mode: osztályból színezett, középső oszlopban renderelt komponensek (a szöveg krémre vált, ezért a hátteret is sötétíteni kell) */
+body.dark-mode .mc-top{background:#1C1C1C}
+body.dark-mode .mcard-active .mc-top{background:#241F12}
+body.dark-mode .mcard+.mcard{border-top-color:rgba(255,255,255,.07)}
+body.dark-mode .mc-date{background:#161616;border-top-color:rgba(255,255,255,.07)}
+body.dark-mode .mc-grp{background:#2A2A2A}
+body.dark-mode .mc-odds-pill{background:#222222;border-color:rgba(255,255,255,.1)}
+body.dark-mode .lb-card{background:#1C1C1C}
+body.dark-mode .lb-card.me{background:#241F12}
+body.dark-mode .wk-box{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
+body.dark-mode .wk-hdr{background:#161616;border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .wk-sep{background:rgba(255,255,255,.08)}
+body.dark-mode .bk-mob-card{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
+body.dark-mode .pred-third-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
+body.dark-mode .pred-third-btn.selected{background:#C8A84B;color:#0A0A0A !important}
+/* dark-mode: osztály-akcentek visszaállítása (a széles .bc-center szabály különben krémre váltaná) */
+body.dark-mode .bc-center .mc-tip-v,
+body.dark-mode .bc-center .mc-tip-open,
+body.dark-mode .bc-center .mc-score-time,
+body.dark-mode .bc-center .mc-res,
+body.dark-mode .bc-center .bc-sec-more,
+body.dark-mode .bc-center .lg-code,
+body.dark-mode .bc-center .btn-gold,
+body.dark-mode .bc-center .btn-sm.gold{color:#C8A84B !important}
+body.dark-mode .bc-center .mc-tip-p,
+body.dark-mode .bc-center .mc-saved,
+body.dark-mode .bc-center .btn-green{color:#3EAD6A !important}
+/* dark-mode: fekete keretek/aláhúzások láthatóvá tétele sötét háttéren */
+body.dark-mode .sect,
+body.dark-mode .bc-sec{border-bottom-color:rgba(255,255,255,.15)}
+body.dark-mode .btn-sm{border-color:rgba(255,255,255,.25)}
+body.dark-mode .btn-sm:hover{background:rgba(255,255,255,.1)}
+body.dark-mode .modal-title{color:var(--text-color);border-bottom-color:rgba(255,255,255,.2)}
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b),system-ui,sans-serif;min-height:100vh}
