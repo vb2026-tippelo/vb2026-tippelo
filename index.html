@@ -1316,6 +1316,8 @@ function getLbBoard(){
 
 async function syncKickoffsFromAPI(){
   SS({kickoffLoading:true});
+  // CDT helyszínek: az API 1 órával késő UTC-t ad vissza (CDT-t UTC-ként kezeli)
+  const CDT_VENUES=new Set(['Houston','Kansas City','Arlington','Guadalupe','Mexikóváros']);
   try{
     const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
     const r=await fetch(`${base}/.netlify/functions/kickoffs`);
@@ -1330,7 +1332,15 @@ async function syncKickoffsFromAPI(){
         return (mH===am.home&&mA===am.away)||(mH===am.away&&mA===am.home);
       });
       if(!lm)return;
-      newKo[lm.id]=am.kickoff;
+      let kickoff=am.kickoff;
+      // CDT korrekció: ha CDT helyszín, vonjunk le 1 órát az API hibás UTC-jéből
+      const venue=GROUP_VENUE[lm.id]||'';
+      if(CDT_VENUES.has(venue)){
+        const dt=new Date(kickoff);
+        dt.setHours(dt.getHours()-1);
+        kickoff=dt.toISOString();
+      }
+      newKo[lm.id]=kickoff;
       updated++;
     });
     await sS('wc_ko',newKo,true);
