@@ -348,9 +348,36 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .foot-link:hover{color:#C8A84B}
 .foot-sep{color:rgba(var(--ink-rgb),.25)}
 .foot-copy{text-align:center;margin-top:10px;font-size:11px;color:rgba(var(--ink-rgb),.35);font-family:var(--font-bc);letter-spacing:.5px}
-@media(max-width:900px){.site-footer{padding-bottom:84px}}
 @media(max-width:560px){
-  .mt-hdr,.mt-row{grid-template-columns:42px 1fr 46px 46px 60px 26px !important;padding-left:8px !important;padding-right:8px !important}
+  .mt-hdr{display:none !important}
+  .mt-row{
+    grid-template-columns:46px 1fr 1fr 1fr 26px !important;
+    grid-template-areas:"date match match match share" "tip tip res pts pts" !important;
+    row-gap:7px;padding:11px 10px !important;
+  }
+  .mt-c-date{grid-area:date}
+  .mt-c-match{grid-area:match;padding:0 !important}
+  .mt-c-tip{grid-area:tip;text-align:left !important}
+  .mt-c-res{grid-area:res}
+  .mt-c-pts{grid-area:pts}
+  .mt-c-share{grid-area:share}
+  .mt-c-tip::before,.mt-c-res::before,.mt-c-pts::before{display:block;font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);font-family:var(--font-bc);font-weight:600;margin-bottom:2px}
+  .mt-c-tip::before{content:'Tippem'}
+  .mt-c-res::before{content:'Eredmény'}
+  .mt-c-pts::before{content:'Pont';text-align:right}
+}
+@media(max-width:560px){
+  .mc-top{padding:8px 10px !important}
+  .mc-main{gap:6px !important;padding:14px 8px 10px !important}
+  .mc-main>div{gap:8px !important}
+  .mc-main .flag-img{width:26px !important;height:18px !important}
+  .mc-tname{font-size:14px !important;letter-spacing:.2px !important}
+  .mc-score{font-size:32px !important}
+  .mc-tbd-main{gap:8px !important;padding:16px 10px !important}
+  .mc-tbd-slot{font-size:13px !important}
+  .mc-tipsum-lbl{font-size:13px !important}
+  .mc-actbtn{padding:6px 11px !important;font-size:10px !important}
+  .sbox{width:46px !important;height:46px !important;font-size:22px !important}
 }
 .legal-overlay{position:fixed;inset:0;background:var(--bg-modal);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .legal-box{background:var(--bg-card);color:var(--text-color);max-width:640px;width:100%;max-height:85vh;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.45)}
@@ -375,6 +402,10 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 /* ===== STANDINGS ===== */
 .standings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:#ddd;margin-bottom:20px}
 .std-groups-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(var(--ink-rgb),.1)}
+.fcast-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:8px;padding:4px 0 8px}
+@media(max-width:1200px){.fcast-grid{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:760px){.fcast-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.fcast-grid{grid-template-columns:repeat(2,1fr)}}
 .center-live-mob{display:none}
 @media(max-width:900px){.center-live-mob{display:block}}
 @media(max-width:1200px){.std-groups-grid{grid-template-columns:repeat(2,1fr)}}
@@ -555,7 +586,7 @@ button[data-predko].wk-win .wk-tnm{color:#2E9E5A!important}
 .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 
 /* ===== MOBILE NAV (hidden on desktop) ===== */
-.mobile-nav{display:none;background:var(--chrome-bg);border-top:3px solid #C8A84B;position:sticky;bottom:0;z-index:50}
+.mobile-nav{display:none;background:var(--chrome-bg);border-bottom:3px solid #C8A84B;position:sticky;top:54px;z-index:90}
 @media(max-width:900px){
   .mobile-nav{display:flex}
   .bc-topbar .bc-nav{display:none}
@@ -1873,14 +1904,14 @@ function rMain(hw){
       <div class="bc-av">${initials}</div>
     </div>
   </div>
-  <div class="bc-layout">
-    <div class="bc-sidebar-l">${sidebarL}</div>
-    <div class="bc-center">${vc}${rFooter()}</div>
-  </div>
   <nav class="mobile-nav">
     ${tabs.slice(0,5).map(tb=>`<div class="mn-item${S.view===tb.id?' on':''}" data-v="${tb.id}">${tb.icon}<span>${tb.l}</span></div>`).join('')}
     <div class="mn-item${['leagues','pre-tips','predict','fun','profile','admin'].includes(S.view)?' on':''}" data-vmenu="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Több</span></div>
   </nav>
+  <div class="bc-layout">
+    <div class="bc-sidebar-l">${sidebarL}</div>
+    <div class="bc-center">${vc}${rFooter()}</div>
+  </div>
   ${S.preModal?rPM():''}
   ${S.legalModal?rLegal():''}
   ${S.cookieBanner?rCookieBanner():''}
@@ -2191,16 +2222,16 @@ function rCard(m){
       <span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">${venue?`<span>📍 ${venue}${localTime?` · ⏰ ${localTime}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.4)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''}${wx?`<span>${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''}</span>
     </div>
     <div class="mc-main" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:18px 18px 12px">
-      <div style="display:flex;align-items:center;gap:12px;min-width:0">${fImg(home,38)}<span style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(home)}</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">${fImg(home,38)}<span class="mc-tname" style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(home)}</span></div>
       <div style="text-align:center">
-        ${res?`<div style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:var(--text-color);display:flex;align-items:center;gap:8px;justify-content:center"><span>${res.homeGoals}</span><span style="color:rgba(var(--ink-rgb),.2);font-weight:300;font-size:30px">:</span><span>${res.awayGoals}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Result':'Eredmény'}</div>`:live?`<div style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:#CC2929;display:flex;align-items:center;gap:8px;justify-content:center"><span>${live.h}</span><span style="color:rgba(var(--ink-rgb),.25);font-weight:300;font-size:30px">:</span><span>${live.a}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Live':'Élő'}</div>`:`<div class="sinputs" style="justify-content:center">
+        ${res?`<div class="mc-score" style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:var(--text-color);display:flex;align-items:center;gap:8px;justify-content:center"><span>${res.homeGoals}</span><span style="color:rgba(var(--ink-rgb),.2);font-weight:300;font-size:30px">:</span><span>${res.awayGoals}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Result':'Eredmény'}</div>`:live?`<div class="mc-score" style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:#CC2929;display:flex;align-items:center;gap:8px;justify-content:center"><span>${live.h}</span><span style="color:rgba(var(--ink-rgb),.25);font-weight:300;font-size:30px">:</span><span>${live.a}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Live':'Élő'}</div>`:`<div class="sinputs" style="justify-content:center">
           <input type="text" inputmode="numeric" class="sbox${(th!=='')?(' filled'):''}" id="sh_${m.id}" value="${th}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
           <span class="sdash">–</span>
           <input type="text" inputmode="numeric" class="sbox${(ta!=='')?(' filled'):''}" id="sa_${m.id}" value="${ta}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
         </div>`}
         <div class="mc-saved" id="sv_${m.id}" style="text-align:center">${saved?t('saved'):''}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;justify-content:flex-end;min-width:0"><span style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(away)}</span>${fImg(away,38)}</div>
+      <div style="display:flex;align-items:center;gap:12px;justify-content:flex-end;min-width:0"><span class="mc-tname" style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(away)}</span>${fImg(away,38)}</div>
     </div>
     ${((res&&tip)||(live&&tip))?(()=>{
       const r=res||{homeGoals:live.h,awayGoals:live.a};
@@ -2494,9 +2525,9 @@ function rGroupForecast(){
   });
   return `<div class="std-card" style="margin-top:16px">
     <div class="std-head"><span class="std-glbl">🔮 Csoport előrejelzés</span><span class="std-t" style="font-size:11px;color:rgba(var(--ink-rgb),.4)">(tippek alapján)</span></div>
-    <div style="display:flex;flex-wrap:nowrap;gap:8px;padding:4px 0 8px">
+    <div class="fcast-grid">
       ${forecastData.map(({g,sorted,counts})=>`
-        <div style="flex:1 1 0;min-width:0;background:rgba(var(--ink-rgb),.04);border-radius:10px;padding:9px 8px">
+        <div style="min-width:0;background:rgba(var(--ink-rgb),.04);border-radius:10px;padding:9px 8px">
           <div style="font-size:11px;font-weight:700;color:var(--c-gold);margin-bottom:7px">${g}. csoport</div>
           ${sorted.map((tm,i)=>{
             const bar=Math.round((counts[tm]._pts||0)/Math.max(...sorted.map(t=>counts[t]._pts||1))*100);
@@ -3266,18 +3297,18 @@ function rMyTips(){
         const koT=S.ko[m.id]||m.koDefault;
         const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}):'';
         return `<div class="mt-row" style="display:grid;grid-template-columns:48px 1fr 72px 72px 90px 36px;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(var(--ink-rgb),.06);background:var(--bg-card)">
-          <div style="font-family:var(--font-bc);font-size:10px;color:rgba(var(--ink-rgb),.3);line-height:1.4">${fd(m.date)}<br>${timeStr}</div>
-          <div style="display:flex;align-items:center;gap:8px;padding:0 8px">
+          <div class="mt-c-date" style="font-family:var(--font-bc);font-size:10px;color:rgba(var(--ink-rgb),.3);line-height:1.4">${fd(m.date)}<br>${timeStr}</div>
+          <div class="mt-c-match" style="display:flex;align-items:center;gap:8px;padding:0 8px">
             <span>${teamFlag(home)}</span>
             <span style="font-family:var(--font-bc);font-weight:600;font-size:13px;color:var(--text-color);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(home)}</span>
             <span style="font-family:var(--font-bc);font-size:11px;color:rgba(var(--ink-rgb),.3);margin:0 2px">–</span>
             <span style="font-family:var(--font-bc);font-weight:600;font-size:13px;color:var(--text-color);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(away)}</span>
             <span>${teamFlag(away)}</span>
           </div>
-          <div style="font-family:var(--font-bc);font-weight:700;font-size:16px;color:#C8A84B;text-align:center;letter-spacing:1px">${tip.homeGoals}<span style="color:rgba(var(--ink-rgb),.2);margin:0 2px">:</span>${tip.awayGoals}</div>
-          <div style="text-align:center">${r?`<div style="font-family:var(--font-bc);font-weight:700;font-size:16px;color:${isLive?'#CC2929':'var(--text-color)'};">${r.homeGoals}<span style="color:rgba(var(--ink-rgb),.2);margin:0 2px">:</span>${r.awayGoals}</div>`:`<div style="font-size:10px;color:rgba(var(--ink-rgb),.25);font-family:var(--font-bc)">Várjuk</div>`}</div>
-          <div style="text-align:right">${p!==null?`<span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span><div style="font-size:9px;color:rgba(var(--ink-rgb),.3);font-family:var(--font-bc);letter-spacing:.3px;margin-top:2px">${catLabel[cat]||''}</div>`:`<div style="font-size:10px;color:rgba(var(--ink-rgb),.2);font-family:var(--font-bc)">–</div>`}</div>
-          <div style="text-align:center"><button class="tiprow-share" data-sharetip="${m.id}" title="${S.lang==='en'?'Share':'Megosztás'}">📤</button></div>
+          <div class="mt-c-tip" style="font-family:var(--font-bc);font-weight:700;font-size:16px;color:#C8A84B;text-align:center;letter-spacing:1px">${tip.homeGoals}<span style="color:rgba(var(--ink-rgb),.2);margin:0 2px">:</span>${tip.awayGoals}</div>
+          <div class="mt-c-res" style="text-align:center">${r?`<div style="font-family:var(--font-bc);font-weight:700;font-size:16px;color:${isLive?'#CC2929':'var(--text-color)'};">${r.homeGoals}<span style="color:rgba(var(--ink-rgb),.2);margin:0 2px">:</span>${r.awayGoals}</div>`:`<div style="font-size:10px;color:rgba(var(--ink-rgb),.25);font-family:var(--font-bc)">Várjuk</div>`}</div>
+          <div class="mt-c-pts" style="text-align:right">${p!==null?`<span class="ptag ${cat||'p0'}">${catS[cat]||''} ${p}p</span><div style="font-size:9px;color:rgba(var(--ink-rgb),.3);font-family:var(--font-bc);letter-spacing:.3px;margin-top:2px">${catLabel[cat]||''}</div>`:`<div style="font-size:10px;color:rgba(var(--ink-rgb),.2);font-family:var(--font-bc)">–</div>`}</div>
+          <div class="mt-c-share" style="text-align:center"><button class="tiprow-share" data-sharetip="${m.id}" title="${S.lang==='en'?'Share':'Megosztás'}">📤</button></div>
         </div>`;
       }).join('')}
     </div>`;
