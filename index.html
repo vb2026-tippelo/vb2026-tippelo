@@ -1820,7 +1820,7 @@ function rCard(m){
   const venue=apiVenue||(m.stage==='group'?GROUP_VENUE[m.id]:KO_VENUE[fifaNumOf(m)])||null;
   const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
   const wx=isToday&&venue?S.weather?.[venue]:null;
-  const mOdds=isToday?S.odds?.[m.id]:null;
+  const mOdds=S.odds?.[m.id]||null;
   // Helyi idő
   const koDate2=koTime?new Date(koTime):null;
   const tz=venue?VENUE_TZ[venue]:null;
@@ -1836,21 +1836,26 @@ function rCard(m){
   if(isTBD) return `<div class="mcard locked" id="match-${m.id}"><div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}</span><span class="mc-meta"><span class="mc-grp">${grpLbl}</span>${isKO?'<span class="mc-ko">×2</span>':''}</span></div><div style="text-align:center;padding:16px;color:#aaa;font-size:13px">${t('teams_tbd')}</div></div>`;
 
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
-    <div class="mc-top"><span class="mc-date">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span><span class="mc-meta">${live?`<span style="background:#e63329;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;animation:pulse 1.5s infinite">${t('live_badge')}${live.minute!==undefined&&live.minute!==''?' '+live.minute:''}</span>`:''}<span class="mc-grp">${grpLbl}</span>${venue?`<span class="mc-venue-info">📍 ${venue}${localTime?` · ⏰ ${localTime}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.35)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''} ${wx?`<span class="mc-wx">${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''} ${isKO?'<span class="mc-ko">×2</span>':''}</span></div>
-    <div class="mc-main">
-      <div class="team-b home">${fImg(home,40)}<span class="tname">${teamName(home)}</span></div>
-      <div class="score-b">
-        ${res?`<div class="actual-s"><span>${res.homeGoals}</span><span style="color:#ccc;margin:0 4px">–</span><span>${res.awayGoals}</span></div>`:live?`<div class="actual-s" style="color:#e63329"><span>${live.h}</span><span style="color:#ccc;margin:0 4px">–</span><span>${live.a}</span></div>`:''}
-        <div class="sinputs">
+    <div class="mc-top" style="display:flex;align-items:center;gap:10px;padding:9px 14px;flex-wrap:wrap">
+      <span style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:2px 8px">${grpLbl}</span>
+      <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fd(m.date)}${koLbl?` · ${koLbl}`:''}</span>
+      ${live?`<span style="background:#CC2929;color:#fff;font-family:var(--font-bc);font-weight:800;font-size:10px;letter-spacing:1.5px;padding:2px 7px;display:inline-flex;align-items:center;gap:4px;animation:pulse 1.5s infinite"><span style="width:5px;height:5px;border-radius:50%;background:#fff"></span>${t('live_badge')}${live.minute!==undefined&&live.minute!==''?' '+live.minute:''}</span>`:''}
+      ${isKO?'<span style="font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:.5px;background:rgba(var(--ink-rgb),.06);border:1px solid rgba(200,168,75,.4);color:#C8A84B;padding:2px 7px">×2 KO</span>':''}
+      <span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">${venue?`<span>📍 ${venue}${localTime?` · ⏰ ${localTime}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.4)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''}${wx?`<span>${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''}</span>
+    </div>
+    <div class="mc-main" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:18px 18px 12px">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">${fImg(home,38)}<span style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(home)}</span></div>
+      <div style="text-align:center">
+        ${res?`<div style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:var(--text-color);display:flex;align-items:center;gap:8px;justify-content:center"><span>${res.homeGoals}</span><span style="color:rgba(var(--ink-rgb),.2);font-weight:300;font-size:30px">:</span><span>${res.awayGoals}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Result':'Eredmény'}</div>`:live?`<div style="font-family:var(--font-bc);font-weight:900;font-size:42px;line-height:1;color:#CC2929;display:flex;align-items:center;gap:8px;justify-content:center"><span>${live.h}</span><span style="color:rgba(var(--ink-rgb),.25);font-weight:300;font-size:30px">:</span><span>${live.a}</span></div><div style="font-family:var(--font-bc);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--ink-rgb),.35);margin-top:5px">${S.lang==='en'?'Live':'Élő'}</div>`:`<div class="sinputs" style="justify-content:center">
           <input type="number" class="sbox${(th!=='')?(' filled'):''}" id="sh_${m.id}" min="0" max="20" value="${th}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
           <span class="sdash">–</span>
           <input type="number" class="sbox${(ta!=='')?(' filled'):''}" id="sa_${m.id}" min="0" max="20" value="${ta}" ${res?'disabled':isPast?'disabled':''} placeholder="–">
-        </div>
-        <div class="mc-saved" id="sv_${m.id}">${saved?t('saved'):''}</div>
+        </div>`}
+        <div class="mc-saved" id="sv_${m.id}" style="text-align:center">${saved?t('saved'):''}</div>
       </div>
-      <div class="team-b away"><span class="tname">${teamName(away)}</span>${fImg(away,40)}</div>
+      <div style="display:flex;align-items:center;gap:12px;justify-content:flex-end;min-width:0"><span style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(away)}</span>${fImg(away,38)}</div>
     </div>
-    ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 10px"><button class="btn-green" style="font-size:13px;padding:8px 22px" id="stb_${m.id}" data-mid="${m.id}">${t('save_tip')}</button></div>`:''}
+    ${!res&&!isPast&&!isTBD?`<div style="text-align:center;padding:0 16px 14px"><button id="stb_${m.id}" data-mid="${m.id}" style="font-family:var(--font-bc);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;background:#C8A84B;color:#0A0A0A;border:none;padding:9px 28px;cursor:pointer">💾 ${t('save_tip')}</button></div>`:''}
     ${mOdds?`<div class="mc-odds"><span class="mc-odds-pill">1 ${mOdds.h}</span><span class="mc-odds-pill mc-odds-draw">X ${mOdds.d||'–'}</span><span class="mc-odds-pill">2 ${mOdds.a}</span></div>`:''}
     ${(()=>{
       const allU=S.users.filter(u=>!u.isAdmin);
@@ -1889,19 +1894,15 @@ function rCard(m){
         }).join('')}
       </div>`:'';
       return `<div>
-        <div style="padding:0 14px 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span style="font-size:10px;color:rgba(var(--ink-rgb),.35);font-weight:600">👥 ${tot} tipp:</span>
-          <div style="display:flex;gap:2px;flex:1;min-width:100px;height:6px;border-radius:3px;overflow:hidden">
-            ${hW?`<div style="width:${pct(hW)}%;background:#4a9eff"></div>`:''}
-            ${dr?`<div style="width:${pct(dr)}%;background:#c9a84c"></div>`:''}
-            ${aW?`<div style="width:${pct(aW)}%;background:#e8212a"></div>`:''}
-          </div>
-          <span style="font-size:10px;color:#4a9eff">${pct(hW)}%</span>
-          <span style="font-size:10px;color:#c9a84c">${pct(dr)}%</span>
-          <span style="font-size:10px;color:#e8212a">${pct(aW)}%</span>
-          ${topScore&&topScore[1]>1?`<span style="font-size:10px;color:rgba(var(--ink-rgb),.4)">· legtöbb: <b>${topScore[0]}</b></span>`:''}
-          <button data-exptips="${m.id}" style="margin-left:auto;background:none;border:none;font-size:11px;color:rgba(var(--ink-rgb),.4);cursor:pointer;padding:2px 6px;border-radius:6px;border:1px solid rgba(var(--ink-rgb),.1)">${isExp?'▲ Bezár':'▼ Mindenki tippje'}</button>
+        <div style="padding:6px 14px 8px">
+          <button data-exptips="${m.id}" style="font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;background:none;border:1px solid rgba(var(--ink-rgb),.2);color:rgba(var(--ink-rgb),.7);cursor:pointer;padding:5px 12px">👥 ${isExp?'Bezár ▴':'Mindenki tippje ▾'}</button>
         </div>
+        ${isExp?`<div style="padding:0 14px 6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:10px;color:rgba(var(--ink-rgb),.35);font-weight:600">👥 ${tot} tipp</span>
+          <div style="display:flex;gap:2px;flex:1;min-width:100px;height:6px;border-radius:3px;overflow:hidden">${hW?`<div style="width:${pct(hW)}%;background:#4a9eff"></div>`:''}${dr?`<div style="width:${pct(dr)}%;background:#c9a84c"></div>`:''}${aW?`<div style="width:${pct(aW)}%;background:#e8212a"></div>`:''}</div>
+          <span style="font-size:10px;color:#4a9eff">${pct(hW)}%</span><span style="font-size:10px;color:#c9a84c">${pct(dr)}%</span><span style="font-size:10px;color:#e8212a">${pct(aW)}%</span>
+          ${topScore&&topScore[1]>1?`<span style="font-size:10px;color:rgba(var(--ink-rgb),.4)">· legtöbb: <b>${topScore[0]}</b></span>`:''}
+        </div>`:''}
         ${expHtml}
       </div>`;
     })()}
@@ -1939,8 +1940,8 @@ function rCard(m){
       </div>`:isExp&&!lu?`<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`:'';
       return `<div>
         <div style="padding:4px 14px 8px;display:flex;gap:6px">
-          <button data-explineup="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.1);border-radius:6px;padding:3px 8px;font-size:11px;color:rgba(var(--ink-rgb),.4);cursor:pointer">${isExp?'▲ Bezár':'👕 Felállás'}</button>
-          <button data-expstats="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.1);border-radius:6px;padding:3px 8px;font-size:11px;color:rgba(var(--ink-rgb),.4);cursor:pointer">${S.expandStats===m.id?'▲ Bezár':'📊 Statisztika'}</button>
+          <button data-explineup="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.2);padding:5px 12px;font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:rgba(var(--ink-rgb),.7);cursor:pointer">${isExp?'Bezár ▴':'👕 Felállás'}</button>
+          <button data-expstats="${m.id}" data-wcid="${wcId}" style="background:none;border:1px solid rgba(var(--ink-rgb),.2);padding:5px 12px;font-family:var(--font-bc);font-weight:600;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:rgba(var(--ink-rgb),.7);cursor:pointer">${S.expandStats===m.id?'Bezár ▴':'📊 Statisztika'}</button>
         </div>
         ${expHtml}
         ${(()=>{
