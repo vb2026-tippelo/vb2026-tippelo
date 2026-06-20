@@ -115,6 +115,7 @@ body.dark-mode .wk-sep{background:rgba(255,255,255,.08)}
 body.dark-mode .bk-mob-card{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
 body.dark-mode .pred-third-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
 body.dark-mode .pred-third-btn.selected{background:#C8A84B;color:#0A0A0A !important}
+body.dark-mode .pred-third-btn.picked{background:rgba(46,158,90,.24);border-color:#2E9E5A;color:#43c97a !important}
 /* dark-mode: osztály-akcentek visszaállítása (a széles .bc-center szabály különben krémre váltaná) */
 body.dark-mode .bc-center .mc-tip-v,
 body.dark-mode .bc-center .mc-tip-open,
@@ -131,8 +132,10 @@ body.dark-mode .bc-center .pred-group-h,
 body.dark-mode .bc-center .pred-grp-tag,
 body.dark-mode .bc-center .pred-ko-btn.picked,
 body.dark-mode .bc-center .pred-champion{color:#C8A84B !important}
-body.dark-mode .bc-center .pred-rank-badge.r1{color:#0A0A0A !important}
+body.dark-mode .bc-center .pred-rank-badge.r1{color:#fff !important}
 body.dark-mode .bc-center .pred-rank-badge.r2{color:#fff !important}
+body.dark-mode .bc-center .pred-rank-badge.r3{color:#0A0A0A !important}
+body.dark-mode .bc-center .pred-rank-badge.r4{color:#fff !important}
 /* dark-mode: fekete keretek/aláhúzások láthatóvá tétele sötét háttéren */
 body.dark-mode .sect,
 body.dark-mode .bc-sec{border-bottom-color:rgba(255,255,255,.15)}
@@ -140,7 +143,9 @@ body.dark-mode .btn-sm{border-color:rgba(255,255,255,.25)}
 body.dark-mode .btn-sm:hover{background:rgba(255,255,255,.1)}
 body.dark-mode .modal-title{color:var(--text-color);border-bottom-color:rgba(255,255,255,.2)}
 /* dark-mode: ligaszűrő fehér sáv + figyelmeztető doboz láthatóvá tétele */
-body.dark-mode .lg-sel-row{background:#161616;border-color:rgba(255,255,255,.1)}
+body.dark-mode .lg-sel-row{background:#1C1C1C;border:1px solid rgba(255,255,255,.16);border-radius:10px}
+body.dark-mode .lg-sel-row .pill{border-color:rgba(255,255,255,.22);color:rgba(255,255,255,.6)}
+body.dark-mode .lg-sel-row .pill.on{border-color:#C8A84B;color:#C8A84B;background:rgba(200,168,75,.12)}
 body.dark-mode .note-bar{background:#1C1C1C;border:1px solid rgba(255,255,255,.08);border-left:3px solid #C8A84B}
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -223,9 +228,15 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .sml-item{border-bottom:1px solid rgba(255,255,255,.04);padding:9px 18px;cursor:pointer;display:flex;align-items:center;gap:8px}
 .sml-item.active{background:rgba(200,168,75,.06);border-left:3px solid #C8A84B;padding-left:15px}
 .sml-time{font-family:var(--font-bc);font-weight:600;font-size:11px;color:rgba(255,255,255,.25);min-width:32px;flex-shrink:0}
-.sml-teams{flex:1;display:flex;flex-direction:column;gap:3px}
-.sml-t{font-family:var(--font-bc);font-weight:600;font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px;letter-spacing:.3px}
+.sml-teams{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.sml-t{font-family:var(--font-bc);font-weight:600;font-size:12px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sml-tip{font-size:10px;color:#C8A84B;font-family:var(--font-bc);font-weight:600;letter-spacing:.3px;flex-shrink:0}
+.sml-stat{display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:50px}
+.sml-st-row{display:flex;align-items:center;justify-content:flex-end;gap:5px;font-family:var(--font-bc);line-height:1.2}
+.sml-st-l{font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.28);font-weight:700;width:9px;text-align:left}
+.sml-st-v{font-size:11px;font-weight:700;color:rgba(255,255,255,.82);min-width:28px;text-align:right}
+.sml-st-v.sml-pts{color:#C8A84B}
+.sml-st-v.muted{color:rgba(255,255,255,.22)}
 
 /* ===== CENTER MAIN ===== */
 .bc-center{background:#F2F0EB;padding:22px 26px;overflow-y:auto}
@@ -237,6 +248,22 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .bc-sec-more{font-size:11px;color:#C8A84B;font-family:var(--font-bc);font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
 
 /* ===== MATCH CARDS – broadcast newspaper style ===== */
+.match-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-items:start}
+.match-grid .mcard{border:1px solid var(--border);border-left:3px solid transparent;border-radius:12px;overflow:hidden}
+.match-grid .mcard+.mcard{border-top:1px solid var(--border)}
+body.dark-mode .match-grid .mcard{border-color:rgba(255,255,255,.08)}
+@media(max-width:1100px){.match-grid{grid-template-columns:1fr;gap:0}.match-grid .mcard{border-radius:0;border:none;border-left:3px solid transparent;border-bottom:1px solid var(--border)}}
+.grp-mini-std{margin-bottom:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.gms-row{display:grid;grid-template-columns:26px 1fr 28px 28px 28px 28px 40px 34px;align-items:center;gap:4px;padding:6px 10px;font-family:var(--font-bc);font-weight:600;font-size:13px;color:var(--text-color)}
+.gms-row+.gms-row{border-top:1px solid rgba(var(--ink-rgb),.06)}
+.gms-head{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.45);font-weight:700;background:rgba(var(--ink-rgb),.03)}
+.gms-row>span:not(.gms-team):not(.gms-pos){text-align:center}
+.gms-pos{font-weight:900;text-align:center}
+.gms-team{display:flex;align-items:center;gap:7px;min-width:0;text-transform:uppercase;letter-spacing:.3px}
+.gms-tnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gms-pts{font-weight:900;color:var(--c-gold)}
+body.dark-mode .grp-mini-std{border-color:rgba(255,255,255,.08)}
+body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .mcard{background:#fff;border-left:3px solid transparent;cursor:pointer;transition:border-color .12s}
 .mcard.locked{opacity:1}
 .mcard+.mcard{border-top:1px solid #E5E3DE}
@@ -389,7 +416,8 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 /* ===== LEAGUE ===== */
 .lg-card{background:#fff;border:1px solid #ddd;padding:14px;margin-bottom:8px;cursor:pointer}
 .lg-code{font-family:'Courier New',monospace;font-size:18px;font-weight:700;color:#C8A84B;letter-spacing:3px;margin:8px 0 4px}
-.lg-sel-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:#F7F5F0;border:1px solid #ddd}
+.lg-sel-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:#F7F5F0;border:1px solid #d8d4cb;border-radius:10px}
+.lg-sel-row .pill{border-color:rgba(10,10,10,.22)}
 
 /* ===== FUN / MISC ===== */
 .fun-card{background:#fff;border:1px solid #ddd;padding:14px;margin-bottom:8px}
@@ -402,7 +430,7 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .pred-third-btn{padding:5px 12px;font-family:var(--font-bc);font-weight:600;font-size:12px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#0A0A0A}
 .pred-third-btn.selected{border-color:#0A0A0A;background:#0A0A0A;color:#C8A84B}
 .pred-third-count{font-size:11px;color:#888;font-family:var(--font-bc);margin-bottom:10px}
-.pred-third-btn.picked{border-color:#C8A84B;background:rgba(200,168,75,.12)}
+.pred-third-btn.picked{border-color:#2E9E5A;background:rgba(46,158,90,.16);color:#1f7a43}
 .pred-grp-tag{font-family:var(--font-bc);font-weight:700;font-size:10px;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:1px 5px;margin-left:4px}
 .divider{height:1px;background:rgba(var(--ink-rgb),.12);margin:20px 0}
 /* ===== PREDIKCIÓ FÜL ===== */
@@ -415,10 +443,15 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .pred-team-btn:last-child{border-bottom:none}
 .pred-team-btn:hover{background:rgba(var(--ink-rgb),.04)}
 .pred-team-btn.picked{border-left-color:#C8A84B;background:rgba(200,168,75,.08)}
+.pred-team-btn.rank-1,.pred-team-btn.rank-2{border-left-color:#2E9E5A;background:rgba(46,158,90,.10)}
+.pred-team-btn.rank-3{border-left-color:#C8A84B;background:rgba(200,168,75,.10)}
+.pred-team-btn.rank-4{border-left-color:#e63329;background:rgba(230,51,41,.10)}
 .pred-team-nm{font-family:var(--font-bc);font-weight:600;font-size:14px;letter-spacing:.3px;text-transform:uppercase;color:var(--text-color);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pred-rank-badge{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-family:var(--font-bc);font-weight:900;font-size:12px;flex-shrink:0;color:rgba(var(--ink-rgb),.5);border:1px solid rgba(var(--ink-rgb),.2)}
-.pred-rank-badge.r1{background:#C8A84B;color:#0A0A0A;border:none}
+.pred-rank-badge.r1{background:#2E9E5A;color:#fff;border:none}
 .pred-rank-badge.r2{background:#2E9E5A;color:#fff;border:none}
+.pred-rank-badge.r3{background:#C8A84B;color:#0A0A0A;border:none}
+.pred-rank-badge.r4{background:#e63329;color:#fff;border:none}
 .pred-round-block{margin-bottom:14px}
 .pred-round-h{font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.45);margin-bottom:6px}
 .pred-ko-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:8px;margin-bottom:7px}
@@ -1673,11 +1706,15 @@ function rSidebarLeft(){
         <div class="sml-t">${teamFlag(h)} ${teamName(h)}</div>
         <div class="sml-t">${teamFlag(a)} ${teamName(a)}</div>
       </div>
-      <div class="sml-tip">${res?`<span style="font-family:var(--font-bc);font-weight:700;color:rgba(255,255,255,.85)">${res.homeGoals}</span><span style="color:rgba(255,255,255,.3);margin:0 1px">:</span><span style="font-family:var(--font-bc);font-weight:700;color:rgba(255,255,255,.85)">${res.awayGoals}</span>`:''}${tip?'<span title="Van tipped" style="color:#3EAD6A;font-family:var(--font-bc);font-weight:700;margin-left:5px">✓</span>':'<span title="Nincs tipped" style="color:#CC2929;font-family:var(--font-bc);font-weight:700;margin-left:5px;opacity:.7">✗</span>'}</div>
+      <div class="sml-stat">
+        <div class="sml-st-row"><span class="sml-st-l">T</span><span class="sml-st-v${tip?'':' muted'}">${tip?`${tip.homeGoals}-${tip.awayGoals}`:'–'}</span></div>
+        <div class="sml-st-row"><span class="sml-st-l">E</span><span class="sml-st-v${res?'':' muted'}">${res?`${res.homeGoals}:${res.awayGoals}`:'–'}</span></div>
+        <div class="sml-st-row"><span class="sml-st-l">P</span><span class="sml-st-v sml-pts${(res&&tip)?'':' muted'}">${(res&&tip)?'+'+(calcPts(tip,res,m.stage)||0):'–'}</span></div>
+      </div>
     </div>`;
   }).join('');
 
-  return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches">Mind →</div></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(255,255,255,.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
+  return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches">Mind →</div></div><div style="padding:3px 18px 5px;display:flex;justify-content:flex-end;gap:7px;font-family:var(--font-bc);font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.05)"><span>T·tipp</span><span>E·ered.</span><span>P·pont</span></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(255,255,255,.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
 }
 
 function rSidebarStats(){
@@ -1836,8 +1873,16 @@ function rMatches(){
     <button id="liveRefreshBtn" onclick="refreshLiveIfStale(true).then(()=>render())" style="flex-shrink:0;background:rgba(var(--ink-rgb),.08);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:rgba(var(--ink-rgb),.6);font-size:11px;cursor:pointer;white-space:nowrap">🔄 ${lastUpd}</button>
   </div>
   <div class="pill-row">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
-  ${grp?`<div style="font-size:12px;color:rgba(var(--ink-rgb),.3);margin-bottom:10px">${grp.teams.map(tm=>`${fImg(tm,16)} ${teamName(tm)}`).join(' · ')}</div>`:''}
-  <div>${vis.map(m=>rCard(m)).join('')}</div>`;
+  ${grp?(()=>{
+    const eff=getEffectiveResults();
+    const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+    const tc=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e63329';
+    return `<div class="grp-mini-std">
+      <div class="gms-row gms-head"><span class="gms-pos">#</span><span class="gms-team">${S.lang==='en'?'Group '+grp.id:grp.id+'. csoport'}</span><span>M</span><span>GY</span><span>D</span><span>V</span><span>GK</span><span>P</span></div>
+      ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span></span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
+    </div>`;
+  })():''}
+  <div class="match-grid">${vis.map(m=>rCard(m)).join('')}</div>`;
 }
 
 function rCard(m){
@@ -2172,9 +2217,9 @@ function rGroupForecast(){
   });
   return `<div class="std-card" style="margin-top:16px">
     <div class="std-head"><span class="std-glbl">🔮 Csoport előrejelzés</span><span class="std-t" style="font-size:11px;color:rgba(var(--ink-rgb),.4)">(tippek alapján)</span></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:4px 0">
+    <div style="display:flex;flex-wrap:nowrap;gap:10px;padding:4px 0 8px;overflow-x:auto">
       ${forecastData.map(({g,sorted,counts})=>`
-        <div style="background:rgba(var(--ink-rgb),.04);border-radius:10px;padding:10px">
+        <div style="flex:0 0 190px;background:rgba(var(--ink-rgb),.04);border-radius:10px;padding:10px">
           <div style="font-size:11px;font-weight:700;color:var(--c-gold);margin-bottom:7px">${g}. csoport</div>
           ${sorted.map((tm,i)=>{
             const bar=Math.round((counts[tm]._pts||0)/Math.max(...sorted.map(t=>counts[t]._pts||1))*100);
@@ -2558,7 +2603,9 @@ function bkBox(m){
   return wkBox(fn,40,76,165,m.stage==='final');
 }
 function rBracket(){
-  const BH=60,MW=172,CW=16,sc='rgba(212,175,55,0.35)',sw=1.5;
+  const BH=60,MW=172,sc='rgba(212,175,55,0.35)',sw=1.5;
+  const _cw=(document.querySelector('.bc-center')?.clientWidth||document.getElementById('root')?.clientWidth||window.innerWidth)-44;
+  const CW=Math.max(16,Math.min(340,Math.round((_cw-5*MW)/4)));
   const N=8,HC=BH+14,H=N*HC; // egy fél magassága
   const TH=H*2; // teljes magasság
   function cy(round,i){return (i*2+1)*Math.pow(2,round)*HC/2;}
@@ -2625,7 +2672,7 @@ function rBracket(){
   const bkW=5*MW+4*CW, bkH=TH+80;
   const avW=Math.max(600,(document.getElementById('root')?.clientWidth||window.innerWidth)-24);
   const avH=Math.max(400,window.innerHeight-220);
-  const zoom=Math.min(1,avW/bkW,avH/bkH).toFixed(3);
+  const zoom=Math.min(1,_cw/bkW).toFixed(3);
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
@@ -2678,7 +2725,9 @@ function rBracketMobile(){
 }
 
 function rPredBracket(r32g,cache){
-  const BH=60,MW=172,CW=16,sc='rgba(212,175,55,0.35)',sw=1.5;
+  const BH=60,MW=172,sc='rgba(212,175,55,0.35)',sw=1.5;
+  const _cw=(document.querySelector('.bc-center')?.clientWidth||document.getElementById('root')?.clientWidth||window.innerWidth)-44;
+  const CW=Math.max(16,Math.min(340,Math.round((_cw-5*MW)/4)));
   const N=8,HC=BH+14,H=N*HC,TH=H*2;
   function cy(round,i){return (i*2+1)*Math.pow(2,round)*HC/2;}
   const halves=[
@@ -2779,7 +2828,7 @@ function rPredBracket(r32g,cache){
   const bkW=5*MW+4*CW,bkH=TH+80;
   const avW=Math.max(600,(document.querySelector('.bc-center')?.clientWidth||document.getElementById('root')?.clientWidth||window.innerWidth)-40);
   const avH=Math.max(400,window.innerHeight-220);
-  const zoom=Math.min(1,avW/bkW,avH/bkH).toFixed(3);
+  const zoom=Math.min(1,_cw/bkW).toFixed(3);
 
   return `<div class="bk-desktop" style="overflow:visible">
     <div style="zoom:${zoom};transform-origin:top left">${hdrRow}
@@ -2892,18 +2941,24 @@ function rMyTips(){
   // Csoportosítás csoport/kör szerint
   const byGroup={};
   tipped.forEach(m=>{
-    const key=m.group||stageLabel(m.stage)||'KO';
+    const key=m.group||m.stage||'ko';
     if(!byGroup[key])byGroup[key]=[];
     byGroup[key].push(m);
   });
 
-  const grpKeys=Object.keys(byGroup);
+  const grpLabel=k=>GD.some(g=>g.id===k)?(S.lang==='en'?'Group '+k:k+'. csoport'):(stageLabel(k)||k);
+  const grpKeys=Object.keys(byGroup).sort((a,b)=>{
+    const ga=GD.findIndex(g=>g.id===a),gb=GD.findIndex(g=>g.id===b);
+    const ka=ga>=0?ga:100+KO.indexOf(a),kb=gb>=0?gb:100+KO.indexOf(b);
+    return ka-kb;
+  });
   const fg=(S.tipFilterG&&byGroup[S.tipFilterG])?S.tipFilterG:'all';
-  const tipRows=Object.entries(byGroup).filter(([grp])=>fg==='all'||grp===fg).map(([grp,ms])=>{
+  const tipRows=grpKeys.filter(grp=>fg==='all'||grp===fg).map(grp=>{
+    const ms=byGroup[grp];
     const grpPts=ms.reduce((s,m)=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];return r?s+(calcPts(tip,r,m.stage,cfg)||0):s;},0);
     return `<div>
       <div style="background:#0A0A0A;padding:7px 14px;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase">${grp} CSOPORT</div>
+        <div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase">${grpLabel(grp)}</div>
         ${grpPts?`<div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:rgba(255,255,255,.5)">${grpPts} pont</div>`:''}
       </div>
       ${ms.map(m=>{
@@ -2951,7 +3006,7 @@ function rMyTips(){
     </div>`:''}
     <div class="pill-row">
       <button class="pill ${fg==='all'?'on':'off'}" data-tg="all">${S.lang==='en'?'All':'Mind'}</button>
-      ${grpKeys.map(k=>`<button class="pill ${fg===k?'on':'off'}" data-tg="${k}">${k.length===1?(S.lang==='en'?'Group '+k:k):k}</button>`).join('')}
+      ${grpKeys.map(k=>`<button class="pill ${fg===k?'on':'off'}" data-tg="${k}">${GD.some(g=>g.id===k)?(S.lang==='en'?'Group '+k:k):(stageLabel(k)||k)}</button>`).join('')}
     </div>
     <div style="background:#0A0A0A;padding:7px 14px;display:grid;grid-template-columns:48px 1fr 72px 72px 90px;align-items:center;gap:0;margin-bottom:1px">
       <div style="font-family:var(--font-bc);font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;text-transform:uppercase">Dátum</div>
