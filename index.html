@@ -1253,7 +1253,7 @@ async function adminResetPassword(uid){
   alert('Jelszó visszaállítva: vb2026');
 }
 
-const fd=d=>{const p=d.split('-');return `jún. ${parseInt(p[2])}., ${['vas','hét','kedd','szer','csüt','pén','szo'][new Date(d).getDay()]}`;};
+const fd=d=>{const p=d.split('-'),mn=parseInt(p[1]),day=parseInt(p[2]),dow=['vas','hét','kedd','szer','csüt','pén','szo'][new Date(d+'T12:00:00Z').getUTCDay()];return `${mn===6?'jún.':'júl.'} ${day}., ${dow}`;};
 const fImg=(nm,sz=40)=>CC[nm]?`<img class="flag-img" src="https://flagcdn.com/w40/${CC[nm]}.png" style="width:${sz}px;height:${Math.round(sz*.67)}px" alt="${nm}" loading="lazy">`:`<span style="font-size:${Math.round(sz*.6)}px">🏳</span>`;
 function getEffectiveLgId(){
   const uid=S.user?.id;
@@ -1645,8 +1645,7 @@ function rCard(m){
   const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
   const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
   const isKO=KO.includes(m.stage),isPast=Date.now()>=lockMs,locked=isPast||!!res,isTBD=m.tbd&&!ov;
-  const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit'}):'';
-  const pts=tip&&res?calcPts(tip,res,m.stage):null;
+  const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}).replace(/\./g,':'):'';  const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:stageLabel(m.stage);
   const wcId=S.wcIds?.[m.id];
