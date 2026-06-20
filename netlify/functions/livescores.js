@@ -23,6 +23,11 @@ const EN_TEAM = {
 };
 
 function mapTeam(en){ return EN_TEAM[en] || en; }
+function fmtMinute(val){
+  if(val === null || val === undefined) return '';
+  const s = String(val).trim();
+  return s === '0' ? '1\'' : s ? (s.includes('\'') ? s : s + '\'') : '';
+}
 
 const LIVE_STATUSES = new Set([2,6,7,8,9,10,37,38]);
 const FINISHED_STATUSES = new Set([3,43]);
@@ -40,41 +45,55 @@ exports.handler = async function(event, context) {
     const koData = koResp.ok ? await koResp.json() : {data:[]};
     const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
 
-    const minuteMap = {};
-    (liveData.data || []).forEach(m => { minuteMap[m.matchId] = m.minute || ''; });
+    // Live meccsek: matchId → {minute, scoreHome, scoreAway, status}
+    const liveMap = {};
+    (liveData.data || []).forEach(m => {
+      liveMap[m.matchId] = {
+        minute: fmtMinute(m.minute),
+        scoreHome: m.scoreHome,
+        scoreAway: m.scoreAway,
+        status: m.status,
+      };
+    });
 
     const allRaw = [...(groupData.data||[]), ...(koData.data||[])];
 
-    // MINDEN meccs benne van (scheduled is) – matchId és kickoff szinkronhoz
-    // Csak azokat adjuk vissza amelyek relevánsak (van eredmény/élő VAGY van matchId)
     const matches = allRaw
       .filter(m => m.matchId || m.scoreHome !== null || LIVE_STATUSES.has(m.status))
-      .map(m => ({
-        home: mapTeam(m.home),
-        away: mapTeam(m.away),
-        homeEn: m.home,
-        awayEn: m.away,
-        h: m.scoreHome ?? 0,
-        a: m.scoreAway ?? 0,
-        status: m.statusText,
-        minute: minuteMap[m.matchId] || '',
-        live: LIVE_STATUSES.has(m.status),
-        finished: FINISHED_STATUSES.has(m.status),
-        scheduled: m.status === 1,
-        kickoff: m.kickoff,
-        matchId: m.matchId || null,
-      }));
+      .map(m => {
+        // Ha a /wc/live is tartalmazza ezt a meccset, az az igazság
+        const liveInfo = m.matchId ? liveMap[m.matchId] : null;
+        const isLive = LIVE_STATUSES.has(m.status) || (liveInfo && LIVE_STATUSES.has(liveInfo.status));
+        const isFinished = FINISHED_STATUSES.has(m.status);
+        // Pontszám: live adatból ha elérhető és élő meccs
+        const scoreH = liveInfo && isLive ? (liveInfo.scoreHome ?? m.scoreHome ?? 0) : (m.scoreHome ?? 0);
+        const scoreA = liveInfo && isLive ? (liveInfo.scoreAway ?? m.scoreAway ?? 0) : (m.scoreAway ?? 0);
 
-    const liveCount = matches.filter(m => m.live).length;
-    const finishedCount = matches.filter(m => m.finished).length;
-    const scheduledCount = matches.filter(m => m.scheduled).length;
-    console.log(`Meccsek: ${matches.length} (élő:${liveCount}, befejezett:${finishedCount}, tervezett:${scheduledCount})`);
+        return {
+          home: mapTeam(m.home),
+          away: mapTeam(m.away),
+          homeEn: m.home,
+          awayEn: m.away,
+          h: scoreH,
+          a: scoreA,
+          status: m.statusText,
+          minute: liveInfo?.minute || '',
+          live: isLive,
+          finished: isFinished,
+          scheduled: m.status === 1,
+          kickoff: m.kickoff,
+          matchId: m.matchId || null,
+        };
+      });
 
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
-        matches, updatedAt: new Date().toISOString(),
-        source: 'wc2026api', wcCount: matches.length
+        matches,
+        updatedAt: new Date().toISOString(),
+        source: 'wc2026api',
+        wcCount: matches.length,
+        liveCount: matches.filter(m=>m.live).length,
       })
     };
   } catch(err) {
