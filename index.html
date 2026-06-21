@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://vb26tipp.forma1fitnesz.hu/og-image.png">
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#011524">
+<meta name="theme-color" content="#0A0A0A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1802,6 +1802,7 @@ function bindBracketResize(){
 function render(){
   try{
     document.body.classList.toggle('dark-mode',S.theme==='dark');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',S.theme==='dark'?'#0A0A0A':'#FFFFFF');
     const root=document.getElementById('root');
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
     if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
