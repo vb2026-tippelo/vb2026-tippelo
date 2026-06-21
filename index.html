@@ -824,6 +824,8 @@ const STRINGS={
   }
 };
 function t(key){return STRINGS[S.lang||'hu']?.[key]??STRINGS.hu[key]??key;}
+function userTz(){return (S&&S.tz)||'Europe/Budapest';}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function trophyIcon(size,extraStyle){
   return `<img src="/trophy.png" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;object-fit:contain;${extraStyle||''}" alt="trophy">`;
 }
@@ -913,7 +915,7 @@ const VENUE_TZ={'Mexikóváros':'America/Mexico_City','Guadalajara':'America/Mex
 const VENUE_DOME={'Los Angeles':true,'Vancouver':true,'Atlanta':true,'Houston':true,'Dallas':true};
 const WMO_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
 async function fetchTodayWeather(){
-  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const today=new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
   const todayMatches=ALL.filter(m=>m.stage==='group'&&m.date===today);
   if(!todayMatches.length)return;
   const venues=[...new Set(todayMatches.map(m=>m.venue).filter(Boolean))];
@@ -953,7 +955,7 @@ EN_TEAM['South Korea']='Dél-Korea';
 EN_TEAM['South Africa']='Dél-Afrika';
 async function fetchTodayOdds(){
   const KEY=S.adminSpec?.oddsKey||'d2e76cddb77f1adbf0cc133c71abdd39';
-  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const today=new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
   const todayMs=ALL.filter(m=>m.date===today&&!m.tbd);
   if(!todayMs.length)return;
   try{
@@ -1017,9 +1019,9 @@ function genM(){
 const ALL=genM();
 function todayGroupId(){
   const now=new Date();
-  const todayHU=now.toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const todayHU=now.toLocaleDateString('en-CA',{timeZone:userTz()});
   const todays=ALL.filter(m=>m.stage==='group'&&m.koDefault).filter(m=>{
-    const localDate=new Date(m.koDefault).toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+    const localDate=new Date(m.koDefault).toLocaleDateString('en-CA',{timeZone:userTz()});
     return localDate===todayHU;
   }).sort((a,b)=>new Date(a.koDefault)-new Date(b.koDefault));
   return todays.length?todays[0].group:null;
@@ -1118,7 +1120,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})()
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1153,9 +1155,9 @@ async function loadScorers(depth){
 }
 
 async function init(){
-  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds,wcVenues]=await Promise.all([
+  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds,wcVenues,chat]=await Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
-    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true),sG('wc_venues',true)
+    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true),sG('wc_venues',true),sG('wc_chat',true)
   ]);
   let ul=users||[];
   if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:await makePwField('admin123'),isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
@@ -1183,7 +1185,7 @@ async function init(){
   // Az uj (szerveroldali) rendszerhez belepesi jegy (token) kell. Ha van regi munkamenet,
   // de meg nincs token, egyszeri ujra-belepest kerunk, hogy a mentesek a lezaras utan is mukodjenek.
   if(cu && !hasTok){ try{localStorage.removeItem('wc_s');}catch(e){} cu=null; }
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{},chat:chat||{}});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   if(cu){
@@ -1259,7 +1261,7 @@ async function doReg(){
         localStorage.setItem('wc_tok',d.token);
         const nu=d.user;
         await sS('wc_s',{uid:nu.id},false);
-        SS({users:[...users,nu],user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:nu.av||'⚽'});
+        SS({users:[...users,nu],user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:nu.av||'⚽',recCodeShow:d.recCode||null});
         return;
       }
       if(d&&d.ok===false&&d.error==='taken'){SS({authErr:t('err_username_taken'),authLoad:false});return;}
@@ -1928,6 +1930,7 @@ function applyNavPos(){
 function gIcon(){return `<svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`;}
 function rAuth(){
   const L=S.authMode==='login';
+  const en=S.lang==='en';
   return `<div class="auth-page"><div style="width:100%;max-width:420px">
   <div class="auth-hero">
     <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
@@ -1957,7 +1960,22 @@ function rAuth(){
       ${L?t('no_account'):t('has_account')}
       <span id="sw" style="color:#c9a84c;cursor:pointer;font-weight:700;margin-left:4px">${L?t('signup_link'):t('login_link')}</span>
     </p>
+    ${L&&!S.fpOpen?`<p style="text-align:center;margin-top:6px"><span id="fpLink" style="color:rgba(var(--ink-rgb),.45);cursor:pointer;font-size:12px;text-decoration:underline">${en?'Forgot password?':'Elfelejtett jelszó?'}</span></p>`:''}
   </div>
+  ${S.fpOpen?`<div class="auth-card" style="margin-top:14px">
+    <h2 style="font-size:16px;font-weight:800;margin-bottom:6px">🔑 ${en?'Reset password':'Jelszó visszaállítása'}</h2>
+    <p style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px">${en?'Enter your username and the recovery code you saved at sign-up, then a new password.':'Add meg a felhasználóneved és a regisztrációkor kapott visszaállító kódot, majd az új jelszót.'}</p>
+    ${S.fpErr?`<div class="err-box" style="margin-bottom:10px">${S.fpErr}</div>`:''}
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input class="inp" id="fpUn" placeholder="${t('username')}" value="${S.fpUn}">
+      <input class="inp" id="fpCode" placeholder="${en?'Recovery code':'Visszaállító kód'}" value="${S.fpCode}">
+      <input class="inp" id="fpPw" type="password" placeholder="${en?'New password':'Új jelszó'}" value="${S.fpPw}">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-sm" id="fpCancel" style="flex:1">${en?'Cancel':'Mégse'}</button>
+      <button class="btn-gold" id="fpSubmit" style="flex:1;max-width:none;height:40px">${S.fpLoad?'⏳':(en?'Reset':'Visszaállít')}</button>
+    </div>
+  </div>`:''}
   </div></div>`;
 }
 function bindAuth(){
@@ -1973,6 +1991,12 @@ function bindAuth(){
     S.authMode==='login'?doLogin():doReg();
   });
   document.getElementById('aGoogle')?.addEventListener('click',doGoogleLogin);
+  document.getElementById('fpLink')?.addEventListener('click',()=>SS({fpOpen:true,fpErr:null}));
+  document.getElementById('fpCancel')?.addEventListener('click',()=>SS({fpOpen:false,fpErr:null}));
+  document.getElementById('fpSubmit')?.addEventListener('click',()=>{
+    SS({fpUn:document.getElementById('fpUn')?.value||'',fpCode:document.getElementById('fpCode')?.value||'',fpPw:document.getElementById('fpPw')?.value||''});
+    doForgotPw();
+  });
   ['au','ap'].forEach(id=>document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('aBtn')?.click();}));
 }
 
@@ -2045,6 +2069,7 @@ function rMain(hw){
   ${S.legalModal?rLegal():''}
   ${S.helpModal?rHelp():''}
   ${S.delModal?rDelModal():''}
+  ${S.recCodeShow?rRecCode():''}
   ${S.cookieBanner?rCookieBanner():''}
   </div>`;
 }
@@ -2078,15 +2103,15 @@ function rSidebarLeft(){
 
   // Mai meccsek listája
   const todayMs=ALL.filter(m=>{
-    const d=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
-    return m.date===d||(S.ko[m.id]&&new Date(S.ko[m.id]).toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'})===d);
+    const d=new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
+    return m.date===d||(S.ko[m.id]&&new Date(S.ko[m.id]).toLocaleDateString('en-CA',{timeZone:userTz()})===d);
   }).sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)).slice(0,8);
 
   const matchList=todayMs.map(m=>{
     const ov=S.mt[m.id],h=ov?.home||m.home,a=ov?.away||m.away;
     const res=eff[m.id],isLive=!!S.live[m.id],tip=S.tips[`${uid}_${m.id}`];
     const koT=S.ko[m.id]||m.koDefault;
-    const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}):'';
+    const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:userTz()}):'';
     const navGrp=m.group||(m.stage==='bronze'?'final':m.stage)||'A';
     return `<div class="sml-item${isLive?' active':''}" data-v="matches" data-gomatch="${m.id}" data-grp="${navGrp}">
       <div class="sml-top">
@@ -2314,13 +2339,13 @@ function rCard(m){
   const koTime=S.ko[m.id]||m.koDefault,koDate=koTime?new Date(koTime):null;
   const lockMs=koDate?koDate.getTime()-5*60*1000:Infinity;
   const isKO=KO.includes(m.stage),isPast=Date.now()>=lockMs,locked=isPast||!!res||!!S.live[m.id],isTBD=m.tbd&&!ov;
-  const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}).replace(/\./g,':'):'';  const pts=tip&&res?calcPts(tip,res,m.stage):null;
+  const koLbl=koDate?koDate.toLocaleTimeString(S.lang==='en'?'en-GB':'hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:userTz()}).replace(/\./g,':'):'';  const pts=tip&&res?calcPts(tip,res,m.stage):null;
   const cat=tip&&res?ptsCat(tip,res,m.stage):null;
   const grpLbl=m.group?`${m.group} ${t('group_word')}`:(m.stage==='bronze'?'🥉 ':m.stage==='final'?'🏆 ':'')+stageLabel(m.stage);
   const wcId=S.wcIds?.[m.id];
   const apiVenue=wcId?S.wcVenues?.[wcId]?.venue:null;
   const venue=apiVenue||m.venue||null;
-  const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Budapest'});
+  const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
   const wx=isToday&&venue?S.weather?.[venue]:null;
   const mOdds=S.odds?.[m.id]||null;
   // Helyi idő
@@ -2895,6 +2920,86 @@ async function shareH2H(myDn,oppDn,myW,oppW,draw){
     else{await navigator.clipboard.writeText(txt+' '+location.href);SS({h2hCopied:true});setTimeout(()=>SS({h2hCopied:false}),2000);}
   }catch(e){/* user cancelled */}
 }
+async function exportBackup(){
+  SS({bkBusy:true,bkMsg:null});
+  const keys=['wc_u','wc_t','wc_r','wc_lg','wc_sp','wc_asp','wc_mt','wc_ko','wc_predict','wc_chat','wc_ids','wc_venues'];
+  const out={_meta:{app:'vb2026',exportedAt:new Date().toISOString()}};
+  try{
+    for(const k of keys){ out[k]=await sG(k,true); }
+    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vb2026-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);
+    SS({bkBusy:false,bkMsg:S.lang==='en'?'✓ Backup downloaded':'✓ Mentés letöltve'});
+  }catch(e){SS({bkBusy:false,bkMsg:'⚠️ '+e.message});}
+}
+async function importBackup(file){
+  if(!file)return;
+  const en=S.lang==='en';
+  if(!confirm(en?'Restore from this backup? This OVERWRITES current data for the included keys.':'Visszatöltöd ezt a mentést? Ez FELÜLÍRJA a benne szereplő adatokat.'))return;
+  SS({bkBusy:true,bkMsg:null});
+  try{
+    const data=JSON.parse(await file.text());
+    const keys=Object.keys(data).filter(k=>k.startsWith('wc_'));
+    for(const k of keys){ if(data[k]!==undefined&&data[k]!==null) await sS(k,data[k],true); }
+    SS({bkBusy:false,bkMsg:(en?'✓ Restored ':'✓ Visszatöltve ')+keys.length+(en?' keys. Reloading…':' kulcs. Újratöltés…')});
+    setTimeout(()=>location.reload(),1200);
+  }catch(e){SS({bkBusy:false,bkMsg:'⚠️ '+e.message});}
+}
+async function refreshChat(){ try{const c=await sG('wc_chat',true);SS({chat:c||{}});}catch(e){} }
+function clientProfanity(text){
+  const bad=['fasz','geci','picsa','kurva','buzi','szar','baszd','baszott','köcsög','segg','ribanc','kurvaanyád','nigger','néger','fuck','shit','bitch','asshole','cunt','bastard','slut','whore','faggot','retard','nigga'];
+  const n=(text||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const toks=n.split(/[^a-z]+/).filter(Boolean);
+  return bad.some(w=>{const bw=w.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');return toks.includes(bw);});
+}
+async function sendChat(lgId){
+  const text=(S.chatText||'').trim();if(!text)return;
+  const en=S.lang==='en';
+  const tok=localStorage.getItem('wc_tok');
+  if(!tok){SS({chatErr:en?'Log in first.':'Előbb jelentkezz be.'});return;}
+  if(clientProfanity(text)){SS({chatErr:en?'Message contains banned words.':'Az üzenet tiltott szót tartalmaz.'});return;}
+  SS({chatSending:true,chatErr:null});
+  try{
+    const r=await fetch(AUTH_BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,lgId,text})});
+    const d=await r.json();
+    if(!d.ok){SS({chatSending:false,chatErr:d.error==='profanity'?(en?'Message contains banned words.':'Az üzenet tiltott szót tartalmaz.'):(en?'Send failed: ':'Küldés sikertelen: ')+d.error});return;}
+    SS({chatText:'',chatSending:false,chatErr:null});
+    await refreshChat();
+  }catch(e){SS({chatSending:false,chatErr:e.message});}
+}
+async function genRecoveryCode(){
+  const tok=localStorage.getItem('wc_tok');if(!tok)return;
+  try{
+    const r=await fetch(AUTH_BASE+'/recover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'gen',token:tok})});
+    const d=await r.json();if(d.ok)SS({recCodeShow:d.recCode});
+  }catch(e){}
+}
+async function doForgotPw(){
+  const un=(S.fpUn||'').trim(),code=(S.fpCode||'').trim(),pw=S.fpPw||'',en=S.lang==='en';
+  if(!un||!code){SS({fpErr:en?'Username and recovery code required.':'Felhasználónév és visszaállító kód kell.'});return;}
+  if(pw.length<4){SS({fpErr:en?'New password min. 4 characters.':'Új jelszó min. 4 karakter.'});return;}
+  SS({fpLoad:true,fpErr:null});
+  try{
+    const r=await fetch(AUTH_BASE+'/recover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({un,code,newPw:pw})});
+    const d=await r.json();
+    if(!d.ok){SS({fpLoad:false,fpErr:d.error==='badcode'?(en?'Invalid username or recovery code.':'Hibás felhasználónév vagy kód.'):(en?'Reset failed: ':'Sikertelen: ')+d.error});return;}
+    SS({fpLoad:false,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',authMode:'login',authErr:en?'✓ Password reset — please log in.':'✓ Jelszó visszaállítva — jelentkezz be.'});
+  }catch(e){SS({fpLoad:false,fpErr:e.message});}
+}
+function setTz(tz){try{localStorage.setItem('wc_tz',JSON.stringify(tz));}catch(e){}SS({tz});}
+const TZ_LIST=[['Europe/Budapest','Budapest (CET)'],['Europe/London','London (GMT)'],['Europe/Bucharest','Bukarest (EET)'],['America/New_York','New York (ET)'],['America/Chicago','Chicago (CT)'],['America/Denver','Denver (MT)'],['America/Los_Angeles','Los Angeles (PT)'],['America/Mexico_City','Mexikóváros'],['Asia/Dubai','Dubai'],['Australia/Sydney','Sydney'],['UTC','UTC']];
+function rRecCode(){
+  const en=S.lang==='en';
+  return `<div class="legal-overlay" id="recOv">
+    <div class="legal-box" style="max-width:400px">
+      <div class="legal-hdr"><h2>🔑 ${en?'Recovery code':'Visszaállító kód'}</h2><button class="legal-close" id="recCl" aria-label="${en?'Close':'Bezár'}">✕</button></div>
+      <div class="legal-body" style="text-align:center">
+        <p>${en?'Save this code somewhere safe. If you forget your password, reset it with your username + this code. <b>Shown only once.</b>':'Mentsd el biztos helyre. Ha elfelejted a jelszavad, a felhasználóneveddel + ezzel a kóddal állíthatod vissza. <b>Csak most látható.</b>'}</p>
+        <div style="font-family:'Rajdhani',monospace;font-size:28px;font-weight:900;letter-spacing:3px;color:var(--c-gold);background:rgba(var(--ink-rgb),.06);border:1px dashed var(--c-gold);border-radius:10px;padding:14px;margin:14px 0;user-select:all">${S.recCodeShow}</div>
+        <div style="display:flex;gap:8px;justify-content:center"><button class="btn-sm gold" id="recCopy">📋 ${en?'Copy':'Másolás'}</button><button class="btn-sm" id="recCl2">${en?'Done':'Kész'}</button></div>
+      </div>
+    </div>
+  </div>`;
+}
 function rCookieBanner(){
   return `<div class="cookie-banner">
     <div class="ck-ico">🍪</div>
@@ -3112,8 +3217,8 @@ function fmtKoTime(m){
   const koTime=S.ko[m.id]||m.koDefault;
   if(!koTime)return '';
   const d=new Date(koTime);
-  const datePart=d.toLocaleDateString(S.lang==='en'?'en-GB':'hu-HU',{month:'short',day:'numeric',timeZone:'Europe/Budapest'});
-  const timePart=d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'});
+  const datePart=d.toLocaleDateString(S.lang==='en'?'en-GB':'hu-HU',{month:'short',day:'numeric',timeZone:userTz()});
+  const timePart=d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:userTz()});
   return `${datePart} ${timePart}`;
 }
 function slotLabel(matchId,side){
@@ -3529,7 +3634,7 @@ function rMyTips(){
         const cat=r?ptsCat(tip,r,m.stage,cfg):null;
         const isLive=!!S.live[m.id];
         const koT=S.ko[m.id]||m.koDefault;
-        const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Budapest'}):'';
+        const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:userTz()}):'';
         return `<div class="mt-row" style="display:grid;grid-template-columns:48px 1fr 72px 72px 90px 36px;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(var(--ink-rgb),.06);background:var(--bg-card)">
           <div class="mt-c-date" style="font-family:var(--font-bc);font-size:10px;color:rgba(var(--ink-rgb),.3);line-height:1.4">${fd(m.date)}<br>${timeStr}</div>
           <div class="mt-c-match" style="display:flex;align-items:center;gap:8px;padding:0 8px">
@@ -3628,6 +3733,29 @@ function rUserHistory(targetUid,cfg){
     </div>`;
   }).join(''):`<div style="padding:10px 4px;font-size:12px;color:rgba(var(--ink-rgb),.4)">${S.lang==='en'?'No matches for this filter':'Nincs meccs ehhez a szűrőhöz'}</div>`}</div>`;
 }
+function rChat(lgId){
+  const en=S.lang==='en';
+  const msgs=(S.chat&&S.chat[lgId])||[];
+  const uid=S.user.id;
+  const rows=msgs.slice(-100).map(m=>{
+    const mine=m.uid===uid;
+    const time=new Date(m.ts).toLocaleString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:userTz()});
+    return `<div style="margin-bottom:8px;display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'}">
+      <div style="font-size:10px;color:rgba(var(--ink-rgb),.4);margin-bottom:2px">${esc(m.dn)} · ${time}</div>
+      <div style="max-width:82%;background:${mine?'rgba(200,168,75,.18)':'rgba(var(--ink-rgb),.06)'};border:1px solid ${mine?'rgba(200,168,75,.3)':'var(--border)'};border-radius:10px;padding:7px 11px;font-size:13px;word-break:break-word;white-space:pre-wrap">${esc(m.text)}</div>
+    </div>`;
+  }).join('');
+  return `<div style="margin-top:26px">
+    <div class="sect">💬 ${en?'League chat':'Liga-csevegés'}</div>
+    ${S.chatErr?`<div class="err-box" style="margin-bottom:10px">${esc(S.chatErr)}</div>`:''}
+    <div id="chatScroll" style="max-height:320px;overflow-y:auto;background:rgba(var(--ink-rgb),.02);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">${rows||`<div style="color:rgba(var(--ink-rgb),.4);font-size:13px;text-align:center;padding:14px">${en?'No messages yet. Be the first!':'Még nincs üzenet. Légy te az első!'}</div>`}</div>
+    <div style="display:flex;gap:8px">
+      <input class="inp" id="chatInput" maxlength="280" placeholder="${en?'Write a message…':'Írj üzenetet…'}" value="${esc(S.chatText||'')}" style="flex:1">
+      <button class="btn-gold" id="chatSend" data-lgid="${lgId}" style="max-width:none;width:auto;padding:0 18px;height:40px" ${S.chatSending?'disabled':''}>${S.chatSending?'⏳':'➤'}</button>
+    </div>
+    <div style="font-size:10.5px;color:rgba(var(--ink-rgb),.35);margin-top:6px">${en?'Be respectful — offensive language is blocked.':'Légy kulturált — a trágár szavakat a rendszer kiszűri.'}</div>
+  </div>`;
+}
 function rLb(){
   const uid=S.user.id;
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
@@ -3676,6 +3804,7 @@ function rLb(){
   </div>`;
   }).join('')}
   <div class="scoring-hint"><b>${lgN} ${t('scoring_hint')}</b> ⭐${cfg.perfect}p · 🎯${cfg.resultGD}p · ✓${cfg.result}p · ~${cfg.oneGoal}p · ×${cfg.ko} KO · 🏆${cfg.winner}p · ⚽${cfg.topScorer}p</div>
+  ${effLg?rChat(effLg):''}
   </div>`;
 }
 
@@ -3872,6 +4001,18 @@ function rProfile(){
       ${S.notifOn?`<div style="margin-top:8px;font-size:11px;color:#2E9E5A;font-family:var(--font-bc);font-weight:700;letter-spacing:.5px">✓ Értesítések aktívak</div>`:''}
     </div>
 
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">🔑 ${S.lang==='en'?'Recovery code':'Visszaállító kód'}</div>
+    <div style="background:var(--bg-card);padding:14px;margin-bottom:20px">
+      <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px;font-family:var(--font-bc);letter-spacing:.3px">${S.lang==='en'?'Generate a recovery code so you can reset your password if you forget it. A new code replaces the previous one.':'Generálj visszaállító kódot, amivel elfelejtett jelszó esetén újat adhatsz meg. Az új kód érvényteleníti a korábbit.'}</div>
+      <button id="genRecBtn" class="btn-sm gold" style="font-size:11px">🔑 ${S.lang==='en'?'Generate new code':'Új kód generálása'}</button>
+    </div>
+
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">🕐 ${S.lang==='en'?'Time zone':'Időzóna'}</div>
+    <div style="background:var(--bg-card);padding:14px;margin-bottom:20px">
+      <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-bottom:10px;font-family:var(--font-bc);letter-spacing:.3px">${S.lang==='en'?'Match kickoff times are shown in this time zone.':'A meccsek kezdési idejét ebben az időzónában mutatjuk.'}</div>
+      <select id="tzSel" class="inp" style="max-width:280px">${TZ_LIST.map(([v,l])=>`<option value="${v}" ${S.tz===v?'selected':''}>${l}</option>`).join('')}</select>
+    </div>
+
     <div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#e8212a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">⚠️ ${S.lang==='en'?'Danger zone':'Veszélyzóna'}</div>
     <div style="background:var(--bg-card);padding:14px;border:1px solid rgba(232,33,42,.25)">
       <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px;font-family:var(--font-bc);letter-spacing:.3px">${S.lang==='en'?'Permanently delete your account and all your data (tips, predictions, league memberships). This cannot be undone.':'A fiókod és minden adatod (tippek, predikciók, liga-tagságok) végleges törlése. Nem vonható vissza.'}</div>
@@ -4052,6 +4193,16 @@ function rAdmin(){
   const stgs=[{id:'group',l:'Csoportkör'},{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'bronze',l:'Bronz'},{id:'final',l:'Döntő'}];
   const ms=ALL.filter(m=>m.stage===S.aStage);
   return `<div>
+  <div class="sect">💾 ${S.lang==='en'?'Backup':'Biztonsági mentés'}</div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="font-size:12.5px;color:rgba(var(--ink-rgb),.55);margin-bottom:12px">${S.lang==='en'?'Download a full JSON backup of all game data, or restore from a backup file (overwrites the included data).':'Tölts le egy teljes JSON mentést minden játékadatról, vagy állíts vissza egy mentésfájlból (felülírja a benne lévő adatokat).'}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn-sm gold" id="bkExport" ${S.bkBusy?'disabled':''}>${S.bkBusy?'⏳':'💾 '+(S.lang==='en'?'Download backup':'Mentés letöltése')}</button>
+      <button class="btn-sm" id="bkImportBtn" ${S.bkBusy?'disabled':''}>📥 ${S.lang==='en'?'Restore…':'Visszatöltés…'}</button>
+      <input type="file" id="bkFile" accept="application/json,.json" style="display:none">
+    </div>
+    ${S.bkMsg?`<div style="margin-top:10px;font-size:12px;color:rgba(var(--ink-rgb),.7)">${S.bkMsg}</div>`:''}
+  </div>
   <div class="sect">⚙️ Admin – Eredmények</div>
   <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -4365,6 +4516,19 @@ function bindMain(hw){
   document.getElementById('delOv')?.addEventListener('click',e=>{if(e.target.id==='delOv')SS({delModal:false});});
   document.getElementById('delConfirm')?.addEventListener('click',doSelfDelete);
   document.getElementById('h2hShare')?.addEventListener('click',()=>{const d=window._h2hShare;if(d)shareH2H(d.myDn,d.oppDn,d.myW,d.oppW,d.draw);});
+  document.getElementById('recCl')?.addEventListener('click',()=>SS({recCodeShow:null}));
+  document.getElementById('recCl2')?.addEventListener('click',()=>SS({recCodeShow:null}));
+  document.getElementById('recOv')?.addEventListener('click',e=>{if(e.target.id==='recOv')SS({recCodeShow:null});});
+  document.getElementById('recCopy')?.addEventListener('click',()=>{navigator.clipboard?.writeText(S.recCodeShow||'');});
+  document.getElementById('genRecBtn')?.addEventListener('click',genRecoveryCode);
+  document.getElementById('tzSel')?.addEventListener('change',e=>setTz(e.target.value));
+  document.getElementById('bkExport')?.addEventListener('click',exportBackup);
+  document.getElementById('bkImportBtn')?.addEventListener('click',()=>document.getElementById('bkFile')?.click());
+  document.getElementById('bkFile')?.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)importBackup(f);});
+  const _chatIn=document.getElementById('chatInput');
+  if(_chatIn){_chatIn.addEventListener('input',e=>{S.chatText=e.target.value;});_chatIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('chatSend')?.click();}});}
+  document.getElementById('chatSend')?.addEventListener('click',e=>{const ci=document.getElementById('chatInput');if(ci)S.chatText=ci.value;sendChat(e.currentTarget.dataset.lgid);});
+  {const _cs=document.getElementById('chatScroll');if(_cs)_cs.scrollTop=_cs.scrollHeight;}
   document.getElementById('cookieOk')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','1');SS({cookieBanner:false});loadGA();});
   document.getElementById('cookieNo')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','0');SS({cookieBanner:false});});
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
@@ -4519,6 +4683,7 @@ setInterval(async()=>{
 },30000);
 
 _r=render;render();init();loadGA();loadScorers();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}
 </script>
 </body>
 </html>
