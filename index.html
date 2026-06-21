@@ -824,7 +824,7 @@ const STRINGS={
   }
 };
 function t(key){return STRINGS[S.lang||'hu']?.[key]??STRINGS.hu[key]??key;}
-function userTz(){return (S&&S.tz)||'Europe/Budapest';}
+function userTz(){try{return (S&&S.tz)||'Europe/Budapest';}catch(e){return 'Europe/Budapest';}}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function trophyIcon(size,extraStyle){
   return `<img src="/trophy.png" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;object-fit:contain;${extraStyle||''}" alt="trophy">`;
