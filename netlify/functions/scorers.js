@@ -32,6 +32,7 @@ try {
 exports.handler = async function (event) {
   const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
   const reset = !!(event && event.queryStringParameters && event.queryStringParameters.reset);
+  const debug = event && event.queryStringParameters && event.queryStringParameters.debug;
 
   try {
     // 1) gyorsitotar betoltese
@@ -54,6 +55,34 @@ exports.handler = async function (event) {
     const gd = gR.ok ? await gR.json() : { data: [] };
     const kd = kR.ok ? await kR.json() : { data: [] };
     const all = [...(gd.data || []), ...(kd.data || [])];
+
+    // DIAGNOSZTIKA: ?debug=spain  -> nyers statusz + commentary az adott csapat meccseire (a cache-t nem bantja)
+    if (debug) {
+      const q = String(debug).toLowerCase();
+      const hit = all.filter(m => {
+        const hen = String(m.home || '').toLowerCase(), aen = String(m.away || '').toLowerCase();
+        const hhu = mapTeam(m.home || '').toLowerCase(), ahu = mapTeam(m.away || '').toLowerCase();
+        return hen.includes(q) || aen.includes(q) || hhu.includes(q) || ahu.includes(q) || String(m.matchId) === q;
+      }).slice(0, 8);
+      const out = [];
+      for (const m of hit) {
+        let incidents = [], cerr = null;
+        try {
+          const r = await fetch(`https://${WC_HOST}/wc/match/${m.matchId}/commentary`, { headers: HEADERS });
+          if (r.ok) { const d = await r.json(); incidents = (d.data && d.data.incidents) || []; }
+          else cerr = 'HTTP ' + r.status;
+        } catch (e) { cerr = e.message; }
+        out.push({
+          matchId: m.matchId, status: m.status, finishedByCode: FINISHED.has(m.status),
+          home: m.home, away: m.away, alreadyProcessed: (cache.done || []).indexOf(m.matchId) >= 0,
+          commentaryError: cerr, incidentCount: incidents.length,
+          goalIncidents: incidents.filter(i => i && String(i.type || '').toLowerCase().includes('goal')).map(i => ({ type: i.type, player: i.player, side: i.side })),
+          allIncidentTypes: [...new Set(incidents.map(i => i && i.type))]
+        });
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, debug: true, query: debug, knownStatusCodes: [...FINISHED], matches: out }, null, 2) };
+    }
+
     const finished = all.filter(m => m.matchId && FINISHED.has(m.status) && !doneSet.has(m.matchId));
     const batch = finished.slice(0, MAX_PER_RUN);
 
