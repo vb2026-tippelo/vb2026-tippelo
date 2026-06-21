@@ -1074,10 +1074,21 @@ async function sG(key,shared=false){
     return data.value?JSON.parse(data.value):null;
   }catch(e){console.error('sG error',key,e);return null;}
 }
+const AUTH_BASE='https://vb2026-endre.netlify.app/.netlify/functions';
 async function sS(key,value,shared=false){
   try{
     const json=JSON.stringify(value);
     if(!shared){localStorage.setItem(key,json);return;}
+    // megosztott iras -> szerver kapu (jeggyel)
+    const tok=localStorage.getItem('wc_tok');
+    if(tok){
+      try{
+        const r=await fetch(AUTH_BASE+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,key,value:json})});
+        if(r.ok){const d=await r.json();if(d&&d.ok)return;console.warn('[save] szerver elutasitotta:',key,d&&d.error);}
+        else console.warn('[save] http',r.status,key);
+      }catch(e){console.warn('[save] halozati hiba:',key,(e&&e.message)||e);}
+    } else console.warn('[save] nincs token, tartalek:',key);
+    // TARTALEK: kozvetlen Firestore (amig a Firestore-szabalyok nyitva vannak)
     await db.collection('vb2026data').doc(key).set({value:json});
   }catch(e){console.error('sS error',key,e);}
 }
@@ -1156,7 +1167,6 @@ async function _sha256(str){const buf=await crypto.subtle.digest('SHA-256',new T
 function isHashedPw(pw){return typeof pw==='string'&&pw.startsWith('h1$');}
 async function makePwField(plain){const s=_pwSalt();return 'h1$'+s+'$'+await _sha256(s+'|'+plain);}
 async function verifyPw(plain,stored){if(!stored)return false;if(!isHashedPw(stored))return plain===stored;const p=stored.split('$');return (await _sha256(p[1]+'|'+plain))===p[2];}
-const AUTH_BASE='https://vb2026-endre.netlify.app/.netlify/functions';
 async function doLogin(){
   // 1) szerveroldali belepes
   try{
