@@ -1179,18 +1179,6 @@ async function saveMT(mid,h,a){
   const nm={...S.mt,[mid]:{home:h,away:a}};
   await sS('wc_mt',nm,true);SS({mt:nm,editTId:null});
 }
-async function saveKO(mid,localDT){
-  if(!localDT){SS({editKoId:null});return;}
-  const iso=`${localDT}:00+02:00`;
-  const nk={...S.ko,[mid]:iso};
-  await sS('wc_ko',nk,true);SS({ko:nk,editKoId:null});
-}
-function isoToLocalInput(iso){
-  if(!iso)return '';
-  const d=new Date(iso);
-  const shifted=new Date(d.getTime()+2*60*60*1000);
-  return shifted.toISOString().slice(0,16);
-}
 async function saveAdminSpec(w,top){
   const ns={winner:w,top};await sS('wc_asp',ns,true);SS({adminSpec:ns});
 }
@@ -1323,38 +1311,6 @@ async function fetchLiveScores(){
       liveDebug:{total:(data.matches||[]).length,byStatus,koSynced:koCount,sample:(data.matches||[]).slice(0,5).map(x=>`${x.home} ${x.homeScore??'-'}:${x.awayScore??'-'} ${x.away} (${x.status})`)},
       liveErr:applied.length?'':'Nincs új, automatikusan rögzíthető befejezett meccs.'});
   }catch(e){SS({liveLoading:false,liveErr:'Nem sikerült elérni a frissítő szolgáltatást.'});}
-}
-async function syncKickoffTimes(apiMatches){
-  const koUpdates={};
-  const CDT_VENUES=new Set(['Houston','Kansas City','Arlington','Guadalupe','Mexikóváros']);
-  apiMatches.forEach(am=>{
-    // Új API: kickoff mező; régi API: utcDate mező
-    let kickoff=am.kickoff||am.utcDate;
-    if(!kickoff)return;
-    const huHome=am.home||(am.homeEn?matchTeamByEng(am.homeEn):null);
-    const huAway=am.away||(am.awayEn?matchTeamByEng(am.awayEn):null);
-    if(!huHome||!huAway)return;
-    // Keresés az összes meccsben (group + KO)
-    const lm=ALL.find(m=>{
-      const mHome=S.mt[m.id]?.home||m.home;
-      const mAway=S.mt[m.id]?.away||m.away;
-      return (mHome===huHome&&mAway===huAway)||(mHome===huAway&&mAway===huHome);
-    });
-    if(!lm)return;
-    // Idopontot nem korrigaljuk (Excel menetrend az elsodleges)
-    const cur=S.ko[lm.id]||lm.koDefault;
-    if(cur&&new Date(kickoff).getTime()!==new Date(cur).getTime())
-      koUpdates[lm.id]=kickoff;
-    else if(!cur)
-      koUpdates[lm.id]=kickoff;
-  });
-  const n=Object.keys(koUpdates).length;
-  if(n){
-    const newKo={...S.ko,...koUpdates};
-    await sS('wc_ko',newKo,true);
-    SS({ko:newKo});
-  }
-  return n;
 }
 async function refreshLiveIfStale(force=false){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
@@ -1626,33 +1582,6 @@ function getLbBoard(){
   return {board,lgN};
 }
 
-async function syncKickoffsFromAPI(){
-  SS({kickoffLoading:true});
-  // CDT helyszínek: az API 1 órával késő UTC-t ad vissza (CDT-t UTC-ként kezeli)
-  const CDT_VENUES=new Set(['Houston','Kansas City','Arlington','Guadalupe','Mexikóváros']);
-  try{
-    const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
-    const r=await fetch(`${base}/.netlify/functions/kickoffs`);
-    const d=await r.json();
-    if(!d.matches||!d.count){SS({kickoffLoading:false});return;}
-    const newKo={...S.ko};
-    let updated=0;
-    d.matches.forEach(am=>{
-      if(!am.kickoff||!am.home||!am.away)return;
-      const lm=ALL.find(m=>{
-        const mH=S.mt[m.id]?.home||m.home, mA=S.mt[m.id]?.away||m.away;
-        return (mH===am.home&&mA===am.away)||(mH===am.away&&mA===am.home);
-      });
-      if(!lm)return;
-      let kickoff=am.kickoff;
-      // Idopontot nem korrigaljuk (Excel menetrend az elsodleges)
-      newKo[lm.id]=kickoff;
-      updated++;
-    });
-    await sS('wc_ko',newKo,true);
-    SS({ko:newKo,kickoffSynced:updated,kickoffLoading:false});
-  }catch(e){SS({kickoffLoading:false});}
-}
 async function syncVenuesFromAPI(){
   SS({venuesLoading:true});
   try{
@@ -1787,7 +1716,6 @@ function render(){
     document.documentElement.classList.toggle('dark-mode',S.theme==='dark');
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content',S.theme==='dark'?'#0A0A0A':'#FFFFFF');
     document.documentElement.style.colorScheme=S.theme==='dark'?'dark':'light';
-    if(location.hash.indexOf('dbg')>=0){try{let d=document.getElementById('__dbg');if(!d){d=document.createElement('div');d.id='__dbg';d.style.cssText='position:fixed;left:6px;bottom:80px;z-index:99999;font:11px/1.5 monospace;background:rgba(0,0,0,.85);color:#0f0;padding:7px 9px;border-radius:6px;max-width:75vw;white-space:pre-wrap';d.onclick=function(){d.remove();};document.body.appendChild(d);}let ls='-';try{ls=localStorage.getItem('wc_theme');}catch(e){ls='ERR';}const sys=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';var gcs=getComputedStyle(document.documentElement);var bp=gcs.getPropertyValue('--bg-page').trim();var tc=gcs.getPropertyValue('--text-color').trim();var dm=document.querySelectorAll('.dark-mode').length;var cc=document.querySelector('.bc-center');var cbg=cc?getComputedStyle(cc).backgroundColor:'n/a';d.textContent='BUILD-4 (kopp=elrejt)\ntheme='+S.theme+'\nhtml.dm='+(document.documentElement.classList.contains('dark-mode')?'IGEN':'nem')+'\n.dark-mode db='+dm+'\n--bg-page='+bp+'\n--text='+tc+'\ncenter bg='+cbg+'\nLS='+ls+'\nrendszer='+sys;}catch(e){}}
     const root=document.getElementById('root');
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
     if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
@@ -3995,10 +3923,6 @@ function bindMain(hw){
     const mid=parseInt(e.currentTarget.dataset.et),ov=S.mt[mid];
     SS({editTId:S.editTId===mid?null:mid,editRId:null,editKoId:null,editTIn:{h:ov?.home||'',a:ov?.away||''}});
   }));
-  document.querySelectorAll('[data-ek]').forEach(b=>b.addEventListener('click',e=>{
-    const mid=parseInt(e.currentTarget.dataset.ek),m=ALL.find(x=>x.id===mid),cur=S.ko[mid]||m.koDefault;
-    SS({editKoId:S.editKoId===mid?null:mid,editRId:null,editTId:null,editKoIn:isoToLocalInput(cur)});
-  }));
   document.getElementById('svRes')?.addEventListener('click',e=>{
     const h=document.getElementById('arH')?.value,a=document.getElementById('arA')?.value;
     if(h!==''&&a!=='')saveRes(parseInt(e.currentTarget.dataset.mid),h,a);
@@ -4008,10 +3932,6 @@ function bindMain(hw){
     saveMT(parseInt(e.currentTarget.dataset.mid),document.getElementById('atH')?.value||'',document.getElementById('atA')?.value||'');
   });
   document.getElementById('cxT')?.addEventListener('click',()=>SS({editTId:null}));
-  document.getElementById('svKo')?.addEventListener('click',e=>{
-    saveKO(parseInt(e.currentTarget.dataset.mid),document.getElementById('akoIn')?.value||'');
-  });
-  document.getElementById('cxKo')?.addEventListener('click',()=>SS({editKoId:null}));
   document.getElementById('liveBtn')?.addEventListener('click',fetchLiveScores);
   document.getElementById('savAspBtn')?.addEventListener('click',()=>{
     saveAdminSpec(document.getElementById('awIn')?.value||'',readTopscorer('atkIn'));
@@ -4107,7 +4027,6 @@ function bindMain(hw){
   document.querySelectorAll('[data-tg]').forEach(b=>b.addEventListener('click',e=>SS({tipFilterG:e.currentTarget.dataset.tg})));
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid,activeLgId:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
-  document.getElementById('syncKickoffsBtn')?.addEventListener('click',syncKickoffsFromAPI);
   document.getElementById('syncVenuesBtn')?.addEventListener('click',syncVenuesFromAPI);
   document.getElementById('exportCsvBtn')?.addEventListener('click',()=>exportLbCsv());
   document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
