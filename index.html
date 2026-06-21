@@ -925,25 +925,35 @@ const VENUE_TZ={'Mexikóváros':'America/Mexico_City','Guadalajara':'America/Mex
 const VENUE_DOME={'Los Angeles':true,'Vancouver':true,'Atlanta':true,'Houston':true,'Dallas':true};
 const WMO_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
 async function fetchTodayWeather(){
-  const today=new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
-  const todayMatches=ALL.filter(m=>m.stage==='group'&&m.date===today);
-  if(!todayMatches.length)return;
-  const venues=[...new Set(todayMatches.map(m=>m.venue).filter(Boolean))];
-  const weather={};
-  await Promise.all(venues.map(async venue=>{
-    const coords=VENUE_COORDS[venue];
-    if(!coords)return;
+  const now=Date.now(),HD=8,horizon=now+HD*86400*1000;
+  const venueOf=m=>{const wcId=S.wcIds?.[m.id];return (wcId?S.wcVenues?.[wcId]?.venue:null)||m.venue||null;};
+  const ms=ALL.filter(m=>{
+    if(m.tbd&&!S.mt[m.id])return false;
+    if(S.results[m.id])return false;
+    const v=venueOf(m);if(!v||!VENUE_COORDS[v])return false;
+    const ko=S.ko[m.id]||m.koDefault;if(!ko)return false;
+    const t=new Date(ko).getTime();
+    return t>=now-3*3600*1000&&t<=horizon;
+  });
+  if(!ms.length)return;
+  const byVenue={};
+  ms.forEach(m=>{const v=venueOf(m);(byVenue[v]=byVenue[v]||[]).push(m);});
+  const weather={...(S.weather||{})};
+  await Promise.all(Object.entries(byVenue).map(async([venue,list])=>{
+    const c=VENUE_COORDS[venue];if(!c)return;
     try{
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${coords[0]}&longitude=${coords[1]}&current=temperature_2m,precipitation_probability,weather_code&timezone=auto&forecast_days=1`;
-      const r=await fetch(url);
-      const d=await r.json();
-      if(d.current){
-        weather[venue]={
-          temp:Math.round(d.current.temperature_2m),
-          icon:WMO_ICON[d.current.weather_code]||'🌡️',
-          precip:d.current.precipitation_probability??0
-        };
-      }
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${c[0]}&longitude=${c[1]}&hourly=temperature_2m,precipitation_probability,weather_code&timezone=UTC&forecast_days=${HD+1}`;
+      const r=await fetch(url);const d=await r.json();
+      if(!d.hourly||!d.hourly.time)return;
+      const times=d.hourly.time.map(t=>new Date(t+':00Z').getTime());
+      list.forEach(m=>{
+        const ko=new Date(S.ko[m.id]||m.koDefault).getTime();
+        let bi=-1,bd=Infinity;
+        for(let i=0;i<times.length;i++){const diff=Math.abs(times[i]-ko);if(diff<bd){bd=diff;bi=i;}}
+        if(bi>=0&&bd<=2*3600*1000){
+          weather[m.id]={temp:Math.round(d.hourly.temperature_2m[bi]),icon:WMO_ICON[d.hourly.weather_code[bi]]||'🌡️',precip:d.hourly.precipitation_probability?.[bi]??0};
+        }
+      });
     }catch(e){}
   }));
   SS({weather});
@@ -2519,7 +2529,7 @@ function rCard(m){
   const apiVenue=wcId?S.wcVenues?.[wcId]?.venue:null;
   const venue=apiVenue||m.venue||null;
   const isToday=m.date===new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
-  const wx=isToday&&venue?S.weather?.[venue]:null;
+  const wx=venue?S.weather?.[m.id]:null;
   const mOdds=S.odds?.[m.id]||null;
   // Helyi idő
   const koDate2=koTime?new Date(koTime):null;
