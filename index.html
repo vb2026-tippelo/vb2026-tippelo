@@ -26,6 +26,7 @@
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0A0A0A">
+<meta name="color-scheme" content="light dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1785,6 +1786,7 @@ function render(){
   try{
     document.documentElement.classList.toggle('dark-mode',S.theme==='dark');
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content',S.theme==='dark'?'#0A0A0A':'#FFFFFF');
+    document.documentElement.style.colorScheme=S.theme==='dark'?'dark':'light';
     if(location.hash.indexOf('dbg')>=0){try{let d=document.getElementById('__dbg');if(!d){d=document.createElement('div');d.id='__dbg';d.style.cssText='position:fixed;left:6px;bottom:80px;z-index:99999;font:11px/1.5 monospace;background:rgba(0,0,0,.85);color:#0f0;padding:7px 9px;border-radius:6px;max-width:75vw;white-space:pre-wrap';d.onclick=function(){d.remove();};document.body.appendChild(d);}let ls='-';try{ls=localStorage.getItem('wc_theme');}catch(e){ls='ERR';}const sys=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';var gcs=getComputedStyle(document.documentElement);var bp=gcs.getPropertyValue('--bg-page').trim();var tc=gcs.getPropertyValue('--text-color').trim();var dm=document.querySelectorAll('.dark-mode').length;var cc=document.querySelector('.bc-center');var cbg=cc?getComputedStyle(cc).backgroundColor:'n/a';d.textContent='BUILD-4 (kopp=elrejt)\ntheme='+S.theme+'\nhtml.dm='+(document.documentElement.classList.contains('dark-mode')?'IGEN':'nem')+'\n.dark-mode db='+dm+'\n--bg-page='+bp+'\n--text='+tc+'\ncenter bg='+cbg+'\nLS='+ls+'\nrendszer='+sys;}catch(e){}}
     const root=document.getElementById('root');
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
