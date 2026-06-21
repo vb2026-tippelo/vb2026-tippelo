@@ -491,6 +491,7 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .inp:focus,.inp-light:focus{border-color:#0A0A0A}
 .ainp{width:100%;padding:10px 12px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:14px;font-family:var(--font-b);outline:none}
 .ainp:focus{border-color:#C8A84B}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[data-v]:focus-visible,[tabindex]:focus-visible{outline:2px solid #C8A84B;outline-offset:2px;border-radius:4px}
 select.inp,select.inp-light{appearance:none;cursor:pointer}
 
 /* ===== AUTH PAGE ===== */
@@ -1117,7 +1118,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1898,6 +1899,7 @@ function render(){
     document.documentElement.classList.toggle('dark-mode',S.theme==='dark');
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content',S.theme==='dark'?'#0A0A0A':'#FFFFFF');
     document.documentElement.style.colorScheme=S.theme==='dark'?'dark':'light';
+    document.documentElement.lang=S.lang||'hu';
     const root=document.getElementById('root');
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
     if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
@@ -2020,6 +2022,7 @@ function rMain(hw){
     <div class="bc-user">
       ${langSwitcher()}
       <button onclick="toggleTheme()" title="${t('theme_toggle_title')}" style="background:rgba(var(--chrome-ink),.06);border:1px solid rgba(var(--chrome-ink),.14);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${S.theme==='light'?'🌙':'☀️'}</button>
+      <button id="helpBtn" aria-label="${S.lang==='en'?'How it works':'Hogyan működik'}" title="${S.lang==='en'?'How it works':'Hogyan működik'}" style="background:rgba(var(--chrome-ink),.06);border:1px solid rgba(var(--chrome-ink),.14);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:14px;font-weight:800;color:var(--c-gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">?</button>
       <div class="bc-uinfo" data-v="profile" style="cursor:pointer" title="${S.lang==='en'?'Profile':'Profil'}"><div>${S.user.dn}</div><div style="color:rgba(var(--chrome-ink),.3);font-size:9px">🏅 ${S.view==='leaderboard'?'ranglista':'tippelő'}</div></div>
       <div class="bc-av" data-v="profile" style="cursor:pointer" title="${S.lang==='en'?'Profile':'Profil'}">${initials}</div>
     </div>
@@ -2040,6 +2043,8 @@ function rMain(hw){
   </div>`:''}
   ${S.preModal?rPM():''}
   ${S.legalModal?rLegal():''}
+  ${S.helpModal?rHelp():''}
+  ${S.delModal?rDelModal():''}
   ${S.cookieBanner?rCookieBanner():''}
   </div>`;
 }
@@ -2821,6 +2826,74 @@ function rLegal(){
       <div class="legal-body">${pg.html}</div>
     </div>
   </div>`;
+}
+function rHelp(){
+  const en=S.lang==='en';
+  const row=(emoji,pts,hu,enT)=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="width:24px;text-align:center">${emoji}</span><b style="color:var(--c-gold);min-width:34px">${pts}</b><span>${en?enT:hu}</span></div>`;
+  return `<div class="legal-overlay" id="helpOv">
+    <div class="legal-box">
+      <div class="legal-hdr">
+        <h2>❓ ${en?'How it works':'Hogyan működik'}</h2>
+        <button class="legal-close" id="helpCl" aria-label="${en?'Close':'Bezár'}">✕</button>
+      </div>
+      <div class="legal-body" style="font-size:14px;line-height:1.6">
+        <h3 style="color:var(--c-gold);margin:0 0 6px">⚽ ${en?'Tipping':'Tippelés'}</h3>
+        <p>${en?'Tip the <b>90-minute full-time score</b> of each match. Knockout matches are also tipped on the 90-minute result only — extra time and penalties don\'t count.':'Tippeld meg minden meccs <b>90 perces végeredményét</b>. A kieséses meccseknél is csak a 90 perces eredmény számít — hosszabbítás és tizenegyesek nem.'}</p>
+        <p style="background:rgba(232,33,42,.08);border-left:3px solid #e8212a;padding:8px 12px;border-radius:6px"><b>⏱️ ${en?'Deadline:':'Határidő:'}</b> ${en?'tipping closes <b>5 minutes before kickoff</b>. After that a match can no longer be tipped or changed — enforced on the server, so it\'s airtight.':'a tipp <b>5 perccel a kezdés előtt</b> zár. Utána a meccs már nem tippelhető és nem módosítható — ezt a szerver is ellenőrzi, így nem kijátszható.'}</p>
+        <h3 style="color:var(--c-gold);margin:16px 0 6px">🏅 ${en?'Scoring':'Pontozás'}</h3>
+        ${row('⭐','8p','Pontos eredmény','Exact score')}
+        ${row('🎯','5p','Helyes eredmény + gólkülönbség','Correct result + goal difference')}
+        ${row('✓','3p','Helyes kimenetel','Correct outcome (win/draw/loss)')}
+        ${row('~','1p','Egy csapat gólszáma stimmel','One team\'s goals correct')}
+        ${row('🔄','×2','Kieséses meccseken dupla pont','Knockout matches score double')}
+        ${row('🏆','25p','Bónusz: eltalált VB-győztes','Bonus: correct tournament winner')}
+        ${row('⚽','25p','Bónusz: eltalált gólkirály','Bonus: correct top scorer')}
+        <h3 style="color:var(--c-gold);margin:16px 0 6px">⚖️ ${en?'Tie-break':'Holtverseny'}</h3>
+        <p>${en?'If two players have equal points, the one with <b>more exact-score hits</b> (⭐) ranks higher.':'Pontegyenlőségnél az nyer, akinek <b>több telitalálata</b> (⭐ pontos eredmény) van.'}</p>
+        <h3 style="color:var(--c-gold);margin:16px 0 6px">⭐ ${en?'Pre-tournament picks':'Előzetes tippek'}</h3>
+        <p>${en?'Before the tournament starts you can pick the <b>winner</b> and <b>top scorer</b> for bonus points. These lock once the first match kicks off.':'A torna kezdete előtt megtippelheted a <b>győztest</b> és a <b>gólkirályt</b> bónuszpontokért. Ezek az első meccs kezdetekor zárnak.'}</p>
+      </div>
+    </div>
+  </div>`;
+}
+function rDelModal(){
+  const en=S.lang==='en';
+  return `<div class="legal-overlay" id="delOv">
+    <div class="legal-box" style="max-width:440px">
+      <div class="legal-hdr">
+        <h2 style="color:#e8212a">⚠️ ${en?'Delete account':'Fiók törlése'}</h2>
+        <button class="legal-close" id="delCancel" aria-label="${en?'Close':'Bezár'}">✕</button>
+      </div>
+      <div class="legal-body" style="font-size:14px;line-height:1.6">
+        <p>${en?'This permanently deletes your account and <b>all your data</b>: tips, predictions, pre-tournament picks and league memberships. <b>This cannot be undone.</b>':'Ez véglegesen törli a fiókodat és <b>minden adatodat</b>: tippek, predikciók, előzetes tippek és liga-tagságok. <b>Ez nem vonható vissza.</b>'}</p>
+        ${S.delErr?`<div class="err-box" style="margin:10px 0">${S.delErr}</div>`:''}
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn-sm" id="delCancel2" style="flex:1">${en?'Cancel':'Mégse'}</button>
+          <button class="btn-sm red" id="delConfirm" style="flex:1" ${S.delLoad?'disabled':''}>${S.delLoad?'⏳':(en?'Yes, delete':'Igen, törlöm')}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function doSelfDelete(){
+  const tok=localStorage.getItem('wc_tok');
+  if(!tok){SS({delErr:S.lang==='en'?'You must be logged in.':'Be kell jelentkezned.'});return;}
+  SS({delLoad:true,delErr:null});
+  try{
+    const r=await fetch(AUTH_BASE+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,action:'selfdelete'})});
+    const d=await r.json();
+    if(!d.ok){SS({delLoad:false,delErr:(S.lang==='en'?'Deletion failed: ':'Törlés sikertelen: ')+(d.error||'?')});return;}
+    localStorage.removeItem('wc_tok');localStorage.removeItem('wc_s');
+    location.reload();
+  }catch(e){SS({delLoad:false,delErr:(S.lang==='en'?'Network error: ':'Hálózati hiba: ')+e.message});}
+}
+async function shareH2H(myDn,oppDn,myW,oppW,draw){
+  const en=S.lang==='en';
+  const txt=en?`⚽ VB 2026 Tippelő — ${myDn} ${myW} : ${oppW} ${oppDn} (${draw} draws)`:`⚽ VB 2026 Tippelő — ${myDn} ${myW} : ${oppW} ${oppDn} (${draw} döntetlen)`;
+  try{
+    if(navigator.share){await navigator.share({text:txt,url:location.href});}
+    else{await navigator.clipboard.writeText(txt+' '+location.href);SS({h2hCopied:true});setTimeout(()=>SS({h2hCopied:false}),2000);}
+  }catch(e){/* user cancelled */}
 }
 function rCookieBanner(){
   return `<div class="cookie-banner">
@@ -3798,6 +3871,12 @@ function rProfile(){
       <button id="notifToggleBtn" class="${S.notifOn?'btn-sm red':'btn-sm gold'}" style="font-size:11px">${S.notifOn?'🔕 Kikapcsolás':'🔔 Bekapcsolás'}</button>
       ${S.notifOn?`<div style="margin-top:8px;font-size:11px;color:#2E9E5A;font-family:var(--font-bc);font-weight:700;letter-spacing:.5px">✓ Értesítések aktívak</div>`:''}
     </div>
+
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#e8212a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">⚠️ ${S.lang==='en'?'Danger zone':'Veszélyzóna'}</div>
+    <div style="background:var(--bg-card);padding:14px;border:1px solid rgba(232,33,42,.25)">
+      <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px;font-family:var(--font-bc);letter-spacing:.3px">${S.lang==='en'?'Permanently delete your account and all your data (tips, predictions, league memberships). This cannot be undone.':'A fiókod és minden adatod (tippek, predikciók, liga-tagságok) végleges törlése. Nem vonható vissza.'}</div>
+      <button id="delAccBtn" class="btn-sm red" style="font-size:11px">🗑️ ${S.lang==='en'?'Delete account':'Fiók törlése'}</button>
+    </div>
   </div>`;
 }
 
@@ -3964,6 +4043,8 @@ function rFun(){
       <div style="text-align:center;flex:1"><div style="font-size:22px">${h2hOpp.av||'⚽'}</div><div style="font-weight:700;font-size:14px">${h2hOpp.dn}</div><div style="font-size:26px;font-weight:900;color:#e8212a;font-family:'Rajdhani',sans-serif">${h2hOppW}</div></div>
     </div>
     <div style="max-height:300px;overflow-y:auto">${h2hRows||'<div style="color:rgba(var(--ink-rgb),.4);font-size:13px">Nincs közös értékelt meccs.</div>'}</div>
+    ${(()=>{window._h2hShare={myDn:S.user.dn,oppDn:h2hOpp.dn,myW:h2hMyW,oppW:h2hOppW,draw:h2hDraw};return '';})()}
+    <button id="h2hShare" class="btn-sm gold" style="font-size:11px;margin-top:12px">📷 ${S.lang==='en'?(S.h2hCopied?'✓ Copied':'Share result'):(S.h2hCopied?'✓ Másolva':'Eredmény megosztása')}</button>
   </div>`:`<div style="color:rgba(var(--ink-rgb),.4);font-size:13px;margin-bottom:16px">Válassz egy játékost a fenti listából.</div>`}
   </div>`;
 }
@@ -4275,6 +4356,15 @@ function bindMain(hw){
   document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',e=>SS({legalModal:e.currentTarget.dataset.legal})));
   document.getElementById('legalCl')?.addEventListener('click',()=>SS({legalModal:null}));
   document.getElementById('legalOv')?.addEventListener('click',e=>{if(e.target.id==='legalOv')SS({legalModal:null});});
+  document.getElementById('helpBtn')?.addEventListener('click',()=>SS({helpModal:true}));
+  document.getElementById('helpCl')?.addEventListener('click',()=>SS({helpModal:false}));
+  document.getElementById('helpOv')?.addEventListener('click',e=>{if(e.target.id==='helpOv')SS({helpModal:false});});
+  document.getElementById('delAccBtn')?.addEventListener('click',()=>SS({delModal:true,delErr:null}));
+  document.getElementById('delCancel')?.addEventListener('click',()=>SS({delModal:false}));
+  document.getElementById('delCancel2')?.addEventListener('click',()=>SS({delModal:false}));
+  document.getElementById('delOv')?.addEventListener('click',e=>{if(e.target.id==='delOv')SS({delModal:false});});
+  document.getElementById('delConfirm')?.addEventListener('click',doSelfDelete);
+  document.getElementById('h2hShare')?.addEventListener('click',()=>{const d=window._h2hShare;if(d)shareH2H(d.myDn,d.oppDn,d.myW,d.oppW,d.draw);});
   document.getElementById('cookieOk')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','1');SS({cookieBanner:false});loadGA();});
   document.getElementById('cookieNo')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','0');SS({cookieBanner:false});});
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
