@@ -97,6 +97,30 @@ exports.handler = async function (event) {
     } catch (e) { return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) }; }
   }
 
+  // REACT to a message (toggle emoji)
+  if (action === 'react') {
+    const msgId = String(body.msgId || '');
+    const emoji = String(body.emoji || '').slice(0, 4);
+    const ALLOWED = ['👍','😂','🔥','😮','⚽','❤️'];
+    if (!ALLOWED.includes(emoji)) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'bademoji' }) };
+    try {
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(chatRef);
+        const chat = snap.exists ? JSON.parse(snap.data().value) : {};
+        const arr = Array.isArray(chat[lgId]) ? chat[lgId] : [];
+        const m = arr.find(x => x.id === msgId);
+        if (!m) return;
+        m.reactions = (m.reactions && typeof m.reactions === 'object') ? m.reactions : {};
+        const list = Array.isArray(m.reactions[emoji]) ? m.reactions[emoji] : [];
+        const i = list.indexOf(pl.uid);
+        if (i >= 0) list.splice(i, 1); else list.push(pl.uid);
+        if (list.length) m.reactions[emoji] = list; else delete m.reactions[emoji];
+        tx.set(chatRef, { value: JSON.stringify(chat) });
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    } catch (e) { return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) }; }
+  }
+
   // SEND a message
   let text = String(body.text || '').trim();
   if (!text) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'missing' }) };

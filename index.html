@@ -284,6 +284,10 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .gms-head{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.45);font-weight:700;background:rgba(var(--ink-rgb),.03)}
 .gms-cap{font-family:var(--font-bc);font-weight:800;font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);padding:8px 10px;border-bottom:1px solid var(--border);background:rgba(var(--ink-rgb),.05)}
 .mreg-div{height:1px;background:linear-gradient(90deg,transparent,rgba(var(--ink-rgb),.18),transparent);margin:22px 0 18px}
+.chat-rchip{cursor:pointer;font-size:11px;background:rgba(var(--ink-rgb),.06);border:1px solid var(--border);border-radius:10px;padding:1px 7px;line-height:1.7;user-select:none}
+.chat-rchip.mine{background:rgba(200,168,75,.18);border-color:rgba(200,168,75,.4);color:#C8A84B}
+.chat-rpick{display:inline-flex;gap:2px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:2px 5px}
+.chat-rpick span{cursor:pointer;font-size:16px;line-height:1;padding:1px 2px}
 .gms-row>span:not(.gms-team):not(.gms-pos){text-align:center}
 .gms-pos{font-weight:900;text-align:center}
 .gms-team{display:flex;align-items:center;gap:7px;min-width:0;text-transform:uppercase;letter-spacing:.3px}
@@ -1118,6 +1122,31 @@ function rBadges(uid,eff){
   return `<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">🏅 ${en?'Badges':'Jelvények'}</div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px">${cards}</div>`;
 }
+function rPointsTrend(uid,eff){
+  const en=S.lang==='en';
+  const byDate={};
+  ALL.forEach(m=>{const r=eff[m.id];if(!r||r.live)return;const tip=S.tips[`${uid}_${m.id}`];if(!tip)return;const d=(S.ko[m.id]||m.koDefault||m.date||'').slice(0,10);if(!d)return;const p=calcPts(tip,r,m.stage)||0;byDate[d]=(byDate[d]||0)+p;});
+  const dates=Object.keys(byDate).sort();
+  if(dates.length<2)return '';
+  let cum=0;const pts=dates.map(d=>{cum+=byDate[d];return {d,v:cum};});
+  const W=300,H=110,pad=8,maxV=Math.max(...pts.map(p=>p.v),1),stepX=(W-pad*2)/(pts.length-1);
+  const x=i=>pad+i*stepX,y=v=>H-pad-(v/maxV)*(H-pad*2);
+  const line=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  const area=`M${x(0).toFixed(1)},${(H-pad).toFixed(1)} `+pts.map((p,i)=>`L${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ')+` L${x(pts.length-1).toFixed(1)},${(H-pad).toFixed(1)} Z`;
+  const dots=pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="2.5" fill="#C8A84B"/>`).join('');
+  const fmt=d=>new Date(d).toLocaleDateString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit'});
+  return `<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">📈 ${en?'Points over time':'Pont-fejlődés'}</div>
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:24px">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;height:120px">
+      <path d="${area}" fill="rgba(200,168,75,.12)"/>
+      <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(var(--ink-rgb),.4);margin-top:6px">
+      <span>${fmt(dates[0])}</span><span>${en?'total':'összesen'}: ${cum}p</span><span>${fmt(dates[dates.length-1])}</span>
+    </div>
+  </div>`;
+}
 function calcStd(gid,results,mt){
   const grp=GD.find(g=>g.id===gid);
   const teams=grp.teams.map(n=>({n,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}));
@@ -1191,7 +1220,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})(),recapCopied:false,announce:null,annText:''
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})(),recapCopied:false,announce:null,annText:'',reactPicker:null,tourStep:-1
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1260,6 +1289,7 @@ async function init(){
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   maybeJoinFromUrl();
+  maybeStartTour();
   if(cu){
     loadPredict(cu.id);
     // Értesítés állapot betöltése
@@ -1300,6 +1330,7 @@ async function doLogin(){
         SS({user:u,authErr:'',authLoad:false,view:'matches',profDN:u.dn,profAv:u.av||'⚽'});
         loadPredict(u.id);
         maybeJoinFromUrl();
+        maybeStartTour();
         return;
       }
       if(d&&d.ok===false&&d.error==='wrong'){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
@@ -2141,6 +2172,7 @@ function rMain(hw){
     </div>
   </div>`:''}
   ${S.preModal?rPM():''}
+  ${rTour()}
   ${S.legalModal?rLegal():''}
   ${S.helpModal?rHelp():''}
   ${S.delModal?rDelModal():''}
@@ -2365,9 +2397,9 @@ function rNext24h(){
   </div>`;
 }
 function rMatches(){
-  const gTabs=[{id:'all',l:S.lang==='en'?'📋 All':'📋 Mind'},...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
+  const gTabs=[{id:'all',l:S.lang==='en'?'📋 All':'📋 Mind'},{id:'todo',l:S.lang==='en'?'⚠️ To tip':'⚠️ Hiányzó'},...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
-  const vis=sel==='all'?ALL.slice().sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)):ALL.filter(m=>sel.length===1?m.group===sel:sel==='final'?m.stage==='final'||m.stage==='bronze':m.stage===sel);
+  const vis=sel==='all'?ALL.slice().sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)):sel==='todo'?ALL.filter(m=>{if(S.tips[`${S.user.id}_${m.id}`])return false;if(S.results[m.id])return false;if(m.tbd&&!S.mt[m.id])return false;const ko=S.ko[m.id]||m.koDefault;return ko&&new Date(ko).getTime()>Date.now();}).sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)):ALL.filter(m=>sel.length===1?m.group===sel:sel==='final'?m.stage==='final'||m.stage==='bronze':m.stage===sel);
   const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
   const lastUpd=S.liveUpdatedAt?new Date(S.liveUpdatedAt).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'}):'–';
   return `<div class="center-live-mob">${rLiveNow()}${rNext24h()}</div>${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">${t('pretips_banner_t')}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">${t('pretips_banner_s')}</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
@@ -2412,8 +2444,9 @@ function rMatches(){
     if(!rows)return '';
     return `<div class="ko-pred-panel"><div class="ko-pred-h">🔮 ${S.lang==='en'?'My prediction':'Az én predikcióm'} · ${stageLabel(sel)}</div><div class="ko-pred-grid">${rows}</div></div>`;
   })()}
-  ${sel!=='all'?'<div class="mreg-div"></div>':''}
+  ${sel!=='all'&&sel!=='todo'?'<div class="mreg-div"></div>':''}
   ${sel==='all'?`<div style="font-size:12.5px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px">${S.lang==='en'?'All matches in chronological order — tap any to add or edit a tip.':'Az összes meccs időrendi sorrendben — koppints bármelyikre a tippeléshez.'}</div>`:''}
+  ${sel==='todo'?(vis.length?`<div style="font-size:12.5px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px">${S.lang==='en'?`${vis.length} upcoming match(es) still need a tip — chronological order.`:`Még ${vis.length} közelgő meccsre nincs tipped — időrendben.`}</div>`:`<div style="text-align:center;padding:34px 16px;color:#2E9E5A"><div style="font-size:42px;margin-bottom:8px">✓</div><div style="font-weight:700;font-size:15px">${S.lang==='en'?'All upcoming matches tipped!':'Minden közelgő meccsre tippeltél!'}</div></div>`):''}
   <div class="match-grid">${vis.map(m=>rCard(m)).join('')}</div>`;
 }
 
@@ -3017,6 +3050,27 @@ function dismissAnnounce(){
   try{localStorage.setItem('wc_ann_seen',JSON.stringify(S.announce?.ts||0));}catch(e){}
   if(_r)_r();
 }
+function buildRecapText(){
+  const uid=S.user.id,en=S.lang==='en';
+  const eff=getEffectiveResults();
+  const today=new Date().toLocaleDateString('en-CA',{timeZone:userTz()});
+  const todayMs=ALL.filter(m=>{const d=(S.ko[m.id]&&new Date(S.ko[m.id]).toLocaleDateString('en-CA',{timeZone:userTz()}))||m.date;return d===today;});
+  let pts=0,exact=0,n=0;
+  todayMs.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!tip||!r||r.live)return;pts+=calcPts(tip,r,m.stage)||0;if(ptsCat(tip,r,m.stage)==='p8')exact++;n++;});
+  const myNow=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,DS).pts;let rank=1;
+  S.users.forEach(u=>{if(u.id===uid||u.isAdmin)return;if(calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,DS).pts>myNow)rank++;});
+  if(!n)return en?`📋 No evaluated matches for me today yet. Overall rank: ${rank}.`:`📋 Ma még nincs értékelt meccsem. Összesített helyezésem: ${rank}.`;
+  return `📋 ${en?'My day':'A napom'} — +${pts}p · ${exact}⭐ · ${en?'rank':'helyezés'} ${rank}.`;
+}
+async function reactChat(lgId,msgId,emoji){
+  const tok=localStorage.getItem('wc_tok');if(!tok)return;
+  try{
+    const r=await fetch(AUTH_BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,action:'react',lgId,msgId,emoji})});
+    const d=await r.json();SS({reactPicker:null});if(d.ok)await refreshChat();
+  }catch(e){SS({reactPicker:null});}
+}
+function endTour(){try{localStorage.setItem('wc_tour_seen','1');}catch(e){}SS({tourStep:-1});}
+function nextTour(){SS({tourStep:S.tourStep+1});}
 async function exportBackup(){
   SS({bkBusy:true,bkMsg:null});
   const keys=['wc_u','wc_t','wc_r','wc_lg','wc_sp','wc_asp','wc_mt','wc_ko','wc_predict','wc_chat','wc_ids','wc_venues'];
@@ -3871,6 +3925,41 @@ function rAnnounce(){
     <button id="annDismiss" aria-label="${en?'Dismiss':'Bezár'}" style="background:none;border:none;color:rgba(var(--ink-rgb),.4);cursor:pointer;font-size:16px;flex-shrink:0">✕</button>
   </div>`;
 }
+function endTour(){try{localStorage.setItem('wc_tour_seen','1');}catch(e){}SS({tourStep:-1});}
+function nextTour(){SS({tourStep:S.tourStep+1});}
+function maybeStartTour(){
+  try{if(S.user&&S.tourStep<0&&!S.recCodeShow&&!S.lgModal&&!localStorage.getItem('wc_tour_seen'))SS({tourStep:0});}catch(e){}
+}
+function rTour(){
+  if(S.tourStep<0)return '';
+  const en=S.lang==='en';
+  const steps=en?[
+    {ico:'⚽',t:'Welcome!',d:'Predict the exact score of every World Cup match. The closer your guess, the more points you earn.'},
+    {ico:'📋',t:'Tip the matches',d:'In “Matches”, use the 📋 All filter to run through every match in order, or ⚠️ To tip to see only the ones you still owe.'},
+    {ico:'📊',t:'Two tables',d:'In Standings you get two mini-tables side by side: the actual standings and your predicted order.'},
+    {ico:'🤝',t:'Leagues & chat',d:'Create or join a league with an invite link, compare with friends and chat right inside the app.'},
+    {ico:'🏅',t:'Have fun!',d:'Collect badges, track your points over time and climb the leaderboard. Good luck!'},
+  ]:[
+    {ico:'⚽',t:'Üdv a Tippelőben!',d:'Tippeld meg minden VB-meccs pontos eredményét. Minél közelebb vagy, annál több pontot kapsz.'},
+    {ico:'📋',t:'Tippelj a meccsekre',d:'A „Meccsek” nézetben a 📋 Mind szűrővel sorban végigmehetsz az összesen, a ⚠️ Hiányzó szűrővel pedig csak azokat látod, amikre még nem tippeltél.'},
+    {ico:'📊',t:'Két tabella',d:'A Tabella nézetben két kis tábla van egymás mellett: a tényleges állás és a te tipped szerinti sorrend.'},
+    {ico:'🤝',t:'Ligák és chat',d:'Hozz létre vagy csatlakozz ligához meghívó linkkel, mérd össze magad a haverokkal, és csevegj is velük az appon belül.'},
+    {ico:'🏅',t:'Jó szórakozást!',d:'Gyűjts jelvényeket, kövesd a pontjaid alakulását és kapaszkodj a ranglistán. Sok sikert!'},
+  ];
+  const i=Math.min(S.tourStep,steps.length-1),st=steps[i],last=i===steps.length-1;
+  return `<div class="modal-ov" id="tourOv" style="z-index:9999">
+    <div class="modal-c" style="max-width:340px;text-align:center">
+      <div style="font-size:46px;margin-bottom:8px">${st.ico}</div>
+      <div style="font-family:var(--font-bc);font-weight:800;font-size:20px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-color);margin-bottom:8px">${st.t}</div>
+      <div style="font-size:14px;color:rgba(var(--ink-rgb),.7);line-height:1.55;margin-bottom:18px">${st.d}</div>
+      <div style="display:flex;justify-content:center;gap:6px;margin-bottom:16px">${steps.map((_,k)=>`<span style="width:7px;height:7px;border-radius:50%;background:${k===i?'#C8A84B':'rgba(var(--ink-rgb),.2)'}"></span>`).join('')}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm" id="tourSkip" style="flex:1">${en?'Skip':'Kihagyom'}</button>
+        <button class="btn-gold" id="tourNext" style="flex:2">${last?(en?'Got it!':'Értem!'):(en?'Next':'Tovább')}</button>
+      </div>
+    </div>
+  </div>`;
+}
 function rChat(lgId){
   const en=S.lang==='en';
   const msgs=(S.chat&&S.chat[lgId])||[];
@@ -3881,7 +3970,12 @@ function rChat(lgId){
     const canDel=mine||isAdmin;
     const reports=(m.reports&&m.reports.length)||0;
     const time=new Date(m.ts).toLocaleString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:userTz()});
-    const ctrl=`<div style="display:flex;gap:10px;margin-top:3px;font-size:12px;align-items:center">
+    const reactChips=Object.entries(m.reactions||{}).map(([e,uids])=>`<span class="chat-rchip${(uids||[]).includes(uid)?' mine':''}" data-react="${e}" data-mid="${m.id}" data-lgid="${lgId}" role="button" tabindex="0">${e} ${(uids||[]).length}</span>`).join('');
+    const picker=S.reactPicker===m.id?`<span class="chat-rpick">${['👍','😂','🔥','😮','⚽','❤️'].map(e=>`<span data-react="${e}" data-mid="${m.id}" data-lgid="${lgId}" role="button" tabindex="0">${e}</span>`).join('')}</span>`:'';
+    const ctrl=`<div style="display:flex;gap:8px;margin-top:3px;font-size:12px;align-items:center;flex-wrap:wrap;justify-content:${mine?'flex-end':'flex-start'}">
+      ${reactChips}
+      <span class="chat-radd" data-mid="${m.id}" role="button" tabindex="0" style="cursor:pointer;color:rgba(var(--ink-rgb),.3)" title="${en?'React':'Reakció'}">😊﹢</span>
+      ${picker}
       ${!mine?`<span class="chat-report" data-mid="${m.id}" data-lgid="${lgId}" role="button" tabindex="0" style="cursor:pointer;color:rgba(var(--ink-rgb),.3)" title="${en?'Report':'Jelentés'}">⚑</span>`:''}
       ${canDel?`<span class="chat-del" data-mid="${m.id}" data-lgid="${lgId}" role="button" tabindex="0" style="cursor:pointer;color:rgba(232,33,42,.55)" title="${en?'Delete':'Törlés'}">🗑</span>`:''}
       ${isAdmin&&reports?`<span style="color:#e8212a;font-weight:700" title="${en?'Reports':'Jelentések'}">⚑${reports}</span>`:''}
@@ -3901,6 +3995,7 @@ function rChat(lgId){
       <button class="btn-gold" id="chatSend" data-lgid="${lgId}" style="max-width:none;width:auto;padding:0 18px;height:40px" ${S.chatSending?'disabled':''}>${S.chatSending?'⏳':'➤'}</button>
     </div>
     <div style="font-size:10.5px;color:rgba(var(--ink-rgb),.35);margin-top:6px">${en?'Be respectful — offensive language is blocked.':'Légy kulturált — a trágár szavakat a rendszer kiszűri.'}</div>
+    <button class="btn-sm" id="chatRecap" data-lgid="${lgId}" style="margin-top:8px;font-size:11px">📊 ${en?'Share my result':'Mai eredményem megosztása'}</button>
   </div>`;
 }
 function rLb(){
@@ -4121,6 +4216,8 @@ function rProfile(){
     </div>
 
     ${rBadges(uid,eff)}
+
+    ${rPointsTrend(uid,eff)}
 
     ${myLgs.length?`<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Ligáim</div>
     <div style="display:flex;flex-direction:column;gap:1px;background:rgba(var(--ink-rgb),.1);margin-bottom:24px">
@@ -4720,9 +4817,9 @@ function bindMain(hw){
   document.getElementById('delOv')?.addEventListener('click',e=>{if(e.target.id==='delOv')SS({delModal:false});});
   document.getElementById('delConfirm')?.addEventListener('click',doSelfDelete);
   document.getElementById('h2hShare')?.addEventListener('click',()=>{const d=window._h2hShare;if(d)shareH2H(d.myDn,d.oppDn,d.myW,d.oppW,d.draw);});
-  document.getElementById('recCl')?.addEventListener('click',()=>{SS({recCodeShow:null});maybeJoinFromUrl();});
-  document.getElementById('recCl2')?.addEventListener('click',()=>{SS({recCodeShow:null});maybeJoinFromUrl();});
-  document.getElementById('recOv')?.addEventListener('click',e=>{if(e.target.id==='recOv'){SS({recCodeShow:null});maybeJoinFromUrl();}});
+  document.getElementById('recCl')?.addEventListener('click',()=>{SS({recCodeShow:null});maybeJoinFromUrl();maybeStartTour();});
+  document.getElementById('recCl2')?.addEventListener('click',()=>{SS({recCodeShow:null});maybeJoinFromUrl();maybeStartTour();});
+  document.getElementById('recOv')?.addEventListener('click',e=>{if(e.target.id==='recOv'){SS({recCodeShow:null});maybeJoinFromUrl();maybeStartTour();}});
   document.getElementById('recapShare')?.addEventListener('click',shareRecap);
   document.getElementById('annDismiss')?.addEventListener('click',dismissAnnounce);
   {const _ai=document.getElementById('annInput');if(_ai)_ai.addEventListener('input',e=>{S.annText=e.target.value;});}
@@ -4738,6 +4835,11 @@ function bindMain(hw){
   const _chatIn=document.getElementById('chatInput');
   if(_chatIn){_chatIn.addEventListener('input',e=>{S.chatText=e.target.value;});_chatIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('chatSend')?.click();}});}
   document.getElementById('chatSend')?.addEventListener('click',e=>{const ci=document.getElementById('chatInput');if(ci)S.chatText=ci.value;sendChat(e.currentTarget.dataset.lgid);});
+  document.getElementById('chatRecap')?.addEventListener('click',e=>{S.chatText=buildRecapText();sendChat(e.currentTarget.dataset.lgid);});
+  document.querySelectorAll('.chat-rchip,.chat-rpick [data-react]').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;reactChat(t.dataset.lgid,t.dataset.mid,t.dataset.react);}));
+  document.querySelectorAll('.chat-radd').forEach(b=>b.addEventListener('click',e=>{const mid=e.currentTarget.dataset.mid;SS({reactPicker:S.reactPicker===mid?null:mid});}));
+  document.getElementById('tourSkip')?.addEventListener('click',endTour);
+  document.getElementById('tourNext')?.addEventListener('click',()=>{const en=S.lang==='en';const len=5;if(S.tourStep>=len-1)endTour();else nextTour();});
   {const _cs=document.getElementById('chatScroll');if(_cs)_cs.scrollTop=_cs.scrollHeight;}
   document.querySelectorAll('.chat-del').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;deleteChatMsg(t.dataset.lgid,t.dataset.mid);}));
   document.querySelectorAll('.chat-report').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;reportChatMsg(t.dataset.lgid,t.dataset.mid);}));
