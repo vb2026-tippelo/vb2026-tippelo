@@ -282,6 +282,8 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .gms-row{display:grid;grid-template-columns:26px 1fr 28px 28px 28px 28px 40px 34px;align-items:center;gap:4px;padding:6px 10px;font-family:var(--font-bc);font-weight:600;font-size:13px;color:var(--text-color)}
 .gms-row+.gms-row{border-top:1px solid rgba(var(--ink-rgb),.06)}
 .gms-head{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:rgba(var(--ink-rgb),.45);font-weight:700;background:rgba(var(--ink-rgb),.03)}
+.gms-cap{font-family:var(--font-bc);font-weight:800;font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);padding:8px 10px;border-bottom:1px solid var(--border);background:rgba(var(--ink-rgb),.05)}
+.mreg-div{height:1px;background:linear-gradient(90deg,transparent,rgba(var(--ink-rgb),.18),transparent);margin:22px 0 18px}
 .gms-row>span:not(.gms-team):not(.gms-pos){text-align:center}
 .gms-pos{font-weight:900;text-align:center}
 .gms-team{display:flex;align-items:center;gap:7px;min-width:0;text-transform:uppercase;letter-spacing:.3px}
@@ -484,7 +486,8 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .pill.off{opacity:.6}
 
 /* ===== SECTIONS ===== */
-.sect{font-family:var(--font-bc);font-weight:700;font-size:22px;color:#0A0A0A;letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid #0A0A0A;padding-bottom:6px;margin-bottom:16px;line-height:1}
+.sect{font-family:var(--font-bc);font-weight:700;font-size:22px;color:#0A0A0A;letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid #0A0A0A;padding-bottom:6px;margin-bottom:16px;margin-top:34px;line-height:1}
+.sect:first-child{margin-top:0}
 
 /* ===== INPUTS ===== */
 .inp,.inp-light{width:100%;padding:10px 12px;border:1.5px solid rgba(10,10,10,.15);background:#fff;color:#0A0A0A;font-size:14px;font-family:var(--font-b);outline:none;border-radius:0;transition:border-color .12s}
@@ -2200,7 +2203,7 @@ function rSidebarLeft(){
     </div>`;
   }).join('');
 
-  return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches">Mind →</div></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(var(--chrome-ink),.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
+  return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches" data-sg="all">Mind →</div></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(var(--chrome-ink),.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
 }
 
 function rSidebarStats(){
@@ -2316,7 +2319,12 @@ function rLiveNow(){
   </div>`;
 }
 function rNext24h(){
-  const uid=S.user.id,ms=next24h();
+  const uid=S.user.id;
+  let ms=next24h(),fb=false;
+  if(!ms.length){
+    ms=ALL.filter(m=>{if(m.tbd&&!S.mt[m.id])return false;if(S.results[m.id])return false;const ko=S.ko[m.id]||m.koDefault;return ko&&new Date(ko).getTime()>Date.now();}).sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)).slice(0,6);
+    fb=true;
+  }
   if(!ms.length)return '';
   const missing=ms.filter(m=>!S.tips[`${uid}_${m.id}`]);
   // Következő meccs időpontja
@@ -2327,7 +2335,7 @@ function rNext24h(){
   const nextKo=nextM?(S.ko[nextM.id]||nextM.koDefault):null;
   return `<div style="background:rgba(var(--ink-rgb),.05);border:1px solid rgba(var(--ink-rgb),.1);border-radius:14px;padding:16px;margin-bottom:18px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-      <div style="font-size:15px;font-weight:800;color:var(--c-gold)">⏰ ${t('next24h')}</div>
+      <div style="font-size:15px;font-weight:800;color:var(--c-gold)">⏰ ${fb?(S.lang==='en'?'Upcoming matches':'Következő meccsek'):t('next24h')}</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         ${nextKo?`<div id="countdown-wrap" style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--c-gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:3px 10px"><span id="countdown-display">–</span></div>`:''}
         ${missing.length?`<span style="background:#e63329;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px">${missing.length} ${t('missing_tips')}</span>`:`<span style="color:#00b050;font-size:12px;font-weight:700">✓ ${t('all_tipped')}</span>`}
@@ -2356,9 +2364,9 @@ function rNext24h(){
   </div>`;
 }
 function rMatches(){
-  const gTabs=[...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
+  const gTabs=[{id:'all',l:S.lang==='en'?'All':'Összes'},...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
-  const vis=ALL.filter(m=>sel.length===1?m.group===sel:sel==='final'?m.stage==='final'||m.stage==='bronze':m.stage===sel);
+  const vis=sel==='all'?ALL.slice().sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)):ALL.filter(m=>sel.length===1?m.group===sel:sel==='final'?m.stage==='final'||m.stage==='bronze':m.stage===sel);
   const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
   const lastUpd=S.liveUpdatedAt?new Date(S.liveUpdatedAt).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'}):'–';
   return `<div class="center-live-mob">${rLiveNow()}${rNext24h()}</div>${hw?`<div class="pre-banner" id="preBanner"><span style="font-size:26px">⭐</span><div><div style="color:#c9a84c;font-weight:800;font-size:15px">${t('pretips_banner_t')}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.6);margin-top:2px">${t('pretips_banner_s')}</div></div><span style="margin-left:auto;font-size:20px">→</span></div>`:''}
@@ -2372,12 +2380,14 @@ function rMatches(){
     const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
     const tc=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e63329';
     const liveTable=`<div class="grp-mini-std">
+      <div class="gms-cap">🔴 ${S.lang==='en'?'Actual standings':'Tényleges állás'}</div>
       <div class="gms-row gms-head"><span class="gms-pos">#</span><span class="gms-team">${S.lang==='en'?'Group '+grp.id:grp.id+'. csoport'}</span><span>M</span><span>GY</span><span>D</span><span>V</span><span>GK</span><span>P</span></div>
       ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span></span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
     </div>`;
     const pred=S.predGroups?.[grp.id]||[];
     const predCol=`<div class="grp-mini-std">
-      <div class="gms-row gms-head gms-row-pred"><span class="gms-pos">#</span><span class="gms-team">🔮 ${S.lang==='en'?'My prediction':'Az én predikcióm'}</span></div>
+      <div class="gms-cap">🔮 ${S.lang==='en'?'Your prediction':'A te tipped szerint'}</div>
+      <div class="gms-row gms-head gms-row-pred"><span class="gms-pos">#</span><span class="gms-team">${S.lang==='en'?'Team':'Csapat'}</span></div>
       ${pred.length?pred.map((tm,i)=>`<div class="gms-row gms-row-pred"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(tm,16)}<span class="gms-tnm">${teamName(tm)}</span></span></div>`).join(''):`<div class="gms-empty">${S.lang==='en'?'No prediction yet':'Nincs még predikciód erre a csoportra'}</div>`}
     </div>`;
     return `<div class="pill-row" style="margin-bottom:10px"><button class="pill${S.stMode!=='official'?' on':' off'}" data-stmode="live">🔴 ${S.lang==='en'?'Live table':'Élő tabella'}</button><button class="pill${S.stMode==='official'?' on':' off'}" data-stmode="official">✓ ${S.lang==='en'?'Played only':'Lejátszott meccsek'}</button></div>
@@ -2401,6 +2411,8 @@ function rMatches(){
     if(!rows)return '';
     return `<div class="ko-pred-panel"><div class="ko-pred-h">🔮 ${S.lang==='en'?'My prediction':'Az én predikcióm'} · ${stageLabel(sel)}</div><div class="ko-pred-grid">${rows}</div></div>`;
   })()}
+  ${sel!=='all'?'<div class="mreg-div"></div>':''}
+  ${sel==='all'?`<div style="font-size:12.5px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px">${S.lang==='en'?'All matches in chronological order — tap any to add or edit a tip.':'Az összes meccs időrendi sorrendben — koppints bármelyikre a tippeléshez.'}</div>`:''}
   <div class="match-grid">${vis.map(m=>rCard(m)).join('')}</div>`;
 }
 
@@ -4539,7 +4551,7 @@ function bindMain(hw){
   // lang buttons inline onclick
   document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',e=>{
     const v=e.currentTarget.dataset.v;
-    if(v)SS({view:v,moreMenu:false});
+    if(v)SS({view:v,moreMenu:false,...(e.currentTarget.dataset.sg?{sg:e.currentTarget.dataset.sg}:{})});
     if(v==='standings'||v==='bracket')loadScorers();
   }));
   document.querySelector('[data-vmenu="more"]')?.addEventListener('click',()=>SS({moreMenu:true}));
