@@ -496,7 +496,7 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 /* ===== AUTH PAGE ===== */
 .auth-page{min-height:100vh;background:#0A0A0A;display:flex;align-items:center;justify-content:center;padding:20px;background-image:repeating-linear-gradient(-45deg,transparent,transparent 10px,rgba(255,255,255,.015) 10px,rgba(255,255,255,.015) 11px)}
 .auth-card{background:#141414;border:1px solid rgba(255,255,255,.08);padding:36px 32px;width:100%;max-width:380px}
-.auth-hero{display:flex;align-items:center;gap:12px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.auth-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.08)}
 .auth-hero img{width:40px;height:40px;object-fit:contain}
 .auth-title{font-family:var(--font-bc);font-weight:700;font-size:22px;color:#C8A84B;letter-spacing:.5px;text-transform:uppercase;line-height:1}
 .auth-sub{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.5px;margin-top:2px}
@@ -1743,14 +1743,19 @@ function applyNavPos(){
 
 function rAuth(){
   const L=S.authMode==='login';
-  return `<div class="auth-page"><div style="width:100%;max-width:420px;position:relative">
-  <div style="position:absolute;top:0;right:0;display:flex;gap:8px">
-    ${langSwitcher()}
-    <button id="themeToggleAuth" class="btn-sm white" style="padding:8px 10px;font-size:15px" title="${t('theme_toggle_title')}">${S.theme==='light'?'🌙':'☀️'}</button>
-  </div>
-  <div class="auth-hero"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(56)}</div>
-    <div class="auth-title">VB 2026 Tippelő</div>
-    <div class="auth-sub">${t('tagline')}</div>
+  return `<div class="auth-page"><div style="width:100%;max-width:420px">
+  <div class="auth-hero">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+      <div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4));flex-shrink:0">${trophyIcon(56)}</div>
+      <div style="min-width:0">
+        <div class="auth-title">VB 2026 Tippelő</div>
+        <div class="auth-sub">${t('tagline')}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
+      ${langSwitcher()}
+      <button id="themeToggleAuth" class="btn-sm white" style="padding:8px 10px;font-size:15px" title="${t('theme_toggle_title')}">${S.theme==='light'?'🌙':'☀️'}</button>
+    </div>
   </div>
   <div class="auth-card">
     <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">${L?t('login'):t('register')}</h2>
