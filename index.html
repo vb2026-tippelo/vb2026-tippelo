@@ -502,6 +502,11 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .auth-hero img{width:40px;height:40px;object-fit:contain}
 .auth-title{font-family:var(--font-bc);font-weight:700;font-size:22px;color:#C8A84B;letter-spacing:.5px;text-transform:uppercase;line-height:1}
 .auth-sub{font-size:11px;color:rgba(var(--ink-rgb),.4);letter-spacing:.5px;margin-top:2px}
+.auth-or{display:flex;align-items:center;gap:10px;margin:16px 0;color:rgba(var(--ink-rgb),.4);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--border)}
+.auth-google{width:100%;height:44px;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid var(--border);font-family:var(--font-b);font-weight:600;font-size:14px;cursor:pointer}
+.dark-mode .auth-google{background:#1C1C1C;color:#F0EDE6;border-color:rgba(255,255,255,.15)}
+.auth-google:active{opacity:.85}
 
 /* ===== MODAL ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -647,6 +652,7 @@ button[data-predko].wk-win .wk-tnm{color:#2E9E5A!important}
 <div id="root"></div>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDuxkii5L2wgJS2_x5pxf41erXBlplb_OY",
@@ -659,6 +665,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
 const GD=[
   {id:'A',teams:['Mexikó','Dél-Afrika','Dél-Korea','Csehország']},
@@ -693,6 +700,8 @@ const STRINGS={
     login:'Bejelentkezés',register:'Regisztráció',username:'Felhasználónév',displayname:'Megjelenítési név',password:'Jelszó',
     username_ph:'pl. kovacs.peter',displayname_ph:'pl. Kovács Péter',password_ph:'min. 4 karakter',
     btn_login:'⚡ Belépés',btn_register:'🚀 Regisztráció',loading_btn:'⏳',
+    google_btn:'Belépés Google-fiókkal',or_divider:'vagy',google_err:'A Google belépés nem sikerült. Próbáld újra.',
+    google_link_btn:'Google-fiók összekapcsolása',google_linked:'Google-fiók összekapcsolva',google_link_ok:'✓ Sikeresen összekapcsoltad a Google-fiókod. Mostantól azzal is beléphetsz.',google_link_taken:'Ez a Google-fiók már egy másik felhasználóhoz van kötve.',google_link_err:'Az összekapcsolás nem sikerült. Próbáld újra.',
     err_wrong_login:'Hibás felhasználónév vagy jelszó',err_username_taken:'Ez a felhasználónév már foglalt',err_username_minlen:'Felhasználónév min. 3 karakter',err_password_minlen:'Jelszó min. 4 karakter',
     select_team_ph:'— válassz csapatot —',confirm_remove_member:'Biztosan eltávolítod a tagot a ligából?',confirm_leave_league:'Biztosan kilépsz a ligából?',
     no_account:'Még nincs fiókod?',has_account:'Már van fiókod?',signup_link:'Regisztrálj!',login_link:'Belépés',
@@ -749,6 +758,8 @@ const STRINGS={
     login:'Login',register:'Sign up',username:'Username',displayname:'Display name',password:'Password',
     username_ph:'e.g. john.smith',displayname_ph:'e.g. John Smith',password_ph:'min. 4 characters',
     btn_login:'⚡ Log in',btn_register:'🚀 Sign up',loading_btn:'⏳',
+    google_btn:'Sign in with Google',or_divider:'or',google_err:'Google sign-in failed. Please try again.',
+    google_link_btn:'Link Google account',google_linked:'Google account linked',google_link_ok:'✓ Your Google account is now linked. You can sign in with it too.',google_link_taken:'This Google account is already linked to another user.',google_link_err:'Linking failed. Please try again.',
     err_wrong_login:'Incorrect username or password',err_username_taken:'This username is already taken',err_username_minlen:'Username min. 3 characters',err_password_minlen:'Password min. 4 characters',
     select_team_ph:'— select a team —',confirm_remove_member:'Are you sure you want to remove this member from the league?',confirm_leave_league:'Are you sure you want to leave the league?',
     no_account:"Don't have an account?",has_account:'Already have an account?',signup_link:'Sign up!',login_link:'Log in',
@@ -1094,10 +1105,10 @@ async function init(){
     sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true),sG('wc_venues',true)
   ]);
   let ul=users||[];
-  if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:'admin123',isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
+  if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:await makePwField('admin123'),isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
   let nt=tips||{},nr=results||{},nsp=special||{},nl=leagues||[];
   if(!impFlag){
-    IMP_USERS.forEach(([un,dn])=>{if(!ul.find(u=>u.un===un))ul.push({id:un,un,dn,pw:'vb2026',isAdmin:false,av:'⚽'});});
+    for(const [un,dn] of IMP_USERS){if(!ul.find(u=>u.un===un))ul.push({id:un,un,dn,pw:await makePwField('vb2026'),isAdmin:false,av:'⚽'});}
     Object.entries(IMP_RESULTS).forEach(([mid,p])=>{nr={...nr,[mid]:{homeGoals:p[0],awayGoals:p[1]}};});
     Object.entries(IMP_TIPS).forEach(([un,arr])=>{arr.forEach((p,i)=>{if(p){nt={...nt,[`${un}_${MATCH_IDS[i]}`]:{homeGoals:p[0],awayGoals:p[1]}};}});});
     Object.entries(IMP_SPECIAL).forEach(([un,p])=>{if(p){nsp={...nsp,[`${un}_w`]:p[0],[`${un}_t`]:p[1]};}});
@@ -1140,11 +1151,23 @@ async function savePredict(){
   await sS('wc_predict',nall,true);
 }
 
+function _pwSalt(){return [...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function _sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+function isHashedPw(pw){return typeof pw==='string'&&pw.startsWith('h1$');}
+async function makePwField(plain){const s=_pwSalt();return 'h1$'+s+'$'+await _sha256(s+'|'+plain);}
+async function verifyPw(plain,stored){if(!stored)return false;if(!isHashedPw(stored))return plain===stored;const p=stored.split('$');return (await _sha256(p[1]+'|'+plain))===p[2];}
 async function doLogin(){
-  const u=S.users.find(x=>x.un===S.authU&&x.pw===S.authP);
-  if(!u){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
+  const u=S.users.find(x=>x.un===S.authU);
+  if(!u||!(await verifyPw(S.authP,u.pw))){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
+  let ul=S.users;
+  if(!isHashedPw(u.pw)){
+    const up={...u,pw:await makePwField(S.authP)};
+    ul=S.users.map(x=>x.id===u.id?up:x);
+    u.pw=up.pw;
+    try{await sS('wc_u',ul,true);}catch(e){}
+  }
   await sS('wc_s',{uid:u.id},false);
-  SS({user:u,authErr:'',authLoad:false,view:'matches',profDN:u.dn,profAv:u.av||'⚽'});
+  SS({user:u,users:ul,authErr:'',authLoad:false,view:'matches',profDN:u.dn,profAv:u.av||'⚽'});
   loadPredict(u.id);
 }
 async function doReg(){
@@ -1152,12 +1175,59 @@ async function doReg(){
   if(users.find(x=>x.un===authU)){SS({authErr:t('err_username_taken'),authLoad:false});return;}
   if(authU.length<3){SS({authErr:t('err_username_minlen'),authLoad:false});return;}
   if(authP.length<4){SS({authErr:t('err_password_minlen'),authLoad:false});return;}
-  const nu={id:`u${Date.now()}`,un:authU,dn:authDN||authU,pw:authP,isAdmin:false,av:'⚽'};
+  const nu={id:`u${Date.now()}`,un:authU,dn:authDN||authU,pw:await makePwField(authP),isAdmin:false,av:'⚽'};
   const ul=[...users,nu];
   await sS('wc_u',ul,true);await sS('wc_s',{uid:nu.id},false);
   SS({users:ul,user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:'⚽'});
 }
 async function doLogout(){await sS('wc_s',null,false);SS({user:null,view:'matches',authU:'',authP:'',authDN:'',authErr:''});}
+
+async function doGoogleLogin(){
+  SS({authErr:'',authLoad:true});
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const res=await auth.signInWithPopup(provider);
+    const g=res.user;
+    const gid='g_'+g.uid;
+    const email=(g.email||'').toLowerCase();
+    let ul=S.users.slice();
+    let u=ul.find(x=>x.googleId===g.uid)||ul.find(x=>x.id===gid)||ul.find(x=>x.googleEmail&&x.googleEmail===email);
+    const isNew=!u;
+    if(isNew){
+      u={id:gid,un:email||gid,dn:g.displayName||(email?email.split('@')[0]:'Játékos'),pw:'',isAdmin:false,av:'⚽',provider:'google',googleEmail:email};
+      ul=[...ul,u];
+      await sS('wc_u',ul,true);
+    }
+    await sS('wc_s',{uid:u.id},false);
+    SS({users:ul,user:u,authErr:'',authLoad:false,view:isNew?'pre-tips':'matches',profDN:u.dn,profAv:u.av||'⚽'});
+    if(!isNew)loadPredict(u.id);
+  }catch(e){
+    const code=(e&&e.code)||'';
+    if(code==='auth/popup-closed-by-user'||code==='auth/cancelled-popup-request'){SS({authLoad:false});return;}
+    SS({authErr:t('google_err'),authLoad:false});
+  }
+}
+
+async function linkGoogle(){
+  if(!S.user)return;
+  SS({linkErr:'',linkMsg:'',linkLoad:true});
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const res=await auth.signInWithPopup(provider);
+    const g=res.user;
+    const email=(g.email||'').toLowerCase();
+    const other=S.users.find(x=>x.id!==S.user.id && (x.googleId===g.uid || (x.googleEmail && x.googleEmail===email)));
+    if(other){SS({linkErr:t('google_link_taken'),linkLoad:false});return;}
+    const up={...S.user,googleId:g.uid,googleEmail:email};
+    const ul=S.users.map(x=>x.id===S.user.id?up:x);
+    await sS('wc_u',ul,true);
+    SS({users:ul,user:up,linkMsg:t('google_link_ok'),linkErr:'',linkLoad:false});
+  }catch(e){
+    const code=(e&&e.code)||'';
+    if(code==='auth/popup-closed-by-user'||code==='auth/cancelled-popup-request'){SS({linkLoad:false});return;}
+    SS({linkErr:t('google_link_err'),linkLoad:false});
+  }
+}
 
 async function saveTip(mid,h,a){
   const k=`${S.user.id}_${mid}`;
@@ -1362,17 +1432,18 @@ async function savePassword(){
   const cur=document.getElementById('pwCur')?.value||'';
   const nw=document.getElementById('pwNewIn')?.value||'';
   const conf=document.getElementById('pwConfIn')?.value||'';
-  if(cur!==S.user.pw){SS({pwErr:t('pw_err_wrong_current'),pwMsg:''});return;}
+  if(!(await verifyPw(cur,S.user.pw))){SS({pwErr:t('pw_err_wrong_current'),pwMsg:''});return;}
   if(nw.length<4){SS({pwErr:t('pw_err_too_short'),pwMsg:''});return;}
   if(nw!==conf){SS({pwErr:t('pw_err_mismatch'),pwMsg:''});return;}
-  const up={...S.user,pw:nw};
+  const up={...S.user,pw:await makePwField(nw)};
   const ul=S.users.map(u=>u.id===S.user.id?up:u);
   await sS('wc_u',ul,true);
   SS({user:up,users:ul,pwEdit:false,pwErr:'',pwMsg:t('pw_success')});
 }
 async function adminResetPassword(uid){
   if(!confirm(`Biztosan visszaállítod a jelszót "vb2026"-ra ennél a felhasználónál?`))return;
-  const ul=S.users.map(u=>u.id===uid?{...u,pw:'vb2026'}:u);
+  const np=await makePwField('vb2026');
+  const ul=S.users.map(u=>u.id===uid?{...u,pw:np}:u);
   await sS('wc_u',ul,true);
   SS({users:ul});
   alert('Jelszó visszaállítva: vb2026');
@@ -1743,6 +1814,7 @@ function applyNavPos(){
   nav.classList.toggle('mn-top', window.scrollY>120);
 }
 
+function gIcon(){return `<svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`;}
 function rAuth(){
   const L=S.authMode==='login';
   return `<div class="auth-page"><div style="width:100%;max-width:420px">
@@ -1768,6 +1840,8 @@ function rAuth(){
       <div><label class="lbl">${t('password')}</label><input class="inp" id="ap" type="password" value="${S.authP}" placeholder="${t('password_ph')}"></div>
     </div>
     <button class="btn-gold" id="aBtn" style="margin-top:18px;width:100%;max-width:none;height:44px;font-size:14px">${S.authLoad?t('loading_btn'):(L?t('btn_login'):t('btn_register'))}</button>
+    <div class="auth-or"><span>${t('or_divider')}</span></div>
+    <button type="button" id="aGoogle" class="auth-google">${gIcon()}${t('google_btn')}</button>
     <p style="text-align:center;margin-top:14px;color:rgba(var(--ink-rgb),.4);font-size:13px">
       ${L?t('no_account'):t('has_account')}
       <span id="sw" style="color:#c9a84c;cursor:pointer;font-weight:700;margin-left:4px">${L?t('signup_link'):t('login_link')}</span>
@@ -1787,6 +1861,7 @@ function bindAuth(){
     SS({authLoad:true,authErr:'',authU:u,authP:p,authDN:dn});
     S.authMode==='login'?doLogin():doReg();
   });
+  document.getElementById('aGoogle')?.addEventListener('click',doGoogleLogin);
   ['au','ap'].forEach(id=>document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('aBtn')?.click();}));
 }
 
@@ -3531,6 +3606,13 @@ function rProfile(){
       </div>
     </div>
 
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(var(--ink-rgb),.1)">
+      <div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:#C8A84B;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Google-fiók</div>
+      ${(u.googleId||u.provider==='google')?`<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-color)">${gIcon()}<span>${t('google_linked')}${u.googleEmail?` · ${u.googleEmail}`:''}</span></div>`:`<button type="button" id="linkGoogleBtn" class="auth-google" style="max-width:300px">${gIcon()}${S.linkLoad?'⏳':t('google_link_btn')}</button>`}
+      ${S.linkMsg?`<div style="margin-top:8px;font-size:12px;color:#3EAD6A">${S.linkMsg}</div>`:''}
+      ${S.linkErr?`<div style="margin-top:8px;font-size:12px;color:#e63329">${S.linkErr}</div>`:''}
+    </div>
+
     ${S.profEdit?`<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(var(--ink-rgb),.1)">
       <div style="font-family:var(--font-bc);font-weight:700;font-size:12px;color:#C8A84B;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Válassz avatárt</div>
       <div class="prof-av-sel">${AVS.map(av=>`<div class="prof-av-btn${S.profAv===av?' sel':''}" data-av="${av}">${av}</div>`).join('')}</div>
@@ -3945,6 +4027,7 @@ function bindMain(hw){
   });
 
   document.getElementById('editProf')?.addEventListener('click',()=>SS({profEdit:true,profDN:S.user.dn,profAv:S.user.av||'⚽'}));
+  document.getElementById('linkGoogleBtn')?.addEventListener('click',linkGoogle);
   document.getElementById('saveProf')?.addEventListener('click',()=>{SS({profDN:document.getElementById('profDN')?.value||S.user.dn});saveProf();});
   document.getElementById('cancelProf')?.addEventListener('click',()=>SS({profEdit:false}));
   document.getElementById('togglePwEdit')?.addEventListener('click',()=>SS({pwEdit:true,pwErr:'',pwMsg:''}));
