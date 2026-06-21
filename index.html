@@ -464,8 +464,9 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 
 /* ===== PILLS ===== */
 .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.pill-row-nav{flex-wrap:nowrap;gap:4px;overflow:hidden}
-.pill-row-nav .pill{flex:1 1 auto;min-width:0;text-align:center;padding:7px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--border);background:rgba(var(--ink-rgb),.05);color:rgba(var(--ink-rgb),.7);border-radius:8px}
+.pill-row-nav{flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:3px}
+.pill-row-nav::-webkit-scrollbar{display:none}
+.pill-row-nav .pill{flex:0 0 auto;min-width:0;text-align:center;padding:7px 13px;white-space:nowrap;border:1px solid var(--border);background:rgba(var(--ink-rgb),.05);color:rgba(var(--ink-rgb),.7);border-radius:8px}
 .pill-row-nav .pill.off{opacity:1}
 .pill-row-nav .pill.on{border-color:#C8A84B;background:rgba(200,168,75,.16);color:#C8A84B}
 .pill-row-nav .pill:hover{border-color:var(--border-gold)}
@@ -2364,7 +2365,7 @@ function rNext24h(){
   </div>`;
 }
 function rMatches(){
-  const gTabs=[{id:'all',l:S.lang==='en'?'All':'Összes'},...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
+  const gTabs=[{id:'all',l:S.lang==='en'?'📋 All':'📋 Mind'},...GD.map(g=>({id:g.id,l:`${g.id}`})),{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'final',l:'🏆'}];
   const sel=S.sg,grp=GD.find(g=>g.id===sel);
   const vis=sel==='all'?ALL.slice().sort((a,b)=>new Date(S.ko[a.id]||a.koDefault)-new Date(S.ko[b.id]||b.koDefault)):ALL.filter(m=>sel.length===1?m.group===sel:sel==='final'?m.stage==='final'||m.stage==='bronze':m.stage===sel);
   const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
