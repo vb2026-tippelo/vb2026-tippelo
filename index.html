@@ -1136,7 +1136,11 @@ async function init(){
   // (régi, hibás) idők soha ne írhassák felül a helyes menetrendet.
   let nko={};
   try{ if(ko && Object.keys(ko).length){ await sS('wc_ko',{},true); await sS('wc_sched_ver',SCHED_VER,true); } }catch(e){}
-  const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
+  const hasTok=!!localStorage.getItem('wc_tok');
+  let cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
+  // Az uj (szerveroldali) rendszerhez belepesi jegy (token) kell. Ha van regi munkamenet,
+  // de meg nincs token, egyszeri ujra-belepest kerunk, hogy a mentesek a lezaras utan is mukodjenek.
+  if(cu && !hasTok){ try{localStorage.removeItem('wc_s');}catch(e){} cu=null; }
   SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
