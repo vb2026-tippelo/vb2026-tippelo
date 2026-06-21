@@ -1767,7 +1767,7 @@ function rAuth(){
       ${!L?`<div><label class="lbl">${t('displayname')}</label><input class="inp" id="adn" type="text" value="${S.authDN}" placeholder="${t('displayname_ph')}"></div>`:''}
       <div><label class="lbl">${t('password')}</label><input class="inp" id="ap" type="password" value="${S.authP}" placeholder="${t('password_ph')}"></div>
     </div>
-    <button class="btn-gold" id="aBtn" style="margin-top:18px">${S.authLoad?t('loading_btn'):(L?t('btn_login'):t('btn_register'))}</button>
+    <button class="btn-gold" id="aBtn" style="margin-top:18px;width:100%;max-width:none;height:44px;font-size:14px">${S.authLoad?t('loading_btn'):(L?t('btn_login'):t('btn_register'))}</button>
     <p style="text-align:center;margin-top:14px;color:rgba(var(--ink-rgb),.4);font-size:13px">
       ${L?t('no_account'):t('has_account')}
       <span id="sw" style="color:#c9a84c;cursor:pointer;font-weight:700;margin-left:4px">${L?t('signup_link'):t('login_link')}</span>
