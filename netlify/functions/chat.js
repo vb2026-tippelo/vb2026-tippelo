@@ -20,28 +20,24 @@ function verifyToken(token) {
   return pl;
 }
 
-// --- Profanity filter (HU + EN). Basic but server-authoritative. ---
 const BAD = [
-  // Hungarian
-  'fasz','faszom','faszfej','geci','geci','picsa','picsába','kurva','kurvára','kurafi','buzi','buzeráns','szar','szaros','szarházi','baszd','baszás','baszni','baszom','bassza','baszott','rohadék','köcsög','kocsog','segg','seggfej','fasszopó','faszszopo','csicska','ribanc','kurvaanyád','anyádat','anyad','cigány','nigger','néger','negro','retkes','okádék',
-  // English
-  'fuck','fucker','fucking','motherfucker','shit','bullshit','bitch','asshole','dickhead','cunt','bastard','slut','whore','nigger','nigga','faggot','retard','wanker','prick','twat','pussy','cock'
+  'fasz','faszom','faszfej','geci','picsa','picsába','kurva','kurvára','kurafi','buzi','buzeráns','szar','szaros','szarházi','baszd','baszás','baszni','baszom','bassza','baszott','rohadék','köcsög','kocsog','segg','seggfej','fasszopó','faszszopo','csicska','ribanc','kurvaanyád','anyádat','nigger','néger','negro',
+  'fuck','fucker','fucking','motherfucker','shit','bullshit','bitch','asshole','dickhead','cunt','bastard','slut','whore','nigga','faggot','retard','wanker','prick','twat','pussy','cock'
 ];
 function normalize(s) {
-  return (s || '').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')          // strip accents
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[1!|]/g, 'i').replace(/0/g, 'o').replace(/3/g, 'e').replace(/4/g, 'a').replace(/5/g, 's').replace(/7/g, 't').replace(/@/g, 'a').replace(/\$/g, 's')
-    .replace(/(.)\1{2,}/g, '$1$1');                            // collapse 3+ repeats
+    .replace(/(.)\1{2,}/g, '$1$1');
 }
 function hasProfanity(text) {
   const n = normalize(text);
-  const collapsed = n.replace(/[^a-z]/g, '');                  // for spaced-out obfuscation
+  const collapsed = n.replace(/[^a-z]/g, '');
   const tokens = n.split(/[^a-z]+/).filter(Boolean);
   for (const w of BAD) {
     const bw = normalize(w).replace(/[^a-z]/g, '');
     if (!bw) continue;
     if (tokens.includes(bw)) return true;
-    if (bw.length >= 5 && collapsed.includes(bw)) return true; // catch obvious embeds for longer words
+    if (bw.length >= 5 && collapsed.includes(bw)) return true;
   }
   return false;
 }
@@ -58,13 +54,56 @@ exports.handler = async function (event) {
   if (!pl) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'auth' }) };
 
   const lgId = String(body.lgId || '');
+  if (!lgId) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'missing' }) };
+  const db = admin.firestore();
+  const chatRef = db.collection('vb2026data').doc('wc_chat');
+  const action = body.action || 'send';
+
+  // DELETE a message (admin any, or author own)
+  if (action === 'delete') {
+    const msgId = String(body.msgId || '');
+    try {
+      let ok = false;
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(chatRef);
+        const chat = snap.exists ? JSON.parse(snap.data().value) : {};
+        const arr = Array.isArray(chat[lgId]) ? chat[lgId] : [];
+        const m = arr.find(x => x.id === msgId);
+        if (!m) return;
+        if (!pl.adm && m.uid !== pl.uid) return;
+        chat[lgId] = arr.filter(x => x.id !== msgId);
+        tx.set(chatRef, { value: JSON.stringify(chat) });
+        ok = true;
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ ok }) };
+    } catch (e) { return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) }; }
+  }
+
+  // REPORT a message (flag for admin)
+  if (action === 'report') {
+    const msgId = String(body.msgId || '');
+    try {
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(chatRef);
+        const chat = snap.exists ? JSON.parse(snap.data().value) : {};
+        const arr = Array.isArray(chat[lgId]) ? chat[lgId] : [];
+        const m = arr.find(x => x.id === msgId);
+        if (!m) return;
+        m.reports = Array.isArray(m.reports) ? m.reports : [];
+        if (!m.reports.includes(pl.uid)) m.reports.push(pl.uid);
+        tx.set(chatRef, { value: JSON.stringify(chat) });
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    } catch (e) { return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) }; }
+  }
+
+  // SEND a message
   let text = String(body.text || '').trim();
-  if (!lgId || !text) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'missing' }) };
+  if (!text) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'missing' }) };
   if (text.length > 280) text = text.slice(0, 280);
   if (hasProfanity(text)) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'profanity' }) };
 
   try {
-    const db = admin.firestore();
     const lgSnap = await db.collection('vb2026data').doc('wc_lg').get();
     const leagues = lgSnap.exists ? JSON.parse(lgSnap.data().value) : [];
     const lg = leagues.find(l => String(l.id) === lgId);
@@ -76,18 +115,21 @@ exports.handler = async function (event) {
     const me = users.find(u => u.id === pl.uid);
     const dn = me ? (me.dn || me.un) : '?';
 
-    const chatRef = db.collection('vb2026data').doc('wc_chat');
+    let limited = false;
     const msg = { id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6), uid: pl.uid, dn, text, ts: Date.now() };
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(chatRef);
       const chat = snap.exists ? JSON.parse(snap.data().value) : {};
       const arr = Array.isArray(chat[lgId]) ? chat[lgId] : [];
+      const now = Date.now();
+      const mine = arr.filter(m => m.uid === pl.uid);
+      const last = mine[mine.length - 1];
+      if ((last && now - last.ts < 3000) || mine.filter(m => now - m.ts < 30000).length >= 6) { limited = true; return; }
       arr.push(msg);
-      chat[lgId] = arr.slice(-200); // keep last 200 per league
+      chat[lgId] = arr.slice(-200);
       tx.set(chatRef, { value: JSON.stringify(chat) });
     });
+    if (limited) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'toofast' }) };
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, msg }) };
-  } catch (e) {
-    return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) };
-  }
+  } catch (e) { return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) }; }
 };

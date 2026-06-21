@@ -1230,6 +1230,7 @@ async function doLogin(){
         return;
       }
       if(d&&d.ok===false&&d.error==='wrong'){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
+      if(d&&d.ok===false&&(d.error==='ratelimit'||d.error==='locked')){SS({authErr:S.lang==='en'?(d.error==='locked'?'Too many failed attempts. Try again later.':'Too many attempts — please wait a bit.'):(d.error==='locked'?'Túl sok hibás próbálkozás. Próbáld később.':'Túl sok próbálkozás — várj egy kicsit.'),authLoad:false});return;}
       // egyeb szerverhiba -> tartalek
     }
   }catch(e){/* halozat -> tartalek */}
@@ -1265,6 +1266,7 @@ async function doReg(){
         return;
       }
       if(d&&d.ok===false&&d.error==='taken'){SS({authErr:t('err_username_taken'),authLoad:false});return;}
+      if(d&&d.ok===false&&d.error==='ratelimit'){SS({authErr:S.lang==='en'?'Too many sign-ups from your network — please wait.':'Túl sok regisztráció a hálózatodról — várj egy kicsit.',authLoad:false});return;}
     }
   }catch(e){/* halozat -> tartalek */}
   // 2) TARTALEK: eredeti kliensoldali regisztracio
@@ -2961,10 +2963,39 @@ async function sendChat(lgId){
   try{
     const r=await fetch(AUTH_BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,lgId,text})});
     const d=await r.json();
-    if(!d.ok){SS({chatSending:false,chatErr:d.error==='profanity'?(en?'Message contains banned words.':'Az üzenet tiltott szót tartalmaz.'):(en?'Send failed: ':'Küldés sikertelen: ')+d.error});return;}
+    if(!d.ok){SS({chatSending:false,chatErr:d.error==='profanity'?(en?'Message contains banned words.':'Az üzenet tiltott szót tartalmaz.'):d.error==='toofast'?(en?'Slow down — too many messages.':'Lassíts — túl sok üzenet.'):(en?'Send failed: ':'Küldés sikertelen: ')+d.error});return;}
     SS({chatText:'',chatSending:false,chatErr:null});
     await refreshChat();
   }catch(e){SS({chatSending:false,chatErr:e.message});}
+}
+async function deleteChatMsg(lgId,msgId){
+  const en=S.lang==='en';
+  if(!confirm(en?'Delete this message?':'Törlöd ezt az üzenetet?'))return;
+  const tok=localStorage.getItem('wc_tok');if(!tok)return;
+  try{
+    const r=await fetch(AUTH_BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,action:'delete',lgId,msgId})});
+    const d=await r.json();if(d.ok)await refreshChat();else SS({chatErr:en?'Could not delete.':'Nem sikerült törölni.'});
+  }catch(e){SS({chatErr:e.message});}
+}
+async function reportChatMsg(lgId,msgId){
+  const en=S.lang==='en';
+  const tok=localStorage.getItem('wc_tok');if(!tok)return;
+  try{
+    const r=await fetch(AUTH_BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,action:'report',lgId,msgId})});
+    const d=await r.json();if(d.ok){await refreshChat();SS({chatErr:en?'✓ Reported — thanks.':'✓ Jelentve — köszi.'});}
+  }catch(e){SS({chatErr:e.message});}
+}
+async function restoreAutoBackup(){
+  const en=S.lang==='en';
+  if(!confirm(en?'Restore from the last automatic backup? This OVERWRITES current data.':'Visszaállítod a legutóbbi automatikus mentésből? Ez FELÜLÍRJA a jelenlegi adatokat.'))return;
+  SS({bkBusy:true,bkMsg:null});
+  const keys=['wc_u','wc_t','wc_r','wc_lg','wc_sp','wc_asp','wc_predict','wc_chat','wc_mt','wc_ko'];
+  try{
+    let n=0;
+    for(const k of keys){ const v=await sG('wc_bak_'+k,true); if(v!==undefined&&v!==null){ await sS(k,v,true); n++; } }
+    SS({bkBusy:false,bkMsg:(en?'✓ Restored ':'✓ Visszaállítva ')+n+(en?' keys. Reloading…':' kulcs. Újratöltés…')});
+    setTimeout(()=>location.reload(),1200);
+  }catch(e){SS({bkBusy:false,bkMsg:'⚠️ '+e.message});}
 }
 async function genRecoveryCode(){
   const tok=localStorage.getItem('wc_tok');if(!tok)return;
@@ -3737,12 +3768,21 @@ function rChat(lgId){
   const en=S.lang==='en';
   const msgs=(S.chat&&S.chat[lgId])||[];
   const uid=S.user.id;
+  const isAdmin=!!S.user.isAdmin;
   const rows=msgs.slice(-100).map(m=>{
     const mine=m.uid===uid;
+    const canDel=mine||isAdmin;
+    const reports=(m.reports&&m.reports.length)||0;
     const time=new Date(m.ts).toLocaleString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:userTz()});
+    const ctrl=`<div style="display:flex;gap:10px;margin-top:3px;font-size:12px;align-items:center">
+      ${!mine?`<span class="chat-report" data-mid="${m.id}" data-lgid="${lgId}" role="button" tabindex="0" style="cursor:pointer;color:rgba(var(--ink-rgb),.3)" title="${en?'Report':'Jelentés'}">⚑</span>`:''}
+      ${canDel?`<span class="chat-del" data-mid="${m.id}" data-lgid="${lgId}" role="button" tabindex="0" style="cursor:pointer;color:rgba(232,33,42,.55)" title="${en?'Delete':'Törlés'}">🗑</span>`:''}
+      ${isAdmin&&reports?`<span style="color:#e8212a;font-weight:700" title="${en?'Reports':'Jelentések'}">⚑${reports}</span>`:''}
+    </div>`;
     return `<div style="margin-bottom:8px;display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'}">
       <div style="font-size:10px;color:rgba(var(--ink-rgb),.4);margin-bottom:2px">${esc(m.dn)} · ${time}</div>
-      <div style="max-width:82%;background:${mine?'rgba(200,168,75,.18)':'rgba(var(--ink-rgb),.06)'};border:1px solid ${mine?'rgba(200,168,75,.3)':'var(--border)'};border-radius:10px;padding:7px 11px;font-size:13px;word-break:break-word;white-space:pre-wrap">${esc(m.text)}</div>
+      <div style="max-width:82%;background:${mine?'rgba(200,168,75,.18)':(reports&&isAdmin?'rgba(232,33,42,.1)':'rgba(var(--ink-rgb),.06)')};border:1px solid ${mine?'rgba(200,168,75,.3)':(reports&&isAdmin?'rgba(232,33,42,.4)':'var(--border)')};border-radius:10px;padding:7px 11px;font-size:13px;word-break:break-word;white-space:pre-wrap">${esc(m.text)}</div>
+      ${ctrl}
     </div>`;
   }).join('');
   return `<div style="margin-top:26px">
@@ -4003,6 +4043,7 @@ function rProfile(){
 
     <div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">🔑 ${S.lang==='en'?'Recovery code':'Visszaállító kód'}</div>
     <div style="background:var(--bg-card);padding:14px;margin-bottom:20px">
+      ${!S.user.recHash?`<div style="background:rgba(232,180,34,.12);border:1px solid rgba(232,180,34,.35);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px;color:var(--text-color)">⚠️ ${S.lang==='en'?"You don't have a recovery code yet — generate one so you can reset your password later.":'Még nincs visszaállító kódod — generálj egyet, hogy később vissza tudd állítani a jelszavad.'}</div>`:''}
       <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-bottom:12px;font-family:var(--font-bc);letter-spacing:.3px">${S.lang==='en'?'Generate a recovery code so you can reset your password if you forget it. A new code replaces the previous one.':'Generálj visszaállító kódot, amivel elfelejtett jelszó esetén újat adhatsz meg. Az új kód érvényteleníti a korábbit.'}</div>
       <button id="genRecBtn" class="btn-sm gold" style="font-size:11px">🔑 ${S.lang==='en'?'Generate new code':'Új kód generálása'}</button>
     </div>
@@ -4199,8 +4240,10 @@ function rAdmin(){
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="btn-sm gold" id="bkExport" ${S.bkBusy?'disabled':''}>${S.bkBusy?'⏳':'💾 '+(S.lang==='en'?'Download backup':'Mentés letöltése')}</button>
       <button class="btn-sm" id="bkImportBtn" ${S.bkBusy?'disabled':''}>📥 ${S.lang==='en'?'Restore…':'Visszatöltés…'}</button>
+      <button class="btn-sm" id="bkAutoRestore" ${S.bkBusy?'disabled':''}>🔄 ${S.lang==='en'?'Restore last auto-backup':'Auto-mentés visszaállítása'}</button>
       <input type="file" id="bkFile" accept="application/json,.json" style="display:none">
     </div>
+    <div style="margin-top:8px;font-size:11px;color:rgba(var(--ink-rgb),.4)">${S.lang==='en'?'An automatic snapshot is saved daily on the server.':'A szerver naponta automatikusan készít egy pillanatképet.'}</div>
     ${S.bkMsg?`<div style="margin-top:10px;font-size:12px;color:rgba(var(--ink-rgb),.7)">${S.bkMsg}</div>`:''}
   </div>
   <div class="sect">⚙️ Admin – Eredmények</div>
@@ -4529,6 +4572,9 @@ function bindMain(hw){
   if(_chatIn){_chatIn.addEventListener('input',e=>{S.chatText=e.target.value;});_chatIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('chatSend')?.click();}});}
   document.getElementById('chatSend')?.addEventListener('click',e=>{const ci=document.getElementById('chatInput');if(ci)S.chatText=ci.value;sendChat(e.currentTarget.dataset.lgid);});
   {const _cs=document.getElementById('chatScroll');if(_cs)_cs.scrollTop=_cs.scrollHeight;}
+  document.querySelectorAll('.chat-del').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;deleteChatMsg(t.dataset.lgid,t.dataset.mid);}));
+  document.querySelectorAll('.chat-report').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;reportChatMsg(t.dataset.lgid,t.dataset.mid);}));
+  document.getElementById('bkAutoRestore')?.addEventListener('click',restoreAutoBackup);
   document.getElementById('cookieOk')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','1');SS({cookieBanner:false});loadGA();});
   document.getElementById('cookieNo')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','0');SS({cookieBanner:false});});
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
