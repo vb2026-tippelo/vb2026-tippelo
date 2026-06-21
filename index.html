@@ -590,8 +590,20 @@ button[data-predko].wk-win .wk-tnm{color:#2E9E5A!important}
 .pred-champion{margin-top:10px;background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.4);border-left:3px solid #C8A84B;padding:12px 16px;font-family:var(--font-bc);font-weight:700;font-size:16px;letter-spacing:.5px;text-transform:uppercase;color:#C8A84B;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
 /* ===== NOTIF / COOKIE ===== */
-.cookie-bar{position:fixed;bottom:0;left:0;right:0;background:#0A0A0A;border-top:3px solid #C8A84B;padding:14px 20px;z-index:300;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.cookie-bar p{font-size:12px;color:rgba(255,255,255,.7);font-family:var(--font-b)}
+.cookie-banner{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:660px;z-index:300;background:var(--chrome-bg);border:1px solid rgba(200,168,75,.4);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.4);padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;animation:ckUp .45s cubic-bezier(.16,1,.3,1)}
+@keyframes ckUp{from{opacity:0;transform:translateX(-50%) translateY(22px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.cookie-banner .ck-ico{font-size:26px;line-height:1;flex-shrink:0}
+.cookie-banner p{margin:0;flex:1;min-width:230px;font-family:var(--font-b);font-size:12.5px;line-height:1.55;color:rgba(var(--chrome-ink),.72)}
+.cookie-banner p b{color:rgba(var(--chrome-ink),.92);font-weight:700}
+.cookie-banner a{color:#C8A84B;font-weight:600;cursor:pointer;text-decoration:none;border-bottom:1px solid rgba(200,168,75,.4)}
+.cookie-banner a:hover{border-bottom-color:#C8A84B}
+.ck-actions{display:flex;gap:10px;flex-shrink:0;margin-left:auto}
+.ck-btn{font-family:var(--font-bc);font-weight:600;letter-spacing:.5px;text-transform:uppercase;font-size:13px;padding:9px 18px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.15s}
+.ck-decline{background:transparent;border-color:rgba(var(--chrome-ink),.2);color:rgba(var(--chrome-ink),.6)}
+.ck-decline:hover{border-color:rgba(var(--chrome-ink),.45);color:rgba(var(--chrome-ink),.85)}
+.ck-accept{background:#C8A84B;color:#0A0A0A;border-color:#C8A84B}
+.ck-accept:hover{background:#d8b95c;box-shadow:0 4px 14px rgba(200,168,75,.35)}
+@media(max-width:540px){.cookie-banner{flex-direction:column;align-items:stretch;text-align:center;gap:12px}.cookie-banner .ck-ico{display:none}.ck-actions{margin-left:0;justify-content:center}.ck-btn{flex:1}}
 .notif-btn{padding:6px 14px;font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
 
 /* ===== PROFILE ===== */
@@ -1105,10 +1117,39 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all'
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
+
+// ---- Google Analytics (GA4) – csak suti-elfogadas (cookieOkGA==='1') utan tolt be ----
+let _gaLoaded=false;
+function loadGA(){
+  if(_gaLoaded||localStorage.getItem('cookieOkGA')!=='1')return;
+  _gaLoaded=true;
+  const id='G-L8ZFHFP02T';
+  const sc=document.createElement('script');sc.async=true;sc.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(sc);
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){dataLayer.push(arguments);};
+  gtag('js',new Date());
+  gtag('config',id);
+}
+
+// ---- Goallovolista betoltese a szerverrol (inkrementalis, gyorsitotarazott) ----
+async function loadScorers(depth){
+  depth=depth||0;
+  if(S.scorersLoading&&depth===0)return;
+  SS({scorersLoading:true});
+  try{
+    const r=await fetch(AUTH_BASE+'/scorers');
+    if(r.ok){const d=await r.json();if(d&&d.ok){
+      SS({scorers:d.scorers||[],scorersLoaded:true,scorersUpdatedAt:d.updatedAt,scorersLoading:false});
+      if(d.pending>0&&depth<4){setTimeout(()=>loadScorers(depth+1),1500);}
+      return;
+    }}
+  }catch(e){}
+  SS({scorersLoading:false});
+}
 
 async function init(){
   const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds,wcVenues]=await Promise.all([
@@ -1662,13 +1703,32 @@ function exportPredImage(){
   } else {
     const colW=(W-2*pad)/5;
     const labels=S.lang==='en'?['R32','R16','QF','SF','Final']:['32 között','16 között','Negyeddöntő','Elődöntő','Döntő'];
+    // elore kiszamolt fuggoleges kozeppontok koronkent (igy a parok pontosan illeszkednek)
+    const centers=rounds.map(rd=>{
+      const N=rd.fns.length,slot=bracketH/N;
+      return rd.fns.map((_,i)=>bracketTop+28+i*slot+slot/2);
+    });
+    // osszekoto "konyok" vonalak a korok kozott (eloszor, hogy a dobozok rea rajzolodjanak)
+    ctx.strokeStyle='rgba(200,168,75,.5)';ctx.lineWidth=1.5;
+    for(let ri=0;ri<rounds.length-1;ri++){
+      const rightEdge=pad+(ri+1)*colW-6,midX=pad+(ri+1)*colW,nextLeft=pad+(ri+1)*colW+6;
+      for(let k=0;k<rounds[ri+1].fns.length;k++){
+        const ca=centers[ri][2*k],cb=centers[ri][2*k+1],cn=centers[ri+1][k];
+        ctx.beginPath();
+        ctx.moveTo(rightEdge,ca);ctx.lineTo(midX,ca);
+        ctx.moveTo(rightEdge,cb);ctx.lineTo(midX,cb);
+        ctx.moveTo(midX,ca);ctx.lineTo(midX,cb);
+        ctx.moveTo(midX,cn);ctx.lineTo(nextLeft,cn);
+        ctx.stroke();
+      }
+    }
     rounds.forEach((rd,ri)=>{
       const cx=pad+ri*colW;
-      ctx.fillStyle='#C8A84B';ctx.font='bold 12px sans-serif';ctx.fillText(labels[ri],cx+6,bracketTop+12);
-      const N=rd.fns.length,slot=bracketH/N,bw=colW-12;
+      ctx.fillStyle='#C8A84B';ctx.font='bold 12px sans-serif';ctx.textAlign='left';ctx.fillText(labels[ri],cx+6,bracketTop+12);
+      const bw=colW-12;
       rd.fns.forEach((fn,i)=>{
         const teams=predTeamsForFifaNum(fn,r32,cache);
-        const cyc=bracketTop+28+i*slot+slot/2,boxY=cyc-19;
+        const cyc=centers[ri][i],boxY=cyc-19;
         ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(cx+6,boxY,bw,38);
         if(teams){
           const pick=S.predKO[fn];
@@ -1960,8 +2020,8 @@ function rMain(hw){
     <div class="bc-user">
       ${langSwitcher()}
       <button onclick="toggleTheme()" title="${t('theme_toggle_title')}" style="background:rgba(var(--chrome-ink),.06);border:1px solid rgba(var(--chrome-ink),.14);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${S.theme==='light'?'🌙':'☀️'}</button>
-      <div class="bc-uinfo"><div>${S.user.dn}</div><div style="color:rgba(var(--chrome-ink),.3);font-size:9px">🏅 ${S.view==='leaderboard'?'ranglista':'tippelő'}</div></div>
-      <div class="bc-av">${initials}</div>
+      <div class="bc-uinfo" data-v="profile" style="cursor:pointer" title="${S.lang==='en'?'Profile':'Profil'}"><div>${S.user.dn}</div><div style="color:rgba(var(--chrome-ink),.3);font-size:9px">🏅 ${S.view==='leaderboard'?'ranglista':'tippelő'}</div></div>
+      <div class="bc-av" data-v="profile" style="cursor:pointer" title="${S.lang==='en'?'Profile':'Profil'}">${initials}</div>
     </div>
   </div>
   <nav class="mobile-nav">
@@ -2487,6 +2547,29 @@ function rCard(m){
   </div>`;
 }
 
+function rScorers(){
+  const sc=S.scorers||[];
+  const T=lbl=>S.lang==='en'?lbl[1]:lbl[0];
+  const head=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px"><div style="font-family:var(--font-bc);font-weight:700;font-size:15px;letter-spacing:.5px;text-transform:uppercase;color:rgb(var(--ink-rgb))">⚽ ${T(['Góllövőlista','Top scorers'])}</div>${S.scorersUpdatedAt?`<div style="font-size:9px;color:rgba(var(--ink-rgb),.35);font-family:var(--font-bc)">${T(['frissítve','updated'])}: ${new Date(S.scorersUpdatedAt).toLocaleString(S.lang==='en'?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}</div>`;
+  const wrap=inner=>`<div style="margin-top:18px;background:var(--bg-card);border:1px solid rgba(var(--ink-rgb),.1);border-radius:14px;padding:16px 18px">${head}${inner}</div>`;
+  if(!sc.length){
+    if(!S.scorersLoaded)return wrap(`<div style="font-size:12px;color:rgba(var(--ink-rgb),.4);font-family:var(--font-b)">${T(['Betöltés…','Loading…'])}</div>`);
+    return '';
+  }
+  const top=sc.slice(0,20);
+  const rows=top.map((p,i)=>{
+    const rc=i===0?'#C8A84B':i<3?'rgba(200,168,75,.75)':'rgba(var(--ink-rgb),.4)';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(var(--ink-rgb),.06)">
+      <span style="width:20px;text-align:center;font-family:var(--font-bc);font-weight:700;font-size:13px;color:${rc}">${i+1}</span>
+      <span style="font-size:16px">${teamFlag(p.team)}</span>
+      <span style="flex:1;min-width:0;font-family:var(--font-b);font-size:13px;color:rgb(var(--ink-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}<span style="color:rgba(var(--ink-rgb),.4);font-size:11px"> · ${teamName(p.team)}</span></span>
+      ${p.assists?`<span title="${T(['gólpassz','assists'])}" style="font-size:11px;color:rgba(var(--ink-rgb),.45);font-family:var(--font-bc);font-weight:600">${p.assists}A</span>`:''}
+      <span style="font-family:var(--font-bc);font-weight:800;font-size:16px;color:#C8A84B;min-width:22px;text-align:right">${p.goals}</span>
+      <span style="font-size:10px;color:rgba(var(--ink-rgb),.35);font-family:var(--font-bc);width:24px">${T(['gól','goal'])}</span>
+    </div>`;
+  }).join('');
+  return wrap(`${rows}<div style="margin-top:8px;font-size:9.5px;color:rgba(var(--ink-rgb),.3);font-family:var(--font-b)">${T(['Forrás: World Cup 2026 Live API','Source: World Cup 2026 Live API'])}</div>`);
+}
 function rStandings(){
   const eff=(S.stMode==='official')?S.results:getEffectiveResults();
   if(!Object.keys(eff).length) return `<div class="empty" style="padding:60px 20px;text-align:center"><div style="font-family:var(--font-bc);font-size:48px;font-weight:900;color:rgba(var(--ink-rgb),.1);letter-spacing:-2px;margin-bottom:12px">VB 2026</div><div style="font-family:var(--font-bc);font-size:14px;color:rgba(var(--ink-rgb),.3);letter-spacing:1px;text-transform:uppercase">Még nincs eredmény</div></div>`;
@@ -2689,7 +2772,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <h3>Harmadik fél sütik</h3>
 <p><b>Google Firebase</b> – az adatbázis-kapcsolathoz szükséges munkamenet azonosítók. Google adatvédelmi tájékoztató: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></p>
 <h3>Analitika</h3>
-<p>Az oldal semmilyen analitikai vagy nyomkövető sütit nem használ (nincs Google Analytics, Meta Pixel stb.).</p>
+<p>Az oldal a süti-banner <b>elfogadása esetén Google Analytics (GA4)</b> analitikát használ a látogatottság anonim méréséhez, ami a fejlesztést segíti. A GA <b>kizárólag a hozzájárulásod után</b> töltődik be; ha elutasítod, nem indul el. Google adatvédelmi tájékoztató: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></p>
 <h3>Kezelés</h3>
 <p>A LocalStorage adatok a böngésző beállításaiban törölhetők. Ez a kijelentkezést és az összes helyi beállítás elvesztését eredményezi.</p>`
   },
@@ -2741,8 +2824,12 @@ function rLegal(){
 }
 function rCookieBanner(){
   return `<div class="cookie-banner">
-    <p>🍪 Ez az oldal LocalStorage-ot használ a működéshez. Részletek: <a onclick="SS({legalModal:'cookie',cookieBanner:false})">Cookie tájékoztató</a></p>
-    <button class="btn-green" id="cookieOk" style="padding:8px 18px;font-size:13px;white-space:nowrap">Rendben</button>
+    <div class="ck-ico">🍪</div>
+    <p>Ez az oldal a működéshez LocalStorage-ot, elfogadás esetén pedig <b>Google Analytics</b> sütit használ a látogatottság anonim méréséhez. Részletek: <a onclick="SS({legalModal:'cookie',cookieBanner:false})">Cookie tájékoztató</a></p>
+    <div class="ck-actions">
+      <button class="ck-btn ck-decline" id="cookieNo">Elutasítom</button>
+      <button class="ck-btn ck-accept" id="cookieOk">Elfogadom</button>
+    </div>
   </div>`;
 }
 const LOSER_SOURCES={103:[101,102]};
@@ -2984,6 +3071,7 @@ function wkBox(fn,cy,MH,MW,isFinal){
       <div class="wk-sep"></div>
       <div class="wk-team${win==='away'?' wk-win':''}${isTBD?' wk-slot':''}">${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
     </div>
+    ${rScorers()}
   </div>`;
 }
 function bkBox(m){
@@ -3074,7 +3162,8 @@ function rBracket(){
       </div>
     </div>
   </div>
-  ${rBracketMobile()}`;}
+  ${rBracketMobile()}
+  ${rScorers()}`;}
 
 function rBracketMobile(){
   const rounds=[
@@ -4029,6 +4118,7 @@ function bindMain(hw){
   document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',e=>{
     const v=e.currentTarget.dataset.v;
     if(v)SS({view:v,moreMenu:false});
+    if(v==='standings'||v==='bracket')loadScorers();
   }));
   document.querySelector('[data-vmenu="more"]')?.addEventListener('click',()=>SS({moreMenu:true}));
   document.querySelectorAll('[data-occlose]').forEach(el=>el.addEventListener('click',e=>{if(e.target===e.currentTarget)SS({moreMenu:false});}));
@@ -4186,7 +4276,8 @@ function bindMain(hw){
   document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',e=>SS({legalModal:e.currentTarget.dataset.legal})));
   document.getElementById('legalCl')?.addEventListener('click',()=>SS({legalModal:null}));
   document.getElementById('legalOv')?.addEventListener('click',e=>{if(e.target.id==='legalOv')SS({legalModal:null});});
-  document.getElementById('cookieOk')?.addEventListener('click',()=>{localStorage.setItem('cookieOk','1');SS({cookieBanner:false});});
+  document.getElementById('cookieOk')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','1');SS({cookieBanner:false});loadGA();});
+  document.getElementById('cookieNo')?.addEventListener('click',()=>{localStorage.setItem('cookieOkGA','0');SS({cookieBanner:false});});
   document.querySelectorAll('[data-explb]').forEach(b=>b.addEventListener('click',e=>{
     const tid=e.currentTarget.dataset.explb;
     SS({expandLb:S.expandLb===tid?null:tid});
@@ -4338,7 +4429,7 @@ setInterval(async()=>{
   }catch(e){}
 },30000);
 
-_r=render;render();init();
+_r=render;render();init();loadGA();loadScorers();
 </script>
 </body>
 </html>
