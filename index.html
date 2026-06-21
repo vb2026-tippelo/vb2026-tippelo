@@ -68,7 +68,7 @@
 }
 
 /* ===== DARK MODE ===== */
-body.dark-mode{
+.dark-mode{
   --bg-page:#111111;
   --bg-page-grad:#111111;
   --bg-card:#1C1C1C;
@@ -84,76 +84,76 @@ body.dark-mode{
   --std-play:rgba(200,168,75,.15);
   --std-out:rgba(204,41,41,.1);
 }
-body.dark-mode .bc-center{background:#111111}
-body.dark-mode .bc-sidebar-r{background:#161616;border-left-color:rgba(255,255,255,.06)}
-body.dark-mode .bc-center,
-body.dark-mode .bc-center *:not([style*="color:#C8A84B"]):not([style*="color:#2E9E5A"]):not([style*="color:#CC2929"]):not([style*="color:#3EAD6A"]):not(.ptag){
+.dark-mode .bc-center{background:#111111}
+.dark-mode .bc-sidebar-r{background:#161616;border-left-color:rgba(255,255,255,.06)}
+.dark-mode .bc-center,
+.dark-mode .bc-center *:not([style*="color:#C8A84B"]):not([style*="color:#2E9E5A"]):not([style*="color:#CC2929"]):not([style*="color:#3EAD6A"]):not(.ptag){
   color:var(--text-color);
 }
-body.dark-mode [style*="background:#fff"],
-body.dark-mode [style*="background:#FFFFFF"],
-body.dark-mode [style*="background:#F2F0EB"],
-body.dark-mode [style*="background:#FFFBF2"],
-body.dark-mode [style*="background:#F7F5F0"],
-body.dark-mode [style*="background:#FFFBF0"],
-body.dark-mode [style*="background:var(--bg-card)"],
-body.dark-mode [style*="background:var(--bg-page)"]{
+.dark-mode [style*="background:#fff"],
+.dark-mode [style*="background:#FFFFFF"],
+.dark-mode [style*="background:#F2F0EB"],
+.dark-mode [style*="background:#FFFBF2"],
+.dark-mode [style*="background:#F7F5F0"],
+.dark-mode [style*="background:#FFFBF0"],
+.dark-mode [style*="background:var(--bg-card)"],
+.dark-mode [style*="background:var(--bg-page)"]{
   background:var(--bg-card) !important;
 }
-body.dark-mode [style*="color:#0A0A0A"]{color:var(--text-color) !important}
-body.dark-mode [style*="color:rgba(10,10,10"]{color:var(--text-color) !important}
-body.dark-mode .sbox{background:#1C1C1C}
-body.dark-mode .inp,.dark-mode .inp-light{background:#1C1C1C;border-color:rgba(255,255,255,.12);color:var(--text-color)}
-body.dark-mode .mcard{background:#1C1C1C}
-body.dark-mode .mc-inp{background:#161616;border-top-color:rgba(255,255,255,.08)}
-body.dark-mode .modal-box{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
-body.dark-mode .lg-card,.dark-mode .fun-card,.dark-mode .pre-card{background:#1C1C1C}
+.dark-mode [style*="color:#0A0A0A"]{color:var(--text-color) !important}
+.dark-mode [style*="color:rgba(10,10,10"]{color:var(--text-color) !important}
+.dark-mode .sbox{background:#1C1C1C}
+.dark-mode .inp,.dark-mode .inp-light{background:#1C1C1C;border-color:rgba(255,255,255,.12);color:var(--text-color)}
+.dark-mode .mcard{background:#1C1C1C}
+.dark-mode .mc-inp{background:#161616;border-top-color:rgba(255,255,255,.08)}
+.dark-mode .modal-box{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
+.dark-mode .lg-card,.dark-mode .fun-card,.dark-mode .pre-card{background:#1C1C1C}
 /* dark-mode: osztályból színezett, középső oszlopban renderelt komponensek (a szöveg krémre vált, ezért a hátteret is sötétíteni kell) */
-body.dark-mode .mc-top{background:#1C1C1C}
-body.dark-mode .mcard-active .mc-top{background:#241F12}
-body.dark-mode .mcard+.mcard{border-top-color:rgba(255,255,255,.07)}
-body.dark-mode .mc-date{background:#161616;border-top-color:rgba(255,255,255,.07)}
-body.dark-mode .mc-grp{background:#2A2A2A}
-body.dark-mode .mc-odds-pill{background:#222222;border-color:rgba(255,255,255,.1)}
-body.dark-mode .lb-card.me{background:#241F12}
-body.dark-mode .wk-box{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
-body.dark-mode .wk-hdr{background:#161616;border-bottom-color:rgba(255,255,255,.07)}
-body.dark-mode .wk-sep{background:rgba(255,255,255,.08)}
-body.dark-mode .bk-mob-card{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
-body.dark-mode .pred-third-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
-body.dark-mode .pred-third-btn.selected{background:#C8A84B;color:#0A0A0A !important}
-body.dark-mode .pred-third-btn.picked{background:rgba(46,158,90,.24);border-color:#2E9E5A;color:#43c97a !important}
+.dark-mode .mc-top{background:#1C1C1C}
+.dark-mode .mcard-active .mc-top{background:#241F12}
+.dark-mode .mcard+.mcard{border-top-color:rgba(255,255,255,.07)}
+.dark-mode .mc-date{background:#161616;border-top-color:rgba(255,255,255,.07)}
+.dark-mode .mc-grp{background:#2A2A2A}
+.dark-mode .mc-odds-pill{background:#222222;border-color:rgba(255,255,255,.1)}
+.dark-mode .lb-card.me{background:#241F12}
+.dark-mode .wk-box{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
+.dark-mode .wk-hdr{background:#161616;border-bottom-color:rgba(255,255,255,.07)}
+.dark-mode .wk-sep{background:rgba(255,255,255,.08)}
+.dark-mode .bk-mob-card{background:#1C1C1C;border-color:rgba(255,255,255,.1)}
+.dark-mode .pred-third-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
+.dark-mode .pred-third-btn.selected{background:#C8A84B;color:#0A0A0A !important}
+.dark-mode .pred-third-btn.picked{background:rgba(46,158,90,.24);border-color:#2E9E5A;color:#43c97a !important}
 /* dark-mode: osztály-akcentek visszaállítása (a széles .bc-center szabály különben krémre váltaná) */
-body.dark-mode .bc-center .mc-tip-v,
-body.dark-mode .bc-center .mc-tip-open,
-body.dark-mode .bc-center .mc-score-time,
-body.dark-mode .bc-center .mc-res,
-body.dark-mode .bc-center .bc-sec-more,
-body.dark-mode .bc-center .lg-code,
-body.dark-mode .bc-center .btn-gold,
-body.dark-mode .bc-center .btn-sm.gold{color:#C8A84B !important}
-body.dark-mode .bc-center .mc-tip-p,
-body.dark-mode .bc-center .mc-saved,
-body.dark-mode .bc-center .btn-green{color:#3EAD6A !important}
-body.dark-mode .bc-center .pred-group-h,
-body.dark-mode .bc-center .pred-grp-tag,
-body.dark-mode .bc-center .pred-ko-btn.picked,
-body.dark-mode .bc-center .pred-champion{color:#C8A84B !important}
-body.dark-mode .bc-center .pred-rank-badge.r1{color:#fff !important}
-body.dark-mode .bc-center .pred-rank-badge.r2{color:#fff !important}
-body.dark-mode .bc-center .pred-rank-badge.r3{color:#0A0A0A !important}
-body.dark-mode .bc-center .pred-rank-badge.r4{color:#fff !important}
+.dark-mode .bc-center .mc-tip-v,
+.dark-mode .bc-center .mc-tip-open,
+.dark-mode .bc-center .mc-score-time,
+.dark-mode .bc-center .mc-res,
+.dark-mode .bc-center .bc-sec-more,
+.dark-mode .bc-center .lg-code,
+.dark-mode .bc-center .btn-gold,
+.dark-mode .bc-center .btn-sm.gold{color:#C8A84B !important}
+.dark-mode .bc-center .mc-tip-p,
+.dark-mode .bc-center .mc-saved,
+.dark-mode .bc-center .btn-green{color:#3EAD6A !important}
+.dark-mode .bc-center .pred-group-h,
+.dark-mode .bc-center .pred-grp-tag,
+.dark-mode .bc-center .pred-ko-btn.picked,
+.dark-mode .bc-center .pred-champion{color:#C8A84B !important}
+.dark-mode .bc-center .pred-rank-badge.r1{color:#fff !important}
+.dark-mode .bc-center .pred-rank-badge.r2{color:#fff !important}
+.dark-mode .bc-center .pred-rank-badge.r3{color:#0A0A0A !important}
+.dark-mode .bc-center .pred-rank-badge.r4{color:#fff !important}
 /* dark-mode: fekete keretek/aláhúzások láthatóvá tétele sötét háttéren */
-body.dark-mode .sect,
-body.dark-mode .bc-sec{border-bottom-color:rgba(255,255,255,.15)}
-body.dark-mode .btn-sm{border-color:rgba(255,255,255,.25)}
-body.dark-mode .btn-sm:hover{background:rgba(255,255,255,.1)}
-body.dark-mode .modal-title{color:var(--text-color);border-bottom-color:rgba(255,255,255,.2)}
+.dark-mode .sect,
+.dark-mode .bc-sec{border-bottom-color:rgba(255,255,255,.15)}
+.dark-mode .btn-sm{border-color:rgba(255,255,255,.25)}
+.dark-mode .btn-sm:hover{background:rgba(255,255,255,.1)}
+.dark-mode .modal-title{color:var(--text-color);border-bottom-color:rgba(255,255,255,.2)}
 /* dark-mode: ligaszűrő fehér sáv + figyelmeztető doboz láthatóvá tétele */
-body.dark-mode .lg-sel-row{background:#1C1C1C;border:1px solid rgba(255,255,255,.16);border-radius:10px}
-body.dark-mode .lg-sel-row .pill{border-color:rgba(255,255,255,.22);color:rgba(255,255,255,.6)}
-body.dark-mode .lg-sel-row .pill.on{border-color:#C8A84B;color:#C8A84B;background:rgba(200,168,75,.12)}
-body.dark-mode .note-bar{background:#1C1C1C;border:1px solid rgba(255,255,255,.08);border-left:3px solid #C8A84B}
+.dark-mode .lg-sel-row{background:#1C1C1C;border:1px solid rgba(255,255,255,.16);border-radius:10px}
+.dark-mode .lg-sel-row .pill{border-color:rgba(255,255,255,.22);color:rgba(255,255,255,.6)}
+.dark-mode .lg-sel-row .pill.on{border-color:#C8A84B;color:#C8A84B;background:rgba(200,168,75,.12)}
+.dark-mode .note-bar{background:#1C1C1C;border:1px solid rgba(255,255,255,.08);border-left:3px solid #C8A84B}
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b),system-ui,sans-serif;min-height:100vh}
@@ -270,7 +270,7 @@ body{background:var(--bg-page);color:var(--text-color);font-family:var(--font-b)
 .match-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-items:start}
 .match-grid .mcard{border:1px solid var(--border);border-left:3px solid transparent;border-radius:12px;overflow:hidden}
 .match-grid .mcard+.mcard{border-top:1px solid var(--border)}
-body.dark-mode .match-grid .mcard{border-color:rgba(255,255,255,.08)}
+.dark-mode .match-grid .mcard{border-color:rgba(255,255,255,.08)}
 @media(max-width:1100px){.match-grid{grid-template-columns:1fr;gap:10px}.match-grid .mcard{border-radius:12px;border:1px solid var(--border);border-left:3px solid transparent;overflow:hidden}}
 .grp-mini-std{margin-bottom:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .grp-mini-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;align-items:start}
@@ -286,8 +286,8 @@ body.dark-mode .match-grid .mcard{border-color:rgba(255,255,255,.08)}
 .gms-team{display:flex;align-items:center;gap:7px;min-width:0;text-transform:uppercase;letter-spacing:.3px}
 .gms-tnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gms-pts{font-weight:900;color:var(--c-gold)}
-body.dark-mode .grp-mini-std{border-color:rgba(255,255,255,.08)}
-body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
+.dark-mode .grp-mini-std{border-color:rgba(255,255,255,.08)}
+.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .mcard{background:#fff;border-left:3px solid transparent;cursor:pointer;transition:border-color .12s}
 .mcard.locked{opacity:1}
 .mcard+.mcard{border-top:1px solid var(--border)}
@@ -408,16 +408,16 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .p3{background:rgba(10,10,10,.07);color:#444}
 .p1{background:rgba(10,10,10,.04);color:#888}
 .p0{background:rgba(204,41,41,.08);color:#993333}
-body.dark-mode .p8{background:rgba(200,168,75,.22);color:#E0C56F}
-body.dark-mode .p5{background:rgba(62,173,106,.2);color:#5FD494}
-body.dark-mode .p3{background:rgba(255,255,255,.09);color:#D8D2C6}
-body.dark-mode .p1{background:rgba(255,255,255,.05);color:#A8A29A}
-body.dark-mode .p0{background:rgba(204,41,41,.2);color:#FF8A80}
-body.dark-mode .prof-av-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
-body.dark-mode .prof-av-btn.sel{background:#241F12;border-color:#C8A84B}
-body.dark-mode .sg-row{border-bottom-color:rgba(255,255,255,.07)}
-body.dark-mode .h2h-row{border-bottom-color:rgba(255,255,255,.08)}
-body.dark-mode .lb-wrap{background:rgba(255,255,255,.08)}
+.dark-mode .p8{background:rgba(200,168,75,.22);color:#E0C56F}
+.dark-mode .p5{background:rgba(62,173,106,.2);color:#5FD494}
+.dark-mode .p3{background:rgba(255,255,255,.09);color:#D8D2C6}
+.dark-mode .p1{background:rgba(255,255,255,.05);color:#A8A29A}
+.dark-mode .p0{background:rgba(204,41,41,.2);color:#FF8A80}
+.dark-mode .prof-av-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
+.dark-mode .prof-av-btn.sel{background:#241F12;border-color:#C8A84B}
+.dark-mode .sg-row{border-bottom-color:rgba(255,255,255,.07)}
+.dark-mode .h2h-row{border-bottom-color:rgba(255,255,255,.08)}
+.dark-mode .lb-wrap{background:rgba(255,255,255,.08)}
 
 /* ===== STANDINGS ===== */
 .std-groups-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(var(--ink-rgb),.1)}
@@ -1746,7 +1746,7 @@ function readTopscorer(id){
 
 async function toggleTheme(){
   const nt=S.theme==='light'?'dark':'light';
-  document.body.classList.toggle('dark-mode',nt==='dark');
+  document.documentElement.classList.toggle('dark-mode',nt==='dark');
   SS({theme:nt});
   await sS('wc_theme',nt,false);
 }
@@ -1783,9 +1783,9 @@ function bindBracketResize(){
 }
 function render(){
   try{
-    document.body.classList.toggle('dark-mode',S.theme==='dark');
+    document.documentElement.classList.toggle('dark-mode',S.theme==='dark');
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content',S.theme==='dark'?'#0A0A0A':'#FFFFFF');
-    if(location.hash.indexOf('dbg')>=0){try{let d=document.getElementById('__dbg');if(!d){d=document.createElement('div');d.id='__dbg';d.style.cssText='position:fixed;left:6px;bottom:80px;z-index:99999;font:11px/1.5 monospace;background:rgba(0,0,0,.85);color:#0f0;padding:7px 9px;border-radius:6px;max-width:75vw;white-space:pre-wrap';d.onclick=function(){d.remove();};document.body.appendChild(d);}let ls='-';try{ls=localStorage.getItem('wc_theme');}catch(e){ls='ERR';}const sys=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';d.textContent='BUILD-2 (kopp=elrejt)\ntheme='+S.theme+'\nbody.dark-mode='+(document.body.classList.contains('dark-mode')?'IGEN':'nem')+'\nLS wc_theme='+ls+'\nrendszer='+sys+'\nszelesseg='+window.innerWidth;}catch(e){}}
+    if(location.hash.indexOf('dbg')>=0){try{let d=document.getElementById('__dbg');if(!d){d=document.createElement('div');d.id='__dbg';d.style.cssText='position:fixed;left:6px;bottom:80px;z-index:99999;font:11px/1.5 monospace;background:rgba(0,0,0,.85);color:#0f0;padding:7px 9px;border-radius:6px;max-width:75vw;white-space:pre-wrap';d.onclick=function(){d.remove();};document.body.appendChild(d);}let ls='-';try{ls=localStorage.getItem('wc_theme');}catch(e){ls='ERR';}const sys=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';d.textContent='BUILD-3 (kopp=elrejt)\ntheme='+S.theme+'\nhtml.dark-mode='+(document.documentElement.classList.contains('dark-mode')?'IGEN':'nem')+'\nLS wc_theme='+ls+'\nrendszer='+sys+'\nszelesseg='+window.innerWidth;}catch(e){}}
     const root=document.getElementById('root');
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
     if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
@@ -3568,7 +3568,7 @@ function rProfile(){
   const u=S.user,uid=u.id,eff=getEffectiveResults(),r=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,DS);
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
   const initials=(u.dn||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-  const isDark=document.body.classList.contains('dark-mode');
+  const isDark=document.documentElement.classList.contains('dark-mode');
 
   const statCells=[
     {l:'Leadott',v:r.tipped,ico:'📝'},{l:'Értékelt',v:r.fin,ico:'✅'},
