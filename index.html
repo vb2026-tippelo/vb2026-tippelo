@@ -1149,6 +1149,53 @@ function rPointsTrend(uid,eff){
     </div>
   </div>`;
 }
+function rankTrend(uid){
+  const eff=getEffectiveResults();
+  const users=S.users.filter(u=>!u.isAdmin);
+  const evd=ALL.filter(m=>{const r=eff[m.id];return r&&!r.live;}).map(m=>({m,d:(S.ko[m.id]||m.koDefault||m.date||'').slice(0,10)})).filter(x=>x.d).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+  if(!evd.length)return [];
+  const dates=[],byDate={};
+  evd.forEach(({m,d})=>{if(!byDate[d]){byDate[d]=[];dates.push(d);}byDate[d].push(m);});
+  const cum={};users.forEach(u=>cum[u.id]=0);
+  const trend=[];
+  dates.forEach(d=>{
+    byDate[d].forEach(m=>{const r=eff[m.id];users.forEach(u=>{const tip=S.tips[`${u.id}_${m.id}`];if(tip)cum[u.id]+=calcPts(tip,r,m.stage)||0;});});
+    const my=cum[uid]||0;let rank=1;users.forEach(u=>{if(u.id!==uid&&(cum[u.id]||0)>my)rank++;});
+    trend.push({d,rank});
+  });
+  return trend;
+}
+function rRankTrend(uid,chrome){
+  const en=S.lang==='en';
+  const tr=rankTrend(uid);
+  if(tr.length<2)return '';
+  const ranks=tr.map(p=>p.rank),minR=Math.min(...ranks),maxR=Math.max(...ranks),range=(maxR-minR)||1;
+  const W=300,H=96,pad=10,stepX=(W-pad*2)/(tr.length-1);
+  const x=i=>pad+i*stepX,y=r=>maxR===minR?H/2:pad+((r-minR)/range)*(H-pad*2);
+  const line=tr.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.rank).toFixed(1)}`).join(' ');
+  const dots=tr.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.rank).toFixed(1)}" r="2.3" fill="#C8A84B"/>`).join('');
+  const startR=tr[0].rank,curR=tr[tr.length-1].rank,delta=startR-curR;
+  const dHtml=delta>0?`<span style="color:#2E9E5A">▲${delta}</span>`:delta<0?`<span style="color:#e8212a">▼${-delta}</span>`:`<span style="opacity:.5">●</span>`;
+  if(chrome){
+    return `<div style="margin-top:16px">
+      <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>${en?'Rank trend':'Helyezésed alakulása'}</span><span style="font-size:11px;color:rgba(var(--chrome-ink),.6)">${startR}. → ${curR}. ${dHtml}</span></div>
+      <div style="background:var(--chrome-elev);border-radius:8px;padding:8px">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;height:80px">
+          <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
+        </svg>
+      </div>
+    </div>`;
+  }
+  return `<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">📉 ${en?'Rank over time':'Helyezés alakulása'}</div>
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:24px">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;height:104px">
+      <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(var(--ink-rgb),.5);margin-top:8px">
+      <span>${en?'Start':'Eleje'}: ${startR}.</span><span>${en?'Now':'Most'}: ${curR}. ${dHtml}</span>
+    </div>
+  </div>`;
+}
 function calcStd(gid,results,mt){
   const grp=GD.find(g=>g.id===gid);
   const teams=grp.teams.map(n=>({n,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}));
@@ -2282,6 +2329,7 @@ function rSidebarStats(){
     </div>
     <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>Ranglista</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;gap:3px"><button class="sb-seg${S.lbMode!=='official'?' on':''}" data-lbmode="live">Élő</button><button class="sb-seg${S.lbMode==='official'?' on':''}" data-lbmode="official">Lezárt</button></div><span class="sml-all" data-v="leaderboard" style="color:#C8A84B;cursor:pointer;font-size:10px">Teljes →</span></div></div>
     <div style="display:flex;flex-direction:column;gap:1px;background:rgba(var(--chrome-ink),.06)">${rows||'<div style="padding:10px;font-size:11px;color:rgba(var(--chrome-ink),.25)">Nincs adat</div>'}</div>
+    ${rRankTrend(uid,true)}
   </div>`;
 }
 
@@ -4226,6 +4274,8 @@ function rProfile(){
     ${rBadges(uid,eff)}
 
     ${rPointsTrend(uid,eff)}
+
+    ${rRankTrend(uid,false)}
 
     ${myLgs.length?`<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Ligáim</div>
     <div style="display:flex;flex-direction:column;gap:1px;background:rgba(var(--ink-rgb),.1);margin-bottom:24px">
