@@ -1098,7 +1098,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:'dark',lang:'hu',notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all'
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOk'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1130,7 +1130,7 @@ async function init(){
   let nko={};
   try{ if(ko && Object.keys(ko).length){ await sS('wc_ko',{},true); await sS('wc_sched_ver',SCHED_VER,true); } }catch(e){}
   const cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:theme||'dark',lang:lang||'hu',notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{}});
   refreshLiveIfStale();
   autoFillKnockoutTeams();
   if(cu){
