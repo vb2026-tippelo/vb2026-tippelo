@@ -525,6 +525,10 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal-box{background:#fff;border:1.5px solid #0A0A0A;padding:24px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto}
 .modal-title{font-family:var(--font-bc);font-weight:700;font-size:20px;color:#0A0A0A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #0A0A0A}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal-c{background:var(--bg-card);color:var(--text-color);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:440px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-t{font-family:var(--font-bc);font-weight:800;font-size:20px;color:var(--text-color);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
+.exp-toggle{margin-top:10px;background:none;border:none;color:var(--c-gold);font-size:12px;font-weight:700;cursor:pointer;padding:4px 0;font-family:var(--font-bc);letter-spacing:.3px}
 
 /* ===== ALERT BOXES ===== */
 .err-box{background:rgba(204,41,41,.08);border-left:3px solid #CC2929;padding:10px 14px;font-size:13px;color:#8B1C1C;margin:8px 0;font-family:var(--font-bc);font-weight:600;letter-spacing:.3px}
@@ -1089,19 +1093,21 @@ function myBestTip(uid,eff){
   ALL.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!tip||!r||r.live)return;const p=calcPts(tip,r,m.stage)||0;if(!best||p>best.p)best={m,tip,r,p};});
   return best;
 }
-function crowdStats(uid,eff){
-  let withCrowd=0,against=0,contraWin=0,total=0;
+function crowdStats(uid,eff,memberIds){
+  let withCrowd=0,against=0,contraWin=0,total=0;const items=[];
+  const us=S.users.filter(u=>!u.isAdmin&&(!memberIds||memberIds.includes(u.id)));
   ALL.forEach(m=>{const r=eff[m.id];if(!r||r.live)return;const myTip=S.tips[`${uid}_${m.id}`];if(!myTip)return;
-    const cnt={H:0,D:0,A:0};let any=false;
-    S.users.forEach(u=>{if(u.isAdmin)return;const tp=S.tips[`${u.id}_${m.id}`];if(!tp)return;any=true;const o=tp.homeGoals>tp.awayGoals?'H':tp.homeGoals<tp.awayGoals?'A':'D';cnt[o]++;});
+    const cnt={H:0,D:0,A:0};let any=0;
+    us.forEach(u=>{const tp=S.tips[`${u.id}_${m.id}`];if(!tp)return;any++;const o=tp.homeGoals>tp.awayGoals?'H':tp.homeGoals<tp.awayGoals?'A':'D';cnt[o]++;});
     if(!any)return;
     const maj=cnt.H>=cnt.D&&cnt.H>=cnt.A?'H':cnt.D>=cnt.A?'D':'A';
     const myO=myTip.homeGoals>myTip.awayGoals?'H':myTip.homeGoals<myTip.awayGoals?'A':'D';
     const actO=r.homeGoals>r.awayGoals?'H':r.homeGoals<r.awayGoals?'A':'D';
-    total++;
-    if(myO===maj)withCrowd++;else{against++;if(myO===actO)contraWin++;}
+    total++;let status;
+    if(myO===maj){withCrowd++;status='with';}else{against++;if(myO===actO){contraWin++;status='contraWin';}else status='against';}
+    items.push({m,myTip,r,maj,majPct:Math.round(cnt[maj]/any*100),myO,actO,status});
   });
-  return {withCrowd,against,contraWin,total};
+  return {withCrowd,against,contraWin,total,items};
 }
 function countPerfectDays(uid,eff){
   const byDay={};
@@ -1137,34 +1143,52 @@ function rBadges(uid,eff){
   return `<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">🏅 ${en?'Badges':'Jelvények'}</div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px">${cards}</div>`;
 }
-function rPointsTrend(uid,eff){
+function rPointsTrend(uid,eff,chrome,cfg){
+  cfg=cfg||DS;
   const en=S.lang==='en';
   const byDate={};
-  ALL.forEach(m=>{const r=eff[m.id];if(!r||r.live)return;const tip=S.tips[`${uid}_${m.id}`];if(!tip)return;const d=(S.ko[m.id]||m.koDefault||m.date||'').slice(0,10);if(!d)return;const p=calcPts(tip,r,m.stage)||0;byDate[d]=(byDate[d]||0)+p;});
+  ALL.forEach(m=>{const r=eff[m.id];if(!r||r.live)return;const tip=S.tips[`${uid}_${m.id}`];if(!tip)return;const d=(S.ko[m.id]||m.koDefault||m.date||'').slice(0,10);if(!d)return;const p=calcPts(tip,r,m.stage,cfg)||0;byDate[d]=(byDate[d]||0)+p;});
   const dates=Object.keys(byDate).sort();
   if(dates.length<2)return '';
   let cum=0;const pts=dates.map(d=>{cum+=byDate[d];return {d,v:cum};});
-  const W=300,H=110,pad=8,maxV=Math.max(...pts.map(p=>p.v),1),stepX=(W-pad*2)/(pts.length-1);
+  const W=300,H=chrome?96:110,pad=8,maxV=Math.max(...pts.map(p=>p.v),1),stepX=(W-pad*2)/(pts.length-1);
   const x=i=>pad+i*stepX,y=v=>H-pad-(v/maxV)*(H-pad*2);
   const line=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
   const area=`M${x(0).toFixed(1)},${(H-pad).toFixed(1)} `+pts.map((p,i)=>`L${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ')+` L${x(pts.length-1).toFixed(1)},${(H-pad).toFixed(1)} Z`;
-  const dots=pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="2.5" fill="#C8A84B"/>`).join('');
+  const dotR=chrome?5:6;
+  const dots=pts.map((p,i)=>`<span style="position:absolute;left:${(x(i)/W*100).toFixed(2)}%;top:${(y(p.v)/H*100).toFixed(2)}%;width:${dotR}px;height:${dotR}px;border-radius:50%;background:#C8A84B;transform:translate(-50%,-50%);pointer-events:none"></span>`).join('');
   const fmt=d=>new Date(d).toLocaleDateString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit'});
+  if(chrome){
+    return `<div style="margin-top:16px">
+      <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>${en?'Points over time':'Pont-fejlődés'}</span><span style="font-size:11px;color:rgba(var(--chrome-ink),.6)">${cum}p</span></div>
+      <div style="background:var(--chrome-elev);border-radius:8px;padding:8px">
+        <div style="position:relative;height:80px">
+          <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">
+            <path d="${area}" fill="rgba(200,168,75,.12)"/>
+            <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </svg>${dots}
+        </div>
+      </div>
+    </div>`;
+  }
   return `<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">📈 ${en?'Points over time':'Pont-fejlődés'}</div>
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:24px">
-    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;height:120px">
-      <path d="${area}" fill="rgba(200,168,75,.12)"/>
-      <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-      ${dots}
-    </svg>
+    <div style="position:relative;height:120px">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">
+        <path d="${area}" fill="rgba(200,168,75,.12)"/>
+        <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>${dots}
+    </div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(var(--ink-rgb),.4);margin-top:6px">
       <span>${fmt(dates[0])}</span><span>${en?'total':'összesen'}: ${cum}p</span><span>${fmt(dates[dates.length-1])}</span>
     </div>
   </div>`;
 }
-function rankTrend(uid){
+function rankTrend(uid,memberIds,cfg){
+  cfg=cfg||DS;
   const eff=getEffectiveResults();
-  const users=S.users.filter(u=>!u.isAdmin);
+  let users=S.users.filter(u=>!u.isAdmin);
+  if(memberIds)users=users.filter(u=>memberIds.includes(u.id));
   const evd=ALL.filter(m=>{const r=eff[m.id];return r&&!r.live;}).map(m=>({m,d:(S.ko[m.id]||m.koDefault||m.date||'').slice(0,10)})).filter(x=>x.d).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
   if(!evd.length)return [];
   const dates=[],byDate={};
@@ -1172,56 +1196,61 @@ function rankTrend(uid){
   const cum={};users.forEach(u=>cum[u.id]=0);
   const trend=[];
   dates.forEach(d=>{
-    byDate[d].forEach(m=>{const r=eff[m.id];users.forEach(u=>{const tip=S.tips[`${u.id}_${m.id}`];if(tip)cum[u.id]+=calcPts(tip,r,m.stage)||0;});});
+    byDate[d].forEach(m=>{const r=eff[m.id];users.forEach(u=>{const tip=S.tips[`${u.id}_${m.id}`];if(tip)cum[u.id]+=calcPts(tip,r,m.stage,cfg)||0;});});
     const my=cum[uid]||0;let rank=1;users.forEach(u=>{if(u.id!==uid&&(cum[u.id]||0)>my)rank++;});
     trend.push({d,rank});
   });
   return trend;
 }
-function rRankTrend(uid,chrome){
+function rRankTrend(uid,chrome,memberIds,cfg){
   const en=S.lang==='en';
-  const tr=rankTrend(uid);
+  const tr=rankTrend(uid,memberIds,cfg);
   if(tr.length<2)return '';
   const ranks=tr.map(p=>p.rank),minR=Math.min(...ranks),maxR=Math.max(...ranks),range=(maxR-minR)||1;
   const W=300,H=96,pad=10,stepX=(W-pad*2)/(tr.length-1);
   const x=i=>pad+i*stepX,y=r=>maxR===minR?H/2:pad+((r-minR)/range)*(H-pad*2);
   const line=tr.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.rank).toFixed(1)}`).join(' ');
-  const dots=tr.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.rank).toFixed(1)}" r="2.3" fill="#C8A84B"/>`).join('');
+  const dotR=chrome?5:6;
+  const dots=tr.map((p,i)=>`<span style="position:absolute;left:${(x(i)/W*100).toFixed(2)}%;top:${(y(p.rank)/H*100).toFixed(2)}%;width:${dotR}px;height:${dotR}px;border-radius:50%;background:#C8A84B;transform:translate(-50%,-50%);pointer-events:none"></span>`).join('');
   const startR=tr[0].rank,curR=tr[tr.length-1].rank,delta=startR-curR;
   const dHtml=delta>0?`<span style="color:#2E9E5A">▲${delta}</span>`:delta<0?`<span style="color:#e8212a">▼${-delta}</span>`:`<span style="opacity:.5">●</span>`;
   if(chrome){
     return `<div style="margin-top:16px">
       <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>${en?'Rank trend':'Helyezésed alakulása'}</span><span style="font-size:11px;color:rgba(var(--chrome-ink),.6)">${startR}. → ${curR}. ${dHtml}</span></div>
       <div style="background:var(--chrome-elev);border-radius:8px;padding:8px">
-        <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;height:80px">
-          <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
-        </svg>
+        <div style="position:relative;height:80px">
+          <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">
+            <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </svg>${dots}
+        </div>
       </div>
     </div>`;
   }
   return `<div style="font-family:var(--font-bc);font-weight:700;font-size:14px;color:#C8A84B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">📉 ${en?'Rank over time':'Helyezés alakulása'}</div>
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:24px">
-    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;height:104px">
-      <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
-    </svg>
+    <div style="position:relative;height:104px">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">
+        <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>${dots}
+    </div>
     <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(var(--ink-rgb),.5);margin-top:8px">
       <span>${en?'Start':'Eleje'}: ${startR}.</span><span>${en?'Now':'Most'}: ${curR}. ${dHtml}</span>
     </div>
   </div>`;
 }
-function _dayPts(uid,ms,eff){let pts=0,n=0;ms.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(tip&&r){pts+=calcPts(tip,r,m.stage)||0;n++;}});return n?pts:null;}
+function _dayPts(uid,ms,eff,cfg){cfg=cfg||DS;let pts=0,n=0;ms.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(tip&&r){pts+=calcPts(tip,r,m.stage,cfg)||0;n++;}});return n?pts:null;}
 function _evalByDate(){
   const eff=getEffectiveResults(),byDate={};
   ALL.forEach(m=>{const r=eff[m.id];if(!r||r.live)return;const d=(S.ko[m.id]||m.koDefault||m.date||'').slice(0,10);if(!d)return;(byDate[d]=byDate[d]||[]).push(m);});
   return {eff,byDate};
 }
-function dayChampion(){
+function dayChampion(memberIds,cfg){
   const {eff,byDate}=_evalByDate();
   const dates=Object.keys(byDate).sort();
   if(!dates.length)return null;
   const d=dates[dates.length-1],ms=byDate[d];
-  let best=null;
-  S.users.filter(u=>!u.isAdmin).forEach(u=>{const p=_dayPts(u.id,ms,eff);if(p!=null&&(!best||p>best.pts))best={uid:u.id,dn:u.dn,av:u.av,pts:p,date:d};});
+  let best=null;const us=S.users.filter(u=>!u.isAdmin&&(!memberIds||memberIds.includes(u.id)));
+  us.forEach(u=>{const p=_dayPts(u.id,ms,eff,cfg);if(p!=null&&(!best||p>best.pts))best={uid:u.id,dn:u.dn,av:u.av,pts:p,date:d,ms};});
   return best&&best.pts>0?best:null;
 }
 function countDaysWon(uid){
@@ -1338,7 +1367,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})(),recapCopied:false,announce:null,annText:'',reactPicker:null,tourStep:-1,showPastAll:false,favTeam:(()=>{try{return localStorage.getItem('wc_fav')||'';}catch(e){return '';}})(),activityLog:null,logLoading:false,logFilter:'all'
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})(),recapCopied:false,announce:null,annText:'',reactPicker:null,tourStep:-1,showPastAll:false,favTeam:(()=>{try{return localStorage.getItem('wc_fav')||'';}catch(e){return '';}})(),activityLog:null,logLoading:false,logFilter:'all',funLg:'all',recapExp:false,champExp:false,crowdExp:false
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -2364,8 +2393,21 @@ function rSidebarLeft(){
   return `${liveHtml}<div class="sml-hdr"><div class="sml-title">Mai meccsek</div><div class="sml-all" data-v="matches" data-sg="all">Mind →</div></div>${matchList||'<div style="padding:16px 18px;font-size:11px;color:rgba(var(--chrome-ink),.25);font-family:var(--font-bc);letter-spacing:.5px">Nincs mai meccs</div>'}${rSidebarStats()}`;
 }
 
-function rSidebarStats(){
-  const uid=S.user.id,eff=(S.lbMode==='official'?S.results:getEffectiveResults()),cfg=getLgCfg();
+function rSbScorers(){
+  const sc=S.scorers||[];if(!sc.length)return '';
+  const en=S.lang==='en',top=sc.slice(0,3),medal=['🥇','🥈','🥉'];
+  const rows=top.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--chrome-elev);border-radius:8px;margin-bottom:4px">
+    <span style="font-size:14px;width:18px;text-align:center;flex-shrink:0">${medal[i]||(i+1)}</span>
+    <span style="font-size:15px;flex-shrink:0">${teamFlag(p.team)}</span>
+    <span style="flex:1;min-width:0;font-family:var(--font-b);font-size:12px;color:rgb(var(--chrome-ink));white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}<span style="color:rgba(var(--chrome-ink),.4);font-size:10px"> · ${teamName(p.team)}</span></span>
+    <span style="font-family:var(--font-bc);font-weight:800;font-size:15px;color:#C8A84B;flex-shrink:0">${p.goals}</span>
+  </div>`).join('');
+  return `<div style="margin-top:16px">
+    <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">⚽ ${en?'Top scorers':'Gólkirályok'}</div>
+    ${rows}
+  </div>`;
+}
+function rSidebarStats(){  const uid=S.user.id,eff=(S.lbMode==='official'?S.results:getEffectiveResults()),cfg=getLgCfg();
   const r=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);
   const effLg=getEffectiveLgId();
   const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
@@ -2405,7 +2447,9 @@ function rSidebarStats(){
     </div>
     <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>Ranglista</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;gap:3px"><button class="sb-seg${S.lbMode!=='official'?' on':''}" data-lbmode="live">Élő</button><button class="sb-seg${S.lbMode==='official'?' on':''}" data-lbmode="official">Lezárt</button></div><span class="sml-all" data-v="leaderboard" style="color:#C8A84B;cursor:pointer;font-size:10px">Teljes →</span></div></div>
     <div style="display:flex;flex-direction:column;gap:1px;background:rgba(var(--chrome-ink),.06)">${rows||'<div style="padding:10px;font-size:11px;color:rgba(var(--chrome-ink),.25)">Nincs adat</div>'}</div>
-    ${rRankTrend(uid,true)}
+    ${rPointsTrend(uid,eff,true,cfg)}
+    ${rRankTrend(uid,true,fIds,cfg)}
+    ${rSbScorers()}
   </div>`;
 }
 
@@ -3169,6 +3213,53 @@ async function shareH2H(myDn,oppDn,myW,oppW,draw){
     if(navigator.share){await navigator.share({text:txt,url:location.href});}
     else{await navigator.clipboard.writeText(txt+' '+location.href);SS({h2hCopied:true});setTimeout(()=>SS({h2hCopied:false}),2000);}
   }catch(e){/* user cancelled */}
+}
+async function shareH2HImage(){
+  const d=window._h2hShare;if(!d)return;
+  const en=S.lang==='en';
+  try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(e){}
+  const allRows=d.rows||[],MAXR=14,rows=allRows.slice(0,MAXR),extra=allRows.length-rows.length;
+  const W=1080,padX=70,rowH=52,headH=430,footH=96,sc=2;
+  const H=headH+rows.length*rowH+(extra>0?40:0)+footH;
+  const cv=document.createElement('canvas');cv.width=W*sc;cv.height=H*sc;
+  const x=cv.getContext('2d');x.scale(sc,sc);
+  const BC='"Barlow Condensed",sans-serif';
+  x.fillStyle='#0A0A0A';x.fillRect(0,0,W,H);
+  x.fillStyle='#C8A84B';x.fillRect(0,0,W,9);
+  x.textBaseline='alphabetic';x.textAlign='left';
+  x.fillStyle='#C8A84B';x.font='700 34px '+BC;x.fillText((en?'HEAD-TO-HEAD':'HEAD-TO-HEAD'),padX,76);
+  x.fillStyle='rgba(240,237,230,.4)';x.font='600 17px sans-serif';x.fillText('VB 2026 TIPPELŐ',padX,104);
+  x.textAlign='center';
+  x.fillStyle='#F0EDE6';x.font='700 40px '+BC;
+  const clip=(s,max)=>{let t=s;while(x.measureText(t).width>max&&t.length>3)t=t.slice(0,-2);return t===s?s:t+'…';};
+  x.fillText(clip(d.myDn,360),W*0.26,210);
+  x.fillText(clip(d.oppDn,360),W*0.74,210);
+  x.fillStyle='rgba(240,237,230,.3)';x.font='600 24px sans-serif';x.fillText('VS',W/2,205);
+  x.font='800 88px '+BC;
+  x.fillStyle=d.myW>d.oppW?'#2E9E5A':d.myW<d.oppW?'#e8212a':'#C8A84B';x.fillText(String(d.myW),W*0.26,310);
+  x.fillStyle=d.oppW>d.myW?'#2E9E5A':d.oppW<d.myW?'#e8212a':'#C8A84B';x.fillText(String(d.oppW),W*0.74,310);
+  x.fillStyle='rgba(240,237,230,.5)';x.font='500 22px sans-serif';x.fillText(en?`${d.draw} draws`:`${d.draw} döntetlen`,W/2,300);
+  x.strokeStyle='rgba(240,237,230,.12)';x.lineWidth=1;x.beginPath();x.moveTo(padX,372);x.lineTo(W-padX,372);x.stroke();
+  let y=headH;
+  rows.forEach(r=>{
+    x.textAlign='left';x.fillStyle='rgba(240,237,230,.6)';x.font='500 23px sans-serif';
+    x.fillText(clip(r.label,W*0.6),padX,y);
+    x.textAlign='right';x.font='700 23px '+BC;
+    x.fillStyle=r.myP>r.oppP?'#2E9E5A':r.myP<r.oppP?'#e8212a':'#C8A84B';x.fillText(r.myP+'p',W*0.80,y);
+    x.fillStyle='rgba(240,237,230,.25)';x.font='500 16px sans-serif';x.textAlign='center';x.fillText('vs',W*0.845,y);
+    x.font='700 23px '+BC;x.textAlign='left';
+    x.fillStyle=r.oppP>r.myP?'#2E9E5A':r.oppP<r.myP?'#e8212a':'#C8A84B';x.fillText(r.oppP+'p',W*0.875,y);
+    x.strokeStyle='rgba(240,237,230,.06)';x.beginPath();x.moveTo(padX,y+16);x.lineTo(W-padX,y+16);x.stroke();
+    y+=rowH;
+  });
+  if(extra>0){x.textAlign='center';x.fillStyle='rgba(240,237,230,.35)';x.font='500 19px sans-serif';x.fillText(en?`+${extra} more matches`:`+${extra} további meccs`,W/2,y+12);}
+  x.textAlign='center';x.fillStyle='rgba(240,237,230,.3)';x.font='500 18px sans-serif';x.fillText('vb26tipp.forma1fitnesz.hu',W/2,H-30);
+  cv.toBlob(async(blob)=>{
+    if(!blob){SS({h2hCopied:false});return;}
+    const file=new File([blob],'h2h.png',{type:'image/png'});
+    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Head-to-head'});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+    try{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='vb2026-h2h.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);SS({h2hCopied:true});setTimeout(()=>SS({h2hCopied:false}),2000);}catch(e){}
+  },'image/png');
 }
 async function shareRecap(){
   const txt=window._recapText||'';
@@ -4082,7 +4173,8 @@ function rTour(){
   ];
   const i=Math.min(S.tourStep,steps.length-1),st=steps[i],last=i===steps.length-1;
   return `<div class="modal-ov" id="tourOv" style="z-index:9999">
-    <div class="modal-c" style="max-width:340px;text-align:center">
+    <div class="modal-c" style="max-width:340px;text-align:center;position:relative">
+      <button id="tourX" aria-label="${en?'Close':'Bezár'}" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(var(--ink-rgb),.4);font-size:20px;cursor:pointer;line-height:1">✕</button>
       <div style="font-size:46px;margin-bottom:8px">${st.ico}</div>
       <div style="font-family:var(--font-bc);font-weight:800;font-size:20px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-color);margin-bottom:8px">${st.t}</div>
       <div style="font-size:14px;color:rgba(var(--ink-rgb),.7);line-height:1.55;margin-bottom:18px">${st.d}</div>
@@ -4429,17 +4521,27 @@ function rProfile(){
 
 function rFun(){
   const uid=S.user.id,eff=getEffectiveResults(),users=S.users.filter(u=>!u.isAdmin),cfg=DS;
+  const en=S.lang==='en';
+  const myLgs=S.leagues.filter(l=>l.members?.includes(uid));
+  const funLg=myLgs.find(l=>l.id===S.funLg)?S.funLg:'all';
+  const fLeague=funLg==='all'?null:myLgs.find(l=>l.id===funLg);
+  const fMembers=fLeague?fLeague.members:null;
+  const fCfg=fLeague?(fLeague.scoring||DS):DS;
+  const usersF=fMembers?users.filter(u=>fMembers.includes(u.id)):users;
+  const funLgPills=myLgs.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+    ${[{id:'all',name:en?'All':'Összes'},...myLgs].map(l=>`<button data-funlg="${l.id}" style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;cursor:pointer;border-radius:8px;border:1px solid ${funLg===l.id?'#C8A84B':'var(--border)'};background:${funLg===l.id?'rgba(200,168,75,.15)':'transparent'};color:${funLg===l.id?'#C8A84B':'rgba(var(--ink-rgb),.6)'}">${esc(l.name)}</button>`).join('')}
+  </div>`:'';
   // ── 1. Napi kihívás ──────────────────────────────────────────────────────
   const todayStr=new Date().toISOString().slice(0,10);
   const todayMs=ALL.filter(m=>{
     const ko=S.ko[m.id]||m.koDefault;
     return ko&&ko.startsWith(todayStr)&&eff[m.id];
   });
-  const dailyBoard=todayMs.length?users.map(u=>{
+  const dailyBoard=todayMs.length?usersF.map(u=>{
     let pts=0,tips=0;
     todayMs.forEach(m=>{
       const tip=S.tips[`${u.id}_${m.id}`],r=eff[m.id];
-      if(tip&&r){pts+=calcPts(tip,r,m.stage,cfg)||0;tips++;}
+      if(tip&&r){pts+=calcPts(tip,r,m.stage,fCfg)||0;tips++;}
     });
     return{...u,pts,tips};
   }).filter(u=>u.tips>0).sort((a,b)=>b.pts-a.pts||b.tips-a.tips):[];
@@ -4480,7 +4582,7 @@ function rFun(){
   // ── 4. Head-to-head ──────────────────────────────────────────────────────
   const h2hUid=S.h2hOpp||null;
   const h2hOpp=h2hUid?users.find(u=>u.id===h2hUid):null;
-  let h2hRows='',h2hMyW=0,h2hOppW=0,h2hDraw=0;
+  let h2hRows='',h2hMyW=0,h2hOppW=0,h2hDraw=0;const h2hRowData=[];
   if(h2hOpp){
     const both=ALL.filter(m=>{
       const r=eff[m.id];
@@ -4491,6 +4593,7 @@ function rFun(){
       const myTip=S.tips[`${uid}_${m.id}`],oppTip=S.tips[`${h2hUid}_${m.id}`];
       const myP=calcPts(myTip,r,m.stage,cfg)||0,oppP=calcPts(oppTip,r,m.stage,cfg)||0;
       if(myP>oppP)h2hMyW++;else if(oppP>myP)h2hOppW++;else h2hDraw++;
+      h2hRowData.push({label:`${teamName(home)} – ${teamName(away)}`,myP,oppP});
       h2hRows+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
         <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(var(--ink-rgb),.6)">${teamName(home)} – ${teamName(away)}</span>
         <span style="color:${myP>oppP?'#00b050':myP<oppP?'#e8212a':'#c9a84c'};font-weight:700;min-width:28px;text-align:right">${myP}p</span>
@@ -4522,18 +4625,22 @@ function rFun(){
 
   return `<div>
   ${legend}
+  ${funLgPills}
   ${(()=>{
     const en=S.lang==='en';
     const todayIds=new Set(todayMs.map(m=>String(m.id)));
     const effBefore={};for(const k in eff){if(!todayIds.has(String(k)))effBefore[k]=eff[k];}
+    const catC={p8:'#C8A84B',p5:'#2ea043',p3:'#00b050',p1:'#a78bfa',p0:'#e8212a'};
+    const tipRow=(m,who,r)=>{const tip=S.tips[`${who}_${m.id}`];if(!tip||!r)return '';const ov=S.mt[m.id],h=teamName(ov?.home||m.home),a=teamName(ov?.away||m.away);const p=calcPts(tip,r,m.stage,fCfg)||0,cat=ptsCat(tip,r,m.stage,fCfg);return `<div style="display:flex;align-items:center;gap:8px;padding:7px 2px;border-top:1px solid var(--border);font-size:12.5px"><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h} <b>${r.homeGoals}-${r.awayGoals}</b> ${a}</div><div style="color:rgba(var(--ink-rgb),.5);white-space:nowrap">${en?'tip':'tipp'} ${tip.homeGoals}-${tip.awayGoals}</div><div style="font-weight:800;color:${catC[cat]||'rgba(var(--ink-rgb),.5)'};min-width:34px;text-align:right">+${p}p</div></div>`;};
     let myToday=0,myExactToday=0,bestT=null;
-    todayMs.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!tip||!r)return;const p=calcPts(tip,r,m.stage,cfg)||0;myToday+=p;if(ptsCat(tip,r,m.stage,cfg)==='p8')myExactToday++;if(!bestT||p>bestT.p)bestT={m,tip,r,p};});
-    const myNow=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,DS).pts;
-    const myBefore=calcUser(uid,S.tips,effBefore,S.mt,S.special,S.adminSpec,DS).pts;
+    todayMs.forEach(m=>{const tip=S.tips[`${uid}_${m.id}`],r=eff[m.id];if(!tip||!r)return;const p=calcPts(tip,r,m.stage,fCfg)||0;myToday+=p;if(ptsCat(tip,r,m.stage,fCfg)==='p8')myExactToday++;if(!bestT||p>bestT.p)bestT={m,tip,r,p};});
+    const myNow=calcUser(uid,S.tips,eff,S.mt,S.special,S.adminSpec,fCfg).pts;
+    const myBefore=calcUser(uid,S.tips,effBefore,S.mt,S.special,S.adminSpec,fCfg).pts;
     let rankNow=1,rankBefore=1;
-    users.forEach(u=>{if(u.id===uid)return;if(calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,DS).pts>myNow)rankNow++;if(calcUser(u.id,S.tips,effBefore,S.mt,S.special,S.adminSpec,DS).pts>myBefore)rankBefore++;});
+    usersF.forEach(u=>{if(u.id===uid)return;if(calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,fCfg).pts>myNow)rankNow++;if(calcUser(u.id,S.tips,effBefore,S.mt,S.special,S.adminSpec,fCfg).pts>myBefore)rankBefore++;});
     const rankDelta=rankBefore-rankNow;
-    const cs=crowdStats(uid,eff);
+    const cs=crowdStats(uid,eff,fMembers);
+    const recapDetail=todayMs.map(m=>tipRow(m,uid,eff[m.id])).join('');
     window._recapText=`📋 VB 2026 Tippelő — ${en?'today':'ma'}: +${myToday}p, ${myExactToday}⭐, ${en?'rank':'helyezés'} ${rankNow}.${rankDelta>0?` (▲${rankDelta})`:rankDelta<0?` (▼${-rankDelta})`:''}`;
     const recapCard = todayMs.length ? `<div style="background:linear-gradient(135deg,rgba(200,168,75,.14),rgba(200,168,75,.03));border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:16px;margin-bottom:20px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap">
@@ -4546,22 +4653,30 @@ function rFun(){
         <div><div style="font-size:26px;font-weight:900;font-family:'Rajdhani',sans-serif;line-height:1">${rankNow}.${rankDelta>0?`<span style="color:#00b050;font-size:15px"> ▲${rankDelta}</span>`:rankDelta<0?`<span style="color:#e8212a;font-size:15px"> ▼${-rankDelta}</span>`:''}</div><div style="font-size:10px;color:rgba(var(--ink-rgb),.5);text-transform:uppercase;margin-top:3px">${en?'rank':'helyezés'}</div></div>
       </div>
       ${bestT?`<div style="margin-top:12px;font-size:12px;color:rgba(var(--ink-rgb),.6)">${en?'Best tip today':'Mai legjobb tipp'}: <b>${teamName(S.mt[bestT.m.id]?.home||bestT.m.home)} ${bestT.tip.homeGoals}-${bestT.tip.awayGoals} ${teamName(S.mt[bestT.m.id]?.away||bestT.m.away)}</b> (+${bestT.p}p)</div>`:''}
+      ${recapDetail?`<button id="recapExpBtn" class="exp-toggle">${S.recapExp?(en?'▴ Hide my tips':'▴ Tippek elrejtése'):(en?'▾ Which match, what I tipped':'▾ Melyik meccsre mit tippeltem')}</button>${S.recapExp?`<div>${recapDetail}</div>`:''}`:''}
     </div>` : '';
+    const crowdDetail=cs.items.slice().reverse().slice(0,25).map(it=>{const m=it.m,ov=S.mt[m.id],h=teamName(ov?.home||m.home),a=teamName(ov?.away||m.away),ic=it.status==='with'?'🐑':it.status==='contraWin'?'🏆':'🦅';return `<div style="display:flex;align-items:center;gap:8px;padding:7px 2px;border-top:1px solid var(--border);font-size:12.5px"><div style="font-size:15px">${ic}</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h} <b>${it.r.homeGoals}-${it.r.awayGoals}</b> ${a}</div><div style="color:rgba(var(--ink-rgb),.5);white-space:nowrap">${en?'tip':'tipp'} ${it.myTip.homeGoals}-${it.myTip.awayGoals}</div><div style="color:rgba(var(--ink-rgb),.4);white-space:nowrap;min-width:58px;text-align:right">${it.majPct}% ${en?'maj.':'több.'}</div></div>`;}).join('');
     const crowdCard = cs.total ? `<div class="sect">🦅 ${en?'Crowd vs you':'Tömeg vs te'}</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
       ${[{v:Math.round(cs.withCrowd/cs.total*100)+'%',l:en?'with the crowd':'a többséggel',ico:'🐑'},{v:cs.against,l:en?'against':'szembe mentél',ico:'🦅'},{v:cs.contraWin,l:en?'contrarian wins':'kontra-találat',ico:'🏆'}].map(x=>`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
         <div style="font-size:18px">${x.ico}</div>
         <div style="font-family:var(--font-bc);font-weight:900;font-size:22px;color:var(--text-color);line-height:1;margin-top:2px">${x.v}</div>
         <div style="font-size:9px;color:rgba(var(--ink-rgb),.45);text-transform:uppercase;margin-top:3px">${x.l}</div>
       </div>`).join('')}
-    </div>` : '';
-    const champ=dayChampion();
-    const champCard = champ ? `<div style="background:linear-gradient(135deg,rgba(200,168,75,.16),rgba(200,168,75,.04));border:1px solid rgba(200,168,75,.35);border-radius:12px;padding:12px 14px;margin-bottom:20px;display:flex;align-items:center;gap:11px">
-      <span style="font-size:26px">🏆</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45);font-weight:700">${en?'Champion of the day':'Nap bajnoka'} · ${new Date(champ.date).toLocaleDateString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit'})}</div>
-        <div style="font-size:15px;font-weight:800;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${champ.av||'⚽'} ${esc(champ.dn)}${champ.uid===uid?` <span style="color:#C8A84B">(${en?'you':'te'})</span>`:''} — <span style="color:#C8A84B">${champ.pts}p</span></div>
+    </div>
+    ${crowdDetail?`<button id="crowdExpBtn" class="exp-toggle">${S.crowdExp?(en?'▴ Hide details':'▴ Részletek elrejtése'):(en?'▾ Match-by-match':'▾ Meccsenkénti bontás')}</button>${S.crowdExp?`<div style="margin-bottom:22px">${crowdDetail}</div>`:'<div style="margin-bottom:18px"></div>'}`:'<div style="margin-bottom:12px"></div>'}` : '';
+    const champ=dayChampion(fMembers,fCfg);
+    const champDetail=champ?champ.ms.map(m=>tipRow(m,champ.uid,eff[m.id])).join(''):'';
+    const champCard = champ ? `<div style="background:linear-gradient(135deg,rgba(200,168,75,.16),rgba(200,168,75,.04));border:1px solid rgba(200,168,75,.35);border-radius:12px;padding:12px 14px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:11px">
+        <span style="font-size:26px">🏆</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45);font-weight:700">${en?'Champion of the day':'Nap bajnoka'}${fLeague?` · ${esc(fLeague.name)}`:''} · ${new Date(champ.date).toLocaleDateString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit'})}</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${champ.av||'⚽'} ${esc(champ.dn)}${champ.uid===uid?` <span style="color:#C8A84B">(${en?'you':'te'})</span>`:''} — <span style="color:#C8A84B">${champ.pts}p</span></div>
+        </div>
+        ${champDetail?`<button id="champExpBtn" class="exp-toggle" style="margin:0;font-size:16px">${S.champExp?'▴':'▾'}</button>`:''}
       </div>
+      ${S.champExp&&champDetail?`<div style="margin-top:8px">${champDetail}</div>`:''}
     </div>` : '';
     return recapCard + champCard + crowdCard;
   })()}
@@ -4633,7 +4748,7 @@ function rFun(){
       <div style="text-align:center;flex:1"><div style="font-size:22px">${h2hOpp.av||'⚽'}</div><div style="font-weight:700;font-size:14px">${h2hOpp.dn}</div><div style="font-size:26px;font-weight:900;color:#e8212a;font-family:'Rajdhani',sans-serif">${h2hOppW}</div></div>
     </div>
     <div style="max-height:300px;overflow-y:auto">${h2hRows||'<div style="color:rgba(var(--ink-rgb),.4);font-size:13px">Nincs közös értékelt meccs.</div>'}</div>
-    ${(()=>{window._h2hShare={myDn:S.user.dn,oppDn:h2hOpp.dn,myW:h2hMyW,oppW:h2hOppW,draw:h2hDraw};return '';})()}
+    ${(()=>{window._h2hShare={myDn:S.user.dn,oppDn:h2hOpp.dn,myW:h2hMyW,oppW:h2hOppW,draw:h2hDraw,rows:h2hRowData};return '';})()}
     <button id="h2hShare" class="btn-sm gold" style="font-size:11px;margin-top:12px">📷 ${S.lang==='en'?(S.h2hCopied?'✓ Copied':'Share result'):(S.h2hCopied?'✓ Másolva':'Eredmény megosztása')}</button>
   </div>`:`<div style="color:rgba(var(--ink-rgb),.4);font-size:13px;margin-bottom:16px">Válassz egy játékost a fenti listából.</div>`}
   </div>`;
@@ -5013,11 +5128,15 @@ function bindMain(hw){
   document.getElementById('delCancel2')?.addEventListener('click',()=>SS({delModal:false}));
   document.getElementById('delOv')?.addEventListener('click',e=>{if(e.target.id==='delOv')SS({delModal:false});});
   document.getElementById('delConfirm')?.addEventListener('click',doSelfDelete);
-  document.getElementById('h2hShare')?.addEventListener('click',()=>{const d=window._h2hShare;if(d)shareH2H(d.myDn,d.oppDn,d.myW,d.oppW,d.draw);});
+  document.getElementById('h2hShare')?.addEventListener('click',()=>{if(window._h2hShare)shareH2HImage();});
   document.getElementById('recCl')?.addEventListener('click',()=>{SS({recCodeShow:null});maybeJoinFromUrl();maybeStartTour();});
   document.getElementById('recCl2')?.addEventListener('click',()=>{SS({recCodeShow:null});maybeJoinFromUrl();maybeStartTour();});
   document.getElementById('recOv')?.addEventListener('click',e=>{if(e.target.id==='recOv'){SS({recCodeShow:null});maybeJoinFromUrl();maybeStartTour();}});
   document.getElementById('recapShare')?.addEventListener('click',shareRecap);
+  document.querySelectorAll('[data-funlg]').forEach(b=>b.addEventListener('click',()=>SS({funLg:b.dataset.funlg,recapExp:false,champExp:false,crowdExp:false})));
+  document.getElementById('recapExpBtn')?.addEventListener('click',()=>SS({recapExp:!S.recapExp}));
+  document.getElementById('champExpBtn')?.addEventListener('click',()=>SS({champExp:!S.champExp}));
+  document.getElementById('crowdExpBtn')?.addEventListener('click',()=>SS({crowdExp:!S.crowdExp}));
   document.getElementById('annDismiss')?.addEventListener('click',dismissAnnounce);
   {const _ai=document.getElementById('annInput');if(_ai)_ai.addEventListener('input',e=>{S.annText=e.target.value;});}
   document.getElementById('annSet')?.addEventListener('click',()=>{const ai=document.getElementById('annInput');if(ai)S.annText=ai.value;setAnnouncement();});
@@ -5037,6 +5156,7 @@ function bindMain(hw){
   document.querySelectorAll('.chat-rchip,.chat-rpick [data-react]').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;reactChat(t.dataset.lgid,t.dataset.mid,t.dataset.react);}));
   document.querySelectorAll('.chat-radd').forEach(b=>b.addEventListener('click',e=>{const mid=e.currentTarget.dataset.mid;SS({reactPicker:S.reactPicker===mid?null:mid});}));
   document.getElementById('tourSkip')?.addEventListener('click',endTour);
+  document.getElementById('tourX')?.addEventListener('click',endTour);
   document.getElementById('tourNext')?.addEventListener('click',()=>{const en=S.lang==='en';const len=5;if(S.tourStep>=len-1)endTour();else nextTour();});
   {const _cs=document.getElementById('chatScroll');if(_cs)_cs.scrollTop=_cs.scrollHeight;}
   document.querySelectorAll('.chat-del').forEach(b=>b.addEventListener('click',e=>{const t=e.currentTarget;deleteChatMsg(t.dataset.lgid,t.dataset.mid);}));
