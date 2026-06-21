@@ -408,9 +408,18 @@ body.dark-mode .bc-center .gms-pts{color:var(--c-gold) !important}
 .p3{background:rgba(10,10,10,.07);color:#444}
 .p1{background:rgba(10,10,10,.04);color:#888}
 .p0{background:rgba(204,41,41,.08);color:#993333}
+body.dark-mode .p8{background:rgba(200,168,75,.22);color:#E0C56F}
+body.dark-mode .p5{background:rgba(62,173,106,.2);color:#5FD494}
+body.dark-mode .p3{background:rgba(255,255,255,.09);color:#D8D2C6}
+body.dark-mode .p1{background:rgba(255,255,255,.05);color:#A8A29A}
+body.dark-mode .p0{background:rgba(204,41,41,.2);color:#FF8A80}
+body.dark-mode .prof-av-btn{background:#1C1C1C;border-color:rgba(255,255,255,.15)}
+body.dark-mode .prof-av-btn.sel{background:#241F12;border-color:#C8A84B}
+body.dark-mode .sg-row{border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .h2h-row{border-bottom-color:rgba(255,255,255,.08)}
+body.dark-mode .lb-wrap{background:rgba(255,255,255,.08)}
 
 /* ===== STANDINGS ===== */
-.standings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:#ddd;margin-bottom:20px}
 .std-groups-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(var(--ink-rgb),.1)}
 .fcast-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:8px;padding:4px 0 8px}
 @media(max-width:1200px){.fcast-grid{grid-template-columns:repeat(6,1fr)}}
@@ -869,34 +878,7 @@ const IMP_LEAGUE_BIG=['hetesi.endre','berecz.dora','huszka.mate','kiraly.david',
 const IMP_LEAGUE_SMALL=['hetesi.endre','ferenc.bihary','bence.schriffert','peti','benedek.locskai','david.szabolcs','tomcsi','nagy.geri'];
 const IMP_FRA_SEN={'hetesi.endre':[2,1],'bence.schriffert':[2,0],'peti':[2,0],'benedek.locskai':[2,1],'david.szabolcs':[3,1],'nagy.geri':[3,1],'berecz.dora':[2,0],'huszka.mate':[2,0],'kiraly.david':[3,1],'varga.richard':[3,0],'toth.zsolt':[2,0],'laszlo.toth':[5,1],'bohar.nandi':[3,2],'nagy.gabor':[3,0],'petri.balazs':[3,1],'laszlo.gonda':[2,1],'csikos.szilard':[1,0],'palfi.zsombor':[2,1],'tapai.gergely':[2,1],'laczko.szabi':[2,2],'adam.virraszto':[4,2],'laszlo.zahemszky':[3,0],'talpai.judit':[3,1],'kovacs.ferenc':[2,1],'peter.szabo':[3,1],'hunyadi.anna':[3,0],'boldizsar.kiss':[2,0],'orovecz.adam':[5,0],'abelovszki.mihaly':[1,2],'szabo.valentin':[2,0],'juhasz.endre':[2,1],'lovasz.roland':[2,0],'barta.zoltan':[4,1],'busa.adam':[4,0],'rizner.adrian':[3,0],'merei.eszter':[3,1],'kovacs.adam':[2,1],'balazs.szikora':[3,0],'gera.bence':[2,1],'zelena.kristof':[3,1],'czeizel.mate':[2,2],'kozo.balint':[2,0],'horvath.adam':[2,1],'garamvolgyi.csaba':[3,1],'balla.tamas.tibor':[2,1],'rosta.tibor':[3,1],'pataki.gabor':[1,0],'berecz.gergo':[3,1],'ifj.gonda.laszlo':[2,1],'toth.tibor':[3,0],'miklos.mark':[3,0],'banfine.gonda.lujza':[3,1],'molnar.erno':[1,0]};
 
-const GROUP_DATES={A:['2026-06-11','2026-06-18','2026-06-24'],B:['2026-06-12','2026-06-18','2026-06-24'],C:['2026-06-13','2026-06-19','2026-06-24'],D:['2026-06-12','2026-06-19','2026-06-25'],E:['2026-06-14','2026-06-20','2026-06-25'],F:['2026-06-14','2026-06-20','2026-06-25'],G:['2026-06-15','2026-06-21','2026-06-26'],H:['2026-06-15','2026-06-21','2026-06-26'],I:['2026-06-16','2026-06-22','2026-06-27'],J:['2026-06-16','2026-06-22','2026-06-27'],K:['2026-06-17','2026-06-23','2026-06-27'],L:['2026-06-17','2026-06-23','2026-06-27']};
 // Helyszínek csoportmeccsekhez (mérkőzés ID → város)
-const GROUP_VENUE={
-  // A csoport: Mexikó, Dél-Afrika, Dél-Korea, Csehország
-  1:'Mexikóváros',2:'Zapopan',3:'Zapopan',4:'Atlanta',5:'Mexikóváros',6:'Guadalupe',
-  // B csoport: Kanada, Bosznia, Katar, Svájc
-  7:'Toronto',8:'Santa Clara',9:'Vancouver',10:'Los Angeles',11:'Vancouver',12:'Seattle',
-  // C csoport: Brazília, Marokkó, Haiti, Skócia
-  13:'New Jersey',14:'Foxborough',15:'Philadelphia',16:'Foxborough',17:'Miami',18:'Atlanta',
-  // D csoport: USA, Paraguay, Ausztrália, Törökország
-  19:'Los Angeles',20:'Vancouver',21:'Seattle',22:'Santa Clara',23:'Los Angeles',24:'Santa Clara',
-  // E csoport: Németország, Curaçao, Elefántcsontpart, Ecuador
-  25:'Houston',26:'Philadelphia',27:'Seattle',28:'Kansas City',29:'New Jersey',30:'Philadelphia',
-  // F csoport: Hollandia, Japán, Svédország, Tunézia
-  31:'Philadelphia',32:'Guadalupe',33:'Houston',34:'Guadalupe',35:'Kansas City',36:'Arlington',
-  // G csoport: Belgium, Egyiptom, Irán, Új-Zéland
-  37:'Seattle',38:'Los Angeles',39:'Los Angeles',40:'Vancouver',41:'Vancouver',42:'Seattle',
-  // H csoport: Spanyolország, Zöld-foki-sz., Szaúd-Arábia, Uruguay
-  43:'Atlanta',44:'Miami',45:'Atlanta',46:'Miami',47:'Guadalupe',48:'Houston',
-  // I csoport: Franciaország, Szenegál, Irak, Norvégia
-  49:'New Jersey',50:'Foxborough',51:'Philadelphia',52:'New Jersey',53:'Foxborough',54:'Toronto',
-  // J csoport: Argentína, Algéria, Ausztria, Jordánia
-  55:'Kansas City',56:'Santa Clara',57:'Arlington',58:'Santa Clara',59:'Arlington',60:'Kansas City',
-  // K csoport: Portugália, DR Kongó, Üzbegisztán, Kolumbia
-  61:'Houston',62:'Mexikóváros',63:'Houston',64:'Miami',65:'Miami',66:'Atlanta',
-  // L csoport: Anglia, Horvátország, Ghána, Panama
-  67:'Arlington',68:'Toronto',69:'Foxborough',70:'Toronto',71:'New Jersey',72:'Philadelphia'
-};
 const VENUE_COORDS={'Mexikóváros':[19.433,-99.133],'Guadalajara':[20.682,-103.463],'Monterrey':[25.669,-100.244],'Toronto':[43.633,-79.418],'Vancouver':[49.277,-123.112],'Los Angeles':[33.953,-118.339],'San Francisco':[37.403,-121.970],'Seattle':[47.595,-122.332],'New York':[40.814,-74.074],'Boston':[42.091,-71.264],'Philadelphia':[39.901,-75.167],'Atlanta':[33.755,-84.401],'Miami':[25.958,-80.239],'Houston':[29.685,-95.411],'Dallas':[32.748,-97.093],'Kansas City':[39.049,-94.484]};
 // Helyi időzóna (nyáron)
 const VENUE_TZ={'Mexikóváros':'America/Mexico_City','Guadalajara':'America/Mexico_City','Monterrey':'America/Monterrey','Toronto':'America/Toronto','Vancouver':'America/Vancouver','Los Angeles':'America/Los_Angeles','San Francisco':'America/Los_Angeles','Seattle':'America/Los_Angeles','New York':'America/New_York','Boston':'America/New_York','Philadelphia':'America/New_York','Atlanta':'America/New_York','Miami':'America/New_York','Houston':'America/Chicago','Dallas':'America/Chicago','Kansas City':'America/Chicago'};
@@ -3855,16 +3837,6 @@ function rAdmin(){
       </div>
       <button class="btn-sm" id="syncVenuesBtn" style="background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:#4a9eff">${S.venuesLoading?'⏳ Folyamatban...':'📍 Helyszínek szinkronizálása'}</button>
     </div>
-  </div>
-  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:13px;font-weight:600">🕐 Kickoff időpontok szinkronizálása API-ból</div>
-        <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs pontos kezdési időpontját az API-ból és felülírja a becsült időket.</div>
-        ${S.kickoffSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.kickoffSynced} meccs időpontja szinkronizálva</div>`:''}
-      </div>
-      <button class="btn-sm" id="syncKickoffsBtn" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:#c9a84c" ${S.kickoffLoading?'disabled':''}>${S.kickoffLoading?'⏳ Folyamatban...':'🕐 Időpontok szinkronizálása'}</button>
-    </div>
   </div>${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
   <div>${ms.map(m=>{
     const r=S.results[m.id],ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
@@ -3879,7 +3851,6 @@ function rAdmin(){
         ${r?`<b style="color:#00b050">${r.homeGoals}–${r.awayGoals}</b>`:''}
         <div style="display:flex;gap:5px">
           ${m.tbd?`<button class="btn-sm white" data-et="${m.id}" style="padding:5px 9px;font-size:12px">Csapatok</button>`:''}
-          <button class="btn-sm white" data-ek="${m.id}" style="padding:5px 9px;font-size:12px">🕐 Időpont</button>
           <button class="btn-sm gold" data-er="${m.id}" style="padding:5px 9px;font-size:12px">${r?'✎ Módosít':'+ Eredmény'}</button>
         </div>
       </div>
@@ -3893,12 +3864,6 @@ function rAdmin(){
         vs <input class="tinp" id="atA" type="text" placeholder="Vendég" value="${S.editTIn.a}" list="atl">
         <button id="svT" data-mid="${m.id}" style="padding:8px 14px;border-radius:7px;background:#4a9eff;border:none;color:white;font-weight:700;font-size:13px;cursor:pointer">Mentés</button>
         <button class="btn-sm white" id="cxT" style="font-size:13px;padding:8px 12px">Mégse</button>
-      </div>`:''}
-      ${iEK?`<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <input class="tinp" id="akoIn" type="datetime-local" value="${S.editKoIn}" style="width:200px">
-        <span style="font-size:11px;color:rgba(var(--ink-rgb),.4)">magyar idő szerint – ettől 5 perccel zár a tippelés</span>
-        <button class="btn-green" id="svKo" data-mid="${m.id}" style="padding:8px 14px;font-size:13px">Mentés</button>
-        <button class="btn-sm white" id="cxKo" style="padding:8px 12px">Mégse</button>
       </div>`:''}
     </div>`;
   }).join('')}</div>
