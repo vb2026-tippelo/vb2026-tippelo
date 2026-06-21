@@ -124,6 +124,27 @@ exports.handler = async function (event) {
   const payload = verifyToken(body.token);
   if (!payload) return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: 'auth' }) };
 
+  // Aktivitási napló
+  if (body.action === 'log') {
+    const a = String(body.logAction || '').slice(0, 40);
+    const detail = String(body.detail || '').slice(0, 200);
+    const name = String(body.name || '').slice(0, 60);
+    if (!a) return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    try {
+      const coll = admin.firestore().collection('vb2026data');
+      const ref = coll.doc('wc_log');
+      await admin.firestore().runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        let arr = [];
+        if (snap.exists) { try { arr = JSON.parse(snap.data().value); if (!Array.isArray(arr)) arr = []; } catch (_) { arr = []; } }
+        arr.push({ ts: Date.now(), uid: payload.uid, name, a, d: detail, adm: !!payload.adm });
+        if (arr.length > 400) arr = arr.slice(arr.length - 400);
+        tx.set(ref, { value: JSON.stringify(arr) });
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    } catch (e) { return { statusCode: 200, headers, body: JSON.stringify({ ok: false }) }; }
+  }
+
   // Fiók-torlés
   if (body.action === 'selfdelete') {
     try { await selfDelete(payload.uid); return { statusCode: 200, headers, body: JSON.stringify({ ok: true, deleted: true }) }; }

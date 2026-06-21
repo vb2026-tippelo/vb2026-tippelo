@@ -1254,6 +1254,17 @@ function markChatSeen(){
   try{localStorage.setItem('wc_chat_seen',JSON.stringify(seen));}catch(e){}
 }
 function setFav(team){try{localStorage.setItem('wc_fav',team||'');}catch(e){}SS({favTeam:team||''});}
+function logAction(a,detail){
+  try{
+    const tok=localStorage.getItem('wc_tok');if(!tok||!S.user)return;
+    fetch(AUTH_BASE+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,action:'log',logAction:a,detail:detail||'',name:S.user.dn||''})}).catch(()=>{});
+  }catch(e){}
+}
+async function loadActivityLog(){
+  SS({logLoading:true});
+  try{const l=await sG('wc_log',true);SS({activityLog:Array.isArray(l)?l:[],logLoading:false});}
+  catch(e){SS({activityLog:[],logLoading:false});}
+}
 function calcStd(gid,results,mt){
   const grp=GD.find(g=>g.id===gid);
   const teams=grp.teams.map(n=>({n,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}));
@@ -1327,7 +1338,7 @@ let S={
   preModal:false,savedMsgs:{},weather:{},odds:{},
   predGroups:{},predThird8:[],predKO:{},predLoaded:false,
   liveLoading:false,liveErr:'',liveFound:[],liveDebug:null,
-  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})(),recapCopied:false,announce:null,annText:'',reactPicker:null,tourStep:-1,showPastAll:false,favTeam:(()=>{try{return localStorage.getItem('wc_fav')||'';}catch(e){return '';}})()
+  live:{},liveUpdatedAt:null,expandLb:null,expandTips:null,tipFilterLg:'all',highlightMatch:null,theme:(()=>{try{const v=localStorage.getItem('wc_theme');return v?JSON.parse(v):'dark';}catch(e){return 'dark';}})(),lang:(()=>{try{const v=localStorage.getItem('wc_lang');return v?JSON.parse(v):'hu';}catch(e){return 'hu';}})(),notifOn:false,h2hOpp:null,legalModal:null,cookieBanner:!localStorage.getItem('cookieOkGA'),selLg:null,activeLgId:null,bkRound:'r32',wcIds:{},wcVenues:{},lineups:{},stats:{},expandLineup:null,expandStats:null,venuesLoading:false,venuesSynced:null,kickoffLoading:false,kickoffSynced:null,lbMode:'live',stMode:'live',tipFilterG:'all',lbHist:'all',scorers:[],scorersLoaded:false,scorersLoading:false,scorersUpdatedAt:null,helpModal:false,delModal:false,delLoad:false,delErr:null,h2hCopied:false,chat:{},chatText:'',chatErr:null,chatSending:false,recCodeShow:null,fpOpen:false,fpUn:'',fpCode:'',fpPw:'',fpErr:null,fpMsg:null,fpLoad:false,bkBusy:false,bkMsg:null,tz:(()=>{try{const v=localStorage.getItem('wc_tz');return v?JSON.parse(v):'Europe/Budapest';}catch(e){return 'Europe/Budapest';}})(),recapCopied:false,announce:null,annText:'',reactPicker:null,tourStep:-1,showPastAll:false,favTeam:(()=>{try{return localStorage.getItem('wc_fav')||'';}catch(e){return '';}})(),activityLog:null,logLoading:false,logFilter:'all'
 };
 let _r=null;
 function SS(p){Object.assign(S,typeof p==='function'?p(S):p);if(_r)_r();}
@@ -1438,6 +1449,7 @@ async function doLogin(){
         loadPredict(u.id);
         maybeJoinFromUrl();
         maybeStartTour();
+        logAction('login','');
         return;
       }
       if(d&&d.ok===false&&d.error==='wrong'){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
@@ -1474,6 +1486,7 @@ async function doReg(){
         const nu=d.user;
         await sS('wc_s',{uid:nu.id},false);
         SS({users:[...users,nu],user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:nu.av||'⚽',recCodeShow:d.recCode||null});
+        logAction('register','');
         return;
       }
       if(d&&d.ok===false&&d.error==='taken'){SS({authErr:t('err_username_taken'),authLoad:false});return;}
@@ -1486,7 +1499,7 @@ async function doReg(){
   await sS('wc_u',ul,true);await sS('wc_s',{uid:nu.id},false);
   SS({users:ul,user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:'⚽'});
 }
-async function doLogout(){localStorage.removeItem('wc_tok');await sS('wc_s',null,false);SS({user:null,view:'matches',authU:'',authP:'',authDN:'',authErr:''});}
+async function doLogout(){logAction('logout','');localStorage.removeItem('wc_tok');await sS('wc_s',null,false);SS({user:null,view:'matches',authU:'',authP:'',authDN:'',authErr:''});}
 
 async function doGoogleLogin(){
   SS({authErr:'',authLoad:true});
@@ -1539,6 +1552,8 @@ async function saveTip(mid,h,a){
   const k=`${S.user.id}_${mid}`;
   const nt={...S.tips,[k]:{homeGoals:parseInt(h),awayGoals:parseInt(a)}};
   await sS('wc_t',nt,true);
+  const _m=ALL.find(x=>x.id===mid);const _hn=_m?teamName(S.mt[mid]?.home||_m.home):String(mid);const _an=_m?teamName(S.mt[mid]?.away||_m.away):'';
+  logAction('tip',`${_hn}–${_an} ${h}:${a}`);
   const sm={...S.savedMsgs,[mid]:true};SS({tips:nt,savedMsgs:sm});
   setTimeout(()=>{const nm={...S.savedMsgs};delete nm[mid];SS({savedMsgs:nm});},2000);
 }
@@ -1546,6 +1561,7 @@ async function saveSpecial(w,t){
   const uid=S.user.id;
   const ns={...S.special,[`${uid}_w`]:w,[`${uid}_t`]:t};
   await sS('wc_sp',ns,true);
+  logAction('special',`győztes: ${w?teamName(w):'-'}, gólkirály: ${t||'-'}`);
   SS({special:ns,preModal:false,view:'matches'});
 }
 async function saveRes(mid,h,a){
@@ -1565,7 +1581,7 @@ async function createLeague(){
   if(!S.lgName.trim()){SS({lgErr:'Add meg a liga nevét!'});return;}
   const lg={id:`lg${Date.now()}`,name:S.lgName.trim(),code:genCode(),ownerId:S.user.id,members:[S.user.id],scoring:{...S.lgSco}};
   const nl=[...S.leagues,lg];
-  await sS('wc_lg',nl,true);SS({leagues:nl,lgModal:null,lgName:'',lgErr:''});
+  await sS('wc_lg',nl,true);logAction('league_create',lg.name);SS({leagues:nl,lgModal:null,lgName:'',lgErr:''});
 }
 async function joinLeague(){
   if(!S.lgCode.trim()){SS({lgErr:'Add meg a kódot!'});return;}
@@ -1574,11 +1590,12 @@ async function joinLeague(){
   if(!lg){SS({lgErr:'Nem található ilyen kód!'});return;}
   if(lg.members?.includes(S.user.id)){SS({lgErr:'Már tagja vagy!'});return;}
   const nl=S.leagues.map(l=>l.id===lg.id?{...l,members:[...l.members,S.user.id]}:l);
-  await sS('wc_lg',nl,true);SS({leagues:nl,lgModal:null,lgCode:'',lgErr:''});
+  await sS('wc_lg',nl,true);logAction('league_join',lg.name);SS({leagues:nl,lgModal:null,lgCode:'',lgErr:''});
 }
 async function leaveLeague(lgId){
+  const _l=S.leagues.find(l=>l.id===lgId);
   const nl=S.leagues.map(l=>l.id===lgId?{...l,members:l.members.filter(id=>id!==S.user.id)}:l);
-  await sS('wc_lg',nl,true);SS({leagues:nl});
+  await sS('wc_lg',nl,true);logAction('league_leave',_l?.name||'');SS({leagues:nl});
 }
 async function updateLgScoring(lgId,sco){
   const nl=S.leagues.map(l=>l.id===lgId?{...l,scoring:sco}:l);
@@ -3140,6 +3157,7 @@ async function doSelfDelete(){
     const r=await fetch(AUTH_BASE+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,action:'selfdelete'})});
     const d=await r.json();
     if(!d.ok){SS({delLoad:false,delErr:(S.lang==='en'?'Deletion failed: ':'Törlés sikertelen: ')+(d.error||'?')});return;}
+    logAction('delete_account','');
     localStorage.removeItem('wc_tok');localStorage.removeItem('wc_s');
     location.reload();
   }catch(e){SS({delLoad:false,delErr:(S.lang==='en'?'Network error: ':'Hálózati hiba: ')+e.message});}
@@ -3229,6 +3247,7 @@ async function sendChat(lgId){
     const d=await r.json();
     if(!d.ok){SS({chatSending:false,chatErr:d.error==='profanity'?(en?'Message contains banned words.':'Az üzenet tiltott szót tartalmaz.'):d.error==='toofast'?(en?'Slow down — too many messages.':'Lassíts — túl sok üzenet.'):(en?'Send failed: ':'Küldés sikertelen: ')+d.error});return;}
     SS({chatText:'',chatSending:false,chatErr:null});
+    logAction('chat',S.leagues.find(l=>l.id===lgId)?.name||'');
     await refreshChat();
   }catch(e){SS({chatSending:false,chatErr:e.message});}
 }
@@ -4619,10 +4638,42 @@ function rFun(){
   </div>`:`<div style="color:rgba(var(--ink-rgb),.4);font-size:13px;margin-bottom:16px">Válassz egy játékost a fenti listából.</div>`}
   </div>`;
 }
+function rActivityLog(){
+  const en=S.lang==='en';
+  const L=en?{login:'🔑 Login',logout:'🚪 Logout',register:'🆕 Register',tip:'⚽ Tip',special:'🏆 Special bet',league_create:'➕ League created',league_join:'🤝 League joined',league_leave:'👋 League left',chat:'💬 Chat',delete_account:'🗑️ Account deleted'}:{login:'🔑 Belépés',logout:'🚪 Kilépés',register:'🆕 Regisztráció',tip:'⚽ Tipp',special:'🏆 Extra tipp',league_create:'➕ Liga létrehozás',league_join:'🤝 Liga csatlakozás',league_leave:'👋 Liga elhagyás',chat:'💬 Chat',delete_account:'🗑️ Fiók törlés'};
+  const log=S.activityLog,types=['all',...Object.keys(L)];
+  const typeLbl=tp=>tp==='all'?(en?'Mind':'Mind'):(L[tp]||tp);
+  let rows='';
+  if(Array.isArray(log)){
+    const filtered=(S.logFilter==='all'?log:log.filter(e=>e.a===S.logFilter)).slice().reverse();
+    if(!filtered.length)rows=`<div style="padding:14px;color:rgba(var(--ink-rgb),.4);font-size:13px">${en?'No entries.':'Nincs bejegyzés.'}</div>`;
+    else rows=filtered.slice(0,200).map(e=>{
+      const tm=new Date(e.ts).toLocaleString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(var(--ink-rgb),.06);font-size:12.5px">
+        <span style="color:rgba(var(--ink-rgb),.4);min-width:80px;font-family:var(--font-bc)">${tm}</span>
+        <span style="font-weight:700;color:var(--text-color);min-width:88px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.name||'?')}${e.adm?' 👑':''}</span>
+        <span style="min-width:128px">${L[e.a]||esc(e.a)}</span>
+        <span style="flex:1;color:rgba(var(--ink-rgb),.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.d||'')}</span>
+      </div>`;
+    }).join('');
+  }
+  return `<div class="sect">📋 ${en?'Activity log':'Aktivitási napló'}</div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:12px;margin-bottom:16px">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <button class="btn-sm gold" id="logRefresh">${S.logLoading?'⏳':'🔄'} ${en?'Refresh':'Frissítés'}</button>
+      <select id="logFilterSel" class="inp" style="width:auto;padding:6px 10px;font-size:12px">
+        ${types.map(tp=>`<option value="${tp}"${S.logFilter===tp?' selected':''}>${typeLbl(tp)}</option>`).join('')}
+      </select>
+      ${Array.isArray(log)?`<span style="font-size:11px;color:rgba(var(--ink-rgb),.4)">${log.length} ${en?'entries':'bejegyzés'}</span>`:''}
+    </div>
+    ${log===null?`<div style="padding:14px;color:rgba(var(--ink-rgb),.4);font-size:13px">${en?'Tap Refresh to load the log.':'Kattints a Frissítésre a napló betöltéséhez.'}</div>`:`<div style="max-height:480px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">${rows}</div>`}
+  </div>`;
+}
 function rAdmin(){
   const stgs=[{id:'group',l:'Csoportkör'},{id:'r32',l:'32'},{id:'r16',l:'16'},{id:'qf',l:'NDD'},{id:'sf',l:'ELD'},{id:'bronze',l:'Bronz'},{id:'final',l:'Döntő'}];
   const ms=ALL.filter(m=>m.stage===S.aStage);
   return `<div>
+  ${rActivityLog()}
   <div class="sect">💾 ${S.lang==='en'?'Backup':'Biztonsági mentés'}</div>
   <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
     <div style="font-size:12.5px;color:rgba(var(--ink-rgb),.55);margin-bottom:12px">${S.lang==='en'?'Download a full JSON backup of all game data, or restore from a backup file (overwrites the included data).':'Tölts le egy teljes JSON mentést minden játékadatról, vagy állíts vissza egy mentésfájlból (felülírja a benne lévő adatokat).'}</div>
@@ -4791,10 +4842,13 @@ function bindMain(hw){
   document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',e=>{
     const v=e.currentTarget.dataset.v;
     if(v==='leaderboard')markChatSeen();
+    if(v==='admin'&&S.activityLog===null)loadActivityLog();
     if(v)SS({view:v,moreMenu:false,...(e.currentTarget.dataset.sg?{sg:e.currentTarget.dataset.sg}:{})});
     if(v==='standings'||v==='bracket')loadScorers();
   }));
   document.getElementById('favSel')?.addEventListener('change',e=>setFav(e.target.value));
+  document.getElementById('logRefresh')?.addEventListener('click',loadActivityLog);
+  document.getElementById('logFilterSel')?.addEventListener('change',e=>SS({logFilter:e.target.value}));
   document.querySelector('[data-vmenu="more"]')?.addEventListener('click',()=>SS({moreMenu:true}));
   document.querySelectorAll('[data-occlose]').forEach(el=>el.addEventListener('click',e=>{if(e.target===e.currentTarget)SS({moreMenu:false});}));
 
