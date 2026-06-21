@@ -1156,7 +1156,26 @@ async function _sha256(str){const buf=await crypto.subtle.digest('SHA-256',new T
 function isHashedPw(pw){return typeof pw==='string'&&pw.startsWith('h1$');}
 async function makePwField(plain){const s=_pwSalt();return 'h1$'+s+'$'+await _sha256(s+'|'+plain);}
 async function verifyPw(plain,stored){if(!stored)return false;if(!isHashedPw(stored))return plain===stored;const p=stored.split('$');return (await _sha256(p[1]+'|'+plain))===p[2];}
+const AUTH_BASE='https://vb2026-endre.netlify.app/.netlify/functions';
 async function doLogin(){
+  // 1) szerveroldali belepes
+  try{
+    const r=await fetch(AUTH_BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({un:S.authU,pw:S.authP})});
+    if(r.ok){
+      const d=await r.json();
+      if(d&&d.ok&&d.token){
+        const u=S.users.find(x=>x.id===d.user.id)||d.user;
+        localStorage.setItem('wc_tok',d.token);
+        await sS('wc_s',{uid:u.id},false);
+        SS({user:u,authErr:'',authLoad:false,view:'matches',profDN:u.dn,profAv:u.av||'⚽'});
+        loadPredict(u.id);
+        return;
+      }
+      if(d&&d.ok===false&&d.error==='wrong'){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
+      // egyeb szerverhiba -> tartalek
+    }
+  }catch(e){/* halozat -> tartalek */}
+  // 2) TARTALEK: eredeti kliensoldali belepes
   const u=S.users.find(x=>x.un===S.authU);
   if(!u||!(await verifyPw(S.authP,u.pw))){SS({authErr:t('err_wrong_login'),authLoad:false});return;}
   let ul=S.users;
@@ -1175,12 +1194,28 @@ async function doReg(){
   if(users.find(x=>x.un===authU)){SS({authErr:t('err_username_taken'),authLoad:false});return;}
   if(authU.length<3){SS({authErr:t('err_username_minlen'),authLoad:false});return;}
   if(authP.length<4){SS({authErr:t('err_password_minlen'),authLoad:false});return;}
+  // 1) szerveroldali regisztracio
+  try{
+    const r=await fetch(AUTH_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({un:authU,dn:authDN,pw:authP})});
+    if(r.ok){
+      const d=await r.json();
+      if(d&&d.ok&&d.token){
+        localStorage.setItem('wc_tok',d.token);
+        const nu=d.user;
+        await sS('wc_s',{uid:nu.id},false);
+        SS({users:[...users,nu],user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:nu.av||'⚽'});
+        return;
+      }
+      if(d&&d.ok===false&&d.error==='taken'){SS({authErr:t('err_username_taken'),authLoad:false});return;}
+    }
+  }catch(e){/* halozat -> tartalek */}
+  // 2) TARTALEK: eredeti kliensoldali regisztracio
   const nu={id:`u${Date.now()}`,un:authU,dn:authDN||authU,pw:await makePwField(authP),isAdmin:false,av:'⚽'};
   const ul=[...users,nu];
   await sS('wc_u',ul,true);await sS('wc_s',{uid:nu.id},false);
   SS({users:ul,user:nu,authErr:'',authLoad:false,view:'pre-tips',profDN:nu.dn,profAv:'⚽'});
 }
-async function doLogout(){await sS('wc_s',null,false);SS({user:null,view:'matches',authU:'',authP:'',authDN:'',authErr:''});}
+async function doLogout(){localStorage.removeItem('wc_tok');await sS('wc_s',null,false);SS({user:null,view:'matches',authU:'',authP:'',authDN:'',authErr:''});}
 
 async function doGoogleLogin(){
   SS({authErr:'',authLoad:true});
