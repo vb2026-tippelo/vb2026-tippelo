@@ -35,17 +35,16 @@ exports.handler = async function (event) {
   const debug = event && event.queryStringParameters && event.queryStringParameters.debug;
 
   try {
-    // 1) gyorsitotar betoltese
-    let cache = { players: {}, done: [], updatedAt: null };
+    // 1) gyorsitotar betoltese (meccsenkenti bontasban)
+    let cache = { matches: {}, updatedAt: null };
     let ref = null;
     if (!initError) {
       ref = admin.firestore().collection('vb2026data').doc(CACHE_KEY);
       if (!reset) {
-        try { const snap = await ref.get(); if (snap.exists) { const v = JSON.parse(snap.data().value); if (v && v.players) cache = v; } } catch (_) {}
+        try { const snap = await ref.get(); if (snap.exists) { const v = JSON.parse(snap.data().value); if (v && v.matches) cache = v; } } catch (_) {}
       }
     }
-    const doneSet = new Set(cache.done || []);
-    const players = cache.players || {};
+    const matches = cache.matches || {};   // matchId -> { sc: { key -> {name,team,goals,assists} }, final: bool }
 
     // 2) meccslista (draw)
     const [gR, kR] = await Promise.all([
@@ -74,7 +73,9 @@ exports.handler = async function (event) {
         } catch (e) { cerr = e.message; }
         out.push({
           matchId: m.matchId, status: m.status, finishedByCode: FINISHED.has(m.status),
-          home: m.home, away: m.away, alreadyProcessed: (cache.done || []).indexOf(m.matchId) >= 0,
+          home: m.home, away: m.away,
+          alreadyProcessed: !!(cache.matches && cache.matches[m.matchId]),
+          finalized: !!(cache.matches && cache.matches[m.matchId] && cache.matches[m.matchId].final),
           commentaryError: cerr, incidentCount: incidents.length,
           goalIncidents: incidents.filter(i => i && String(i.type || '').toLowerCase().includes('goal')).map(i => ({ type: i.type, player: i.player, side: i.side })),
           allIncidentTypes: [...new Set(incidents.map(i => i && i.type))]
@@ -83,8 +84,11 @@ exports.handler = async function (event) {
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, debug: true, query: debug, knownStatusCodes: [...FINISHED], matches: out }, null, 2) };
     }
 
-    const finished = all.filter(m => m.matchId && FINISHED.has(m.status) && !doneSet.has(m.matchId));
-    const batch = finished.slice(0, MAX_PER_RUN);
+    // melyik meccseket dolgozzuk fel: minden elkezdodott (status != 1) meccs,
+    // ami meg nincs veglegesitve. A befejezetteket egyszer (final=true), az eloket
+    // minden korben ujra (a golszamuk meg valtozhat).
+    const toProcess = all.filter(m => m.matchId && m.status !== 1 && !(matches[m.matchId] && matches[m.matchId].final));
+    const batch = toProcess.slice(0, MAX_PER_RUN);
 
     // 3) kommentar lekerese a meccsekhez
     const results = await Promise.all(batch.map(async m => {
@@ -96,50 +100,54 @@ exports.handler = async function (event) {
       } catch (_) { return null; }
     }));
 
-    // 4) golok/asszisztok osszegzese
+    // 4) meccsenkenti golok/asszisztok — az adott meccset FELULIRJUK (nincs duplazas)
     results.forEach(res => {
       if (!res) return;
       const { m, incidents } = res;
+      // ures/hianyos commentary: ne irjuk felul a meglevot, kesobb ujraprobaljuk
+      if (!incidents.length) return;
       const homeHU = mapTeam(m.home), awayHU = mapTeam(m.away);
+      const sc = {};
       incidents.forEach(ic => {
         if (!ic || !ic.player) return;
+        const ty = String(ic.type || '').toLowerCase().trim();
+        if (ty !== 'goal' && ty !== 'assist') return; // ongol ("own goal") es egyeb esemenyek kimaradnak
         const teamHU = ic.side === 'home' ? homeHU : awayHU;
         const key = ic.player + '@@' + teamHU;
-        const ty = String(ic.type || '').toLowerCase().trim();
-        if (ty === 'goal') {
-          if (!players[key]) players[key] = { name: ic.player, team: teamHU, goals: 0, assists: 0 };
-          players[key].goals++;
-        } else if (ty === 'assist') {
-          if (!players[key]) players[key] = { name: ic.player, team: teamHU, goals: 0, assists: 0 };
-          players[key].assists++;
-        }
+        if (!sc[key]) sc[key] = { name: ic.player, team: teamHU, goals: 0, assists: 0 };
+        if (ty === 'goal') sc[key].goals++; else sc[key].assists++;
       });
-      // Csak akkor jeloljuk "keszek", ha tenyleg jott esemeny-lista. Ha ures/hianyos
-      // a commentary (pl. kozvetlenul lefujas utan), kesobb ujraprobaljuk, nehogy
-      // egy-egy gol veglegesen lemaradjon.
-      if (incidents.length > 0) doneSet.add(m.matchId);
+      matches[m.matchId] = { sc, final: FINISHED.has(m.status) };
     });
 
-    // 5) mentes, ha volt uj meccs
-    const newCache = { players, done: [...doneSet], updatedAt: new Date().toISOString() };
+    // 5) osszesites a meccsekbol
+    const players = {};
+    Object.values(matches).forEach(md => {
+      const sc = (md && md.sc) || {};
+      Object.keys(sc).forEach(key => {
+        const v = sc[key];
+        if (!players[key]) players[key] = { name: v.name, team: v.team, goals: 0, assists: 0 };
+        players[key].goals += v.goals || 0;
+        players[key].assists += v.assists || 0;
+      });
+    });
+
+    // 6) mentes
+    const newCache = { matches, updatedAt: new Date().toISOString() };
     if ((batch.length || reset) && ref) { try { await ref.set({ value: JSON.stringify(newCache) }); } catch (_) {} }
 
-    // 6) rendezett lista
+    // 7) rendezett lista
     const list = Object.values(players)
       .filter(p => p.goals > 0)
       .sort((a, b) => b.goals - a.goals || b.assists - a.assists || a.name.localeCompare(b.name));
 
-    // ha semmi nem jott vissza (pl. rossz commentary-utvonal), ne kerjen tovabbi ujraprobalkozast
-    const successCount = results.filter(Boolean).length;
-    const pending = (batch.length > 0 && successCount === 0)
-      ? 0
-      : Math.max(0, finished.length - batch.length);
+    const pending = Math.max(0, toProcess.length - batch.length);
 
     return { statusCode: 200, headers, body: JSON.stringify({
       ok: true,
       scorers: list,
       updatedAt: newCache.updatedAt,
-      processed: [...doneSet].length,
+      processed: Object.keys(matches).length,
       pending
     })};
   } catch (e) {
