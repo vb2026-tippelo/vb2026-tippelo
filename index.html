@@ -1155,9 +1155,12 @@ function rPointsTrend(uid,eff,chrome,cfg){
   const x=i=>pad+i*stepX,y=v=>H-pad-(v/maxV)*(H-pad*2);
   const line=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
   const area=`M${x(0).toFixed(1)},${(H-pad).toFixed(1)} `+pts.map((p,i)=>`L${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ')+` L${x(pts.length-1).toFixed(1)},${(H-pad).toFixed(1)} Z`;
-  const dotR=chrome?5:6;
-  const dots=pts.map((p,i)=>`<span style="position:absolute;left:${(x(i)/W*100).toFixed(2)}%;top:${(y(p.v)/H*100).toFixed(2)}%;width:${dotR}px;height:${dotR}px;border-radius:50%;background:#C8A84B;transform:translate(-50%,-50%);pointer-events:none"></span>`).join('');
+  const dotR=chrome?5:6,inkVar=chrome?'--chrome-ink':'--ink-rgb';
   const fmt=d=>new Date(d).toLocaleDateString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit'});
+  const dots=pts.map((p,i)=>`<span title="${fmt(p.d)} · ${p.v}p" style="position:absolute;left:${(x(i)/W*100).toFixed(2)}%;top:${(y(p.v)/H*100).toFixed(2)}%;width:${dotR}px;height:${dotR}px;border-radius:50%;background:#C8A84B;transform:translate(-50%,-50%);cursor:default"></span>`).join('');
+  const _maxL=chrome?4:8,_step=Math.max(1,Math.ceil((pts.length-1)/_maxL));
+  const xax=pts.map((p,i)=>{if(i!==0&&i!==pts.length-1&&i%_step!==0)return '';const edge=i===0?'left:0':i===pts.length-1?'right:0':`left:${(x(i)/W*100).toFixed(2)}%;transform:translateX(-50%)`;return `<span style="position:absolute;${edge};font-size:${chrome?8:9}px;color:rgba(var(${inkVar}),.4);white-space:nowrap">${fmt(p.d)}</span>`;}).join('');
+  const xaxRow=`<div style="position:relative;height:${chrome?12:14}px;margin-top:4px">${xax}</div>`;
   if(chrome){
     return `<div style="margin-top:16px">
       <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--chrome-ink),.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:6px"><span>${en?'Points over time':'Pont-fejlődés'}</span><span style="font-size:11px;color:rgba(var(--chrome-ink),.6)">${cum}p</span></div>
@@ -1168,6 +1171,7 @@ function rPointsTrend(uid,eff,chrome,cfg){
             <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
           </svg>${dots}
         </div>
+        ${xaxRow}
       </div>
     </div>`;
   }
@@ -1179,9 +1183,8 @@ function rPointsTrend(uid,eff,chrome,cfg){
         <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
       </svg>${dots}
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(var(--ink-rgb),.4);margin-top:6px">
-      <span>${fmt(dates[0])}</span><span>${en?'total':'összesen'}: ${cum}p</span><span>${fmt(dates[dates.length-1])}</span>
-    </div>
+    ${xaxRow}
+    <div style="text-align:center;font-size:10px;color:rgba(var(--ink-rgb),.45);margin-top:2px">${en?'total':'összesen'}: ${cum}p</div>
   </div>`;
 }
 function rankTrend(uid,memberIds,cfg){
@@ -1210,8 +1213,12 @@ function rRankTrend(uid,chrome,memberIds,cfg){
   const W=300,H=96,pad=10,stepX=(W-pad*2)/(tr.length-1);
   const x=i=>pad+i*stepX,y=r=>maxR===minR?H/2:pad+((r-minR)/range)*(H-pad*2);
   const line=tr.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.rank).toFixed(1)}`).join(' ');
-  const dotR=chrome?5:6;
-  const dots=tr.map((p,i)=>`<span style="position:absolute;left:${(x(i)/W*100).toFixed(2)}%;top:${(y(p.rank)/H*100).toFixed(2)}%;width:${dotR}px;height:${dotR}px;border-radius:50%;background:#C8A84B;transform:translate(-50%,-50%);pointer-events:none"></span>`).join('');
+  const dotR=chrome?5:6,inkVar=chrome?'--chrome-ink':'--ink-rgb';
+  const fmt=d=>new Date(d).toLocaleDateString(en?'en-GB':'hu-HU',{month:'2-digit',day:'2-digit'});
+  const dots=tr.map((p,i)=>`<span title="${fmt(p.d)} · ${p.rank}." style="position:absolute;left:${(x(i)/W*100).toFixed(2)}%;top:${(y(p.rank)/H*100).toFixed(2)}%;width:${dotR}px;height:${dotR}px;border-radius:50%;background:#C8A84B;transform:translate(-50%,-50%);cursor:default"></span>`).join('');
+  const _maxL=chrome?4:8,_step=Math.max(1,Math.ceil((tr.length-1)/_maxL));
+  const xax=tr.map((p,i)=>{if(i!==0&&i!==tr.length-1&&i%_step!==0)return '';const edge=i===0?'left:0':i===tr.length-1?'right:0':`left:${(x(i)/W*100).toFixed(2)}%;transform:translateX(-50%)`;return `<span style="position:absolute;${edge};font-size:${chrome?8:9}px;color:rgba(var(${inkVar}),.4);white-space:nowrap">${fmt(p.d)}</span>`;}).join('');
+  const xaxRow=`<div style="position:relative;height:${chrome?12:14}px;margin-top:4px">${xax}</div>`;
   const startR=tr[0].rank,curR=tr[tr.length-1].rank,delta=startR-curR;
   const dHtml=delta>0?`<span style="color:#2E9E5A">▲${delta}</span>`:delta<0?`<span style="color:#e8212a">▼${-delta}</span>`:`<span style="opacity:.5">●</span>`;
   if(chrome){
@@ -1223,6 +1230,7 @@ function rRankTrend(uid,chrome,memberIds,cfg){
             <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
           </svg>${dots}
         </div>
+        ${xaxRow}
       </div>
     </div>`;
   }
@@ -1233,6 +1241,7 @@ function rRankTrend(uid,chrome,memberIds,cfg){
         <path d="${line}" fill="none" stroke="#C8A84B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
       </svg>${dots}
     </div>
+    ${xaxRow}
     <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(var(--ink-rgb),.5);margin-top:8px">
       <span>${en?'Start':'Eleje'}: ${startR}.</span><span>${en?'Now':'Most'}: ${curR}. ${dHtml}</span>
     </div>
@@ -3123,10 +3132,79 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <p>Keresd az oldal adminisztrátorát aki vissza tudja állítani a jelszavadat.</p>
 <h3>Hogyan kérhetek segítséget?</h3>
 <p>Írj e-mailt: <a href="mailto:info@forma1fitnesz.hu">info@forma1fitnesz.hu</a></p>`
+  },
+  funkciok:{
+    title:'Funkciók — részletes leírás',
+    html:`<p>A VB 2026 Tippelő egy ingyenes, baráti focitippelő játék a 2026-os labdarúgó-világbajnokságra. Az alábbiakban minden funkció részletes leírása.</p>
+<h3>⚽ Tippelés</h3>
+<p>A torna mind a 104 meccsére leadhatsz pontos eredmény-tippet (pl. 2–1). A tipp a meccs kezdetéig módosítható; kezdés után automatikusan lezár, utólag nem szerkeszthető. A „Meccsek" fülön a következő meccsek mindig elöl vannak, az előző meccsek külön lenyithatók.</p>
+<h3>🎯 Pontozás</h3>
+<ul>
+<li>⭐ <b>Pontos eredmény</b> (pl. 2–1 = 2–1): <b>8 pont</b></li>
+<li>🎯 <b>Helyes kimenetel + gólkülönbség</b>: <b>5 pont</b></li>
+<li>✓ <b>Helyes kimenetel</b> (győztes/döntetlen): <b>3 pont</b></li>
+<li>~ <b>Egyik csapat góljai egyeznek</b>: <b>1 pont</b></li>
+<li>🔄 <b>Kieséses meccseken</b> a pontok <b>duplázódnak</b> (×2)</li>
+<li>🏆 Helyes bajnok-tipp és ⚽ helyes gólkirály-tipp: extra pont</li>
+</ul>
+<p>A ligák saját, egyedi pontozást is használhatnak, ilyenkor a ligán belüli pontok ettől eltérhetnek.</p>
+<h3>🏅 Ranglista</h3>
+<p>Három nézet: <b>Élő</b> (a folyamatban lévő meccsek élő állásával számolva), <b>Lezárt</b> (csak a véglegesített eredmények) és <b>Teljes</b>. A saját helyezésed mindig kiemelve.</p>
+<h3>👥 Ligák</h3>
+<p>Létrehozhatsz vagy csatlakozhatsz baráti ligához egy kóddal. A ligán belül csak a tagok tabellája látszik. Egy ligának saját pontozása és saját csevegője lehet. A bal oldali statisztika és a Játék fül a kiválasztott ligához igazodik.</p>
+<h3>🔮 Előzetes tippek és Predikció</h3>
+<p>A torna indulása előtt megtippelheted a bajnokot, a gólkirályt és az egész torna menetét (kik jutnak tovább, ki nyeri a kieséses ágat). Az előzetes tippek a nyitány előtt kötelezőek.</p>
+<h3>🎮 Játék fül</h3>
+<p>Szórakoztató statisztikák, mind a felül választott ligához szűrhető:</p>
+<ul>
+<li><b>Mai összefoglaló</b> — napi pont, telitalálatok, helyezés-változás; lenyitva látod, melyik meccsre mit tippeltél.</li>
+<li><b>Nap bajnoka</b> — az adott nap legjobbja (ligánként); lenyitva az ő aznapi tippjei.</li>
+<li><b>Tömeg vs te</b> — mennyit mentél a többséggel, mennyit ellene, és hány „kontra-találatod" volt; lenyitva kategóriánkénti bontás.</li>
+<li><b>Mai nap kihívása</b> — a mai meccsek napi mini-ranglistája.</li>
+<li><b>Forma</b> — az utolsó meccseid találati formája.</li>
+<li><b>Bolondok fala</b> — a legnagyobb mellélövések és a legszebb telitalálatok.</li>
+<li><b>Head-to-head</b> — bárki ellen összevetheted a tippjeidet meccsről meccsre, és az eredmény <b>képként megosztható</b>.</li>
+</ul>
+<h3>📈 Trendek és statisztika</h3>
+<p>A profilodban és a bal sávban követhető a <b>pont-fejlődésed</b> és a <b>helyezésed alakulása</b> napról napra (a pontokra húzva a nap és az érték is látszik). A profil mutatja a találati százalékod, az átlagpontod, a legjobb tipped és a megszerzett jelvényeket.</p>
+<h3>🥇 Gólkirályok és élő adatok</h3>
+<p>A góllövőlista, az élő eredmények és a meccsekhez tartozó időjárás külső, hivatalos forrásokból frissül. A bal sávban a top 3 gólkirály is megjelenik.</p>
+<h3>💬 Csevegés</h3>
+<p>Ligánként van csevegő, ahol emoji-reakciókkal is reagálhatsz az üzenetekre. A Ranglista fülön jelzi, ha új, olvasatlan üzenet érkezett.</p>
+<h3>⚙️ Személyre szabás</h3>
+<p>Sötét/világos téma, magyar/angol nyelv, időzóna-beállítás (a meccsidők ehhez igazodnak), kedvenc csapat (⭐), profilkép-emoji és megjelenített név.</p>
+<h3>🔔 Értesítések és biztonság</h3>
+<p>Bekapcsolható értesítés a közelgő meccsekről. A fiókodhoz tartozik egy <b>visszaállító kód</b>, és a tippjeidről biztonsági mentés készíthető/visszaállítható.</p>
+<h3>🧭 Bemutató túra</h3>
+<p>Első belépéskor egy rövid, átugorható túra mutatja meg a fő funkciókat.</p>`
+  },
+  valtozasok:{
+    title:'Frissítési napló',
+    html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
+<h3>2026.06.21.</h3>
+<ul>
+<li>🦅 <b>Tömeg vs te</b>: a lenyitás kategóriánként csoportosít (többséggel / szembe mentél / kontra-találat).</li>
+<li>📈 <b>Trend-grafikonok</b>: a napok megjelennek az x-tengelyen, és a pontokra húzva látszik az adott nap és érték.</li>
+<li>🎮 <b>Játék fül</b>: közös liga-szűrő, és lenyitható/ligánkénti kártyák (Mai összefoglaló, Nap bajnoka, Tömeg vs te, Mai nap kihívása).</li>
+<li>⚔️ <b>Head-to-head</b>: az eredmény <b>képként</b> is megosztható.</li>
+<li>🥇 <b>Top 3 gólkirály</b> bekerült a bal oldali sávba.</li>
+<li>📊 <b>Trend-grafikonok</b>: kerek pontok (megszűnt a torzulás), és a pont/helyezés-trend a választott ligához igazodik.</li>
+<li>🪟 A bemutató túra és a felugró ablakok középre igazítva, ✕ bezárással.</li>
+<li>📖 Új: részletes <b>funkció leírás</b> és ez a <b>frissítési napló</b> a láblécben.</li>
+</ul>
+<h3>Korábbi fejlesztések</h3>
+<ul>
+<li>🏆 Jelvények, napi győztes, „tipp-iker", napi összefoglaló megosztása.</li>
+<li>🗓️ Időzóna-beállítás, többnapos időjárás-előrejelzés a meccsekhez.</li>
+<li>💬 Liga-csevegő emoji-reakciókkal, olvasatlan-jelzéssel.</li>
+<li>🔐 Visszaállító kód, biztonsági mentés és visszaállítás, automatikus mentés.</li>
+<li>📋 „Mind" nézet kronológiai sorrendben, hiányzó tippek szűrője.</li>
+<li>🌐 Teljes magyar/angol nyelv és sötét/világos téma.</li>
+</ul>`
   }
 };
 function rFooter(){
-  const links=[['aszf',S.lang==='en'?'Terms':'ÁSZF'],['adatkezeles',S.lang==='en'?'Privacy':'Adatkezelés'],['gyik','GYIK'],['impresszum',S.lang==='en'?'Imprint':'Impresszum'],['cookie','Cookie']];
+  const links=[['aszf',S.lang==='en'?'Terms':'ÁSZF'],['adatkezeles',S.lang==='en'?'Privacy':'Adatkezelés'],['gyik','GYIK'],['funkciok',S.lang==='en'?'Features':'Funkciók'],['valtozasok',S.lang==='en'?'Changelog':'Frissítések'],['impresszum',S.lang==='en'?'Imprint':'Impresszum'],['cookie','Cookie']];
   return `<div class="site-footer">
     <div class="foot-links">${links.map(([k,l])=>`<button class="foot-link" data-legal="${k}">${l}</button>`).join('<span class="foot-sep">·</span>')}</div>
     <div class="foot-copy">© 2026 VB 2026 Tippelő</div>
@@ -4655,7 +4733,10 @@ function rFun(){
       ${bestT?`<div style="margin-top:12px;font-size:12px;color:rgba(var(--ink-rgb),.6)">${en?'Best tip today':'Mai legjobb tipp'}: <b>${teamName(S.mt[bestT.m.id]?.home||bestT.m.home)} ${bestT.tip.homeGoals}-${bestT.tip.awayGoals} ${teamName(S.mt[bestT.m.id]?.away||bestT.m.away)}</b> (+${bestT.p}p)</div>`:''}
       ${recapDetail?`<button id="recapExpBtn" class="exp-toggle">${S.recapExp?(en?'▴ Hide my tips':'▴ Tippek elrejtése'):(en?'▾ Which match, what I tipped':'▾ Melyik meccsre mit tippeltem')}</button>${S.recapExp?`<div>${recapDetail}</div>`:''}`:''}
     </div>` : '';
-    const crowdDetail=cs.items.slice().reverse().slice(0,25).map(it=>{const m=it.m,ov=S.mt[m.id],h=teamName(ov?.home||m.home),a=teamName(ov?.away||m.away),ic=it.status==='with'?'🐑':it.status==='contraWin'?'🏆':'🦅';return `<div style="display:flex;align-items:center;gap:8px;padding:7px 2px;border-top:1px solid var(--border);font-size:12.5px"><div style="font-size:15px">${ic}</div><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h} <b>${it.r.homeGoals}-${it.r.awayGoals}</b> ${a}</div><div style="color:rgba(var(--ink-rgb),.5);white-space:nowrap">${en?'tip':'tipp'} ${it.myTip.homeGoals}-${it.myTip.awayGoals}</div><div style="color:rgba(var(--ink-rgb),.4);white-space:nowrap;min-width:58px;text-align:right">${it.majPct}% ${en?'maj.':'több.'}</div></div>`;}).join('');
+    const crowdRow=it=>{const m=it.m,ov=S.mt[m.id],h=teamName(ov?.home||m.home),a=teamName(ov?.away||m.away),win=it.status==='contraWin'?' <span style="color:#2E9E5A">🏆</span>':'';return `<div style="display:flex;align-items:center;gap:8px;padding:6px 2px;border-top:1px solid var(--border);font-size:12.5px"><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h} <b>${it.r.homeGoals}-${it.r.awayGoals}</b> ${a}${win}</div><div style="color:rgba(var(--ink-rgb),.5);white-space:nowrap">${en?'tip':'tipp'} ${it.myTip.homeGoals}-${it.myTip.awayGoals}</div><div style="color:rgba(var(--ink-rgb),.4);white-space:nowrap;min-width:42px;text-align:right">${it.majPct}%</div></div>`;};
+    const cWith=cs.items.filter(i=>i.status==='with'),cAg=cs.items.filter(i=>i.status==='against'||i.status==='contraWin'),cKo=cs.items.filter(i=>i.status==='contraWin');
+    const grpC=(ico,label,arr,col)=>arr.length?`<div style="margin-bottom:12px"><div style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:${col};margin-bottom:1px">${ico} ${label} · ${arr.length}</div>${arr.slice(0,15).map(crowdRow).join('')}${arr.length>15?`<div style="font-size:11px;color:rgba(var(--ink-rgb),.35);padding-top:4px">+${arr.length-15} ${en?'more':'tovább'}</div>`:''}</div>`:'';
+    const crowdDetail=grpC('🐑',en?'With the crowd':'A többséggel',cWith,'rgba(var(--ink-rgb),.6)')+grpC('🦅',en?'Against the crowd':'Szembe mentél',cAg,'rgba(var(--ink-rgb),.6)')+grpC('🏆',en?'Contrarian wins':'Kontra-találat',cKo,'#C8A84B');
     const crowdCard = cs.total ? `<div class="sect">🦅 ${en?'Crowd vs you':'Tömeg vs te'}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
       ${[{v:Math.round(cs.withCrowd/cs.total*100)+'%',l:en?'with the crowd':'a többséggel',ico:'🐑'},{v:cs.against,l:en?'against':'szembe mentél',ico:'🦅'},{v:cs.contraWin,l:en?'contrarian wins':'kontra-találat',ico:'🏆'}].map(x=>`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
@@ -4664,7 +4745,7 @@ function rFun(){
         <div style="font-size:9px;color:rgba(var(--ink-rgb),.45);text-transform:uppercase;margin-top:3px">${x.l}</div>
       </div>`).join('')}
     </div>
-    ${crowdDetail?`<button id="crowdExpBtn" class="exp-toggle">${S.crowdExp?(en?'▴ Hide details':'▴ Részletek elrejtése'):(en?'▾ Match-by-match':'▾ Meccsenkénti bontás')}</button>${S.crowdExp?`<div style="margin-bottom:22px">${crowdDetail}</div>`:'<div style="margin-bottom:18px"></div>'}`:'<div style="margin-bottom:12px"></div>'}` : '';
+    ${crowdDetail?`<button id="crowdExpBtn" class="exp-toggle">${S.crowdExp?(en?'▴ Hide breakdown':'▴ Bontás elrejtése'):(en?'▾ Breakdown by category':'▾ Bontás kategóriánként')}</button>${S.crowdExp?`<div style="margin-bottom:22px">${crowdDetail}</div>`:'<div style="margin-bottom:18px"></div>'}`:'<div style="margin-bottom:12px"></div>'}` : '';
     const champ=dayChampion(fMembers,fCfg);
     const champDetail=champ?champ.ms.map(m=>tipRow(m,champ.uid,eff[m.id])).join(''):'';
     const champCard = champ ? `<div style="background:linear-gradient(135deg,rgba(200,168,75,.16),rgba(200,168,75,.04));border:1px solid rgba(200,168,75,.35);border-radius:12px;padding:12px 14px;margin-bottom:20px">
