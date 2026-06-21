@@ -1662,9 +1662,9 @@ function exportPredImage(){
   let r32=null; if(third8Done){try{r32=resolvePredR32();}catch(e){r32=null;}}
   const cache={};
   const rounds=[
-    {fns:Array.from({length:16},(_,i)=>73+i)},
-    {fns:Array.from({length:8},(_,i)=>89+i)},
-    {fns:Array.from({length:4},(_,i)=>97+i)},
+    {fns:[74,77,73,75,83,84,81,82,76,78,79,80,86,88,85,87]},
+    {fns:[89,90,93,94,91,92,95,96]},
+    {fns:[97,98,99,100]},
     {fns:[101,102]},
     {fns:[104]},
   ];
@@ -2650,7 +2650,7 @@ function rStandings(){
     }).join('')}
   </div>`;
 
-  return `<div><div class="pill-row" style="margin-bottom:10px"><button class="pill${(S.stMode!=='official')?' on':' off'}" data-stmode="live">🔴 Élő tabella</button><button class="pill${(S.stMode==='official')?' on':' off'}" data-stmode="official">✓ Lezárt meccsek</button></div>${legend}<div style="border-bottom:2px solid #0A0A0A;padding-bottom:6px;margin-bottom:14px"><div style="font-family:var(--font-bc);font-weight:700;font-size:20px;color:var(--text-color);letter-spacing:.5px;text-transform:uppercase;line-height:1">Csoporttabella</div></div>${groupSection}${thirds.length?'<div style="height:24px"></div>'+thirdSection:''}${rGroupForecast()}</div>`;
+  return `<div><div class="pill-row" style="margin-bottom:10px"><button class="pill${(S.stMode!=='official')?' on':' off'}" data-stmode="live">🔴 Élő tabella</button><button class="pill${(S.stMode==='official')?' on':' off'}" data-stmode="official">✓ Lezárt meccsek</button></div>${legend}<div style="border-bottom:2px solid #0A0A0A;padding-bottom:6px;margin-bottom:14px"><div style="font-family:var(--font-bc);font-weight:700;font-size:20px;color:var(--text-color);letter-spacing:.5px;text-transform:uppercase;line-height:1">Csoporttabella</div></div>${groupSection}${thirds.length?'<div style="height:24px"></div>'+thirdSection:''}${rGroupForecast()}${rScorers()}</div>`;
 }
 function rGroupForecast(){
   const allTips=S.tips,users=S.users.filter(u=>!u.isAdmin);
@@ -3071,7 +3071,6 @@ function wkBox(fn,cy,MH,MW,isFinal){
       <div class="wk-sep"></div>
       <div class="wk-team${win==='away'?' wk-win':''}${isTBD?' wk-slot':''}">${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
     </div>
-    ${rScorers()}
   </div>`;
 }
 function bkBox(m){
