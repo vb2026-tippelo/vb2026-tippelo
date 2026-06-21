@@ -76,15 +76,19 @@ exports.handler = async function (event) {
         if (!ic || !ic.player) return;
         const teamHU = ic.side === 'home' ? homeHU : awayHU;
         const key = ic.player + '@@' + teamHU;
-        if (ic.type === 'goal') {
+        const ty = String(ic.type || '').toLowerCase().trim();
+        if (ty === 'goal') {
           if (!players[key]) players[key] = { name: ic.player, team: teamHU, goals: 0, assists: 0 };
           players[key].goals++;
-        } else if (ic.type === 'assist') {
+        } else if (ty === 'assist') {
           if (!players[key]) players[key] = { name: ic.player, team: teamHU, goals: 0, assists: 0 };
           players[key].assists++;
         }
       });
-      doneSet.add(m.matchId);
+      // Csak akkor jeloljuk "keszek", ha tenyleg jott esemeny-lista. Ha ures/hianyos
+      // a commentary (pl. kozvetlenul lefujas utan), kesobb ujraprobaljuk, nehogy
+      // egy-egy gol veglegesen lemaradjon.
+      if (incidents.length > 0) doneSet.add(m.matchId);
     });
 
     // 5) mentes, ha volt uj meccs
