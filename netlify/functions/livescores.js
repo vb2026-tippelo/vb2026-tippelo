@@ -31,11 +31,38 @@ function fmtMinute(val) {
   return s.includes('\'') ? s : s + '\'';
 }
 
+// --- robusztus gol-kinyeres: tobbfele mezonevet es "2-0" string format is kezel ---
+function num(v) {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isNaN(n) ? null : n;
+}
+function pick(...vs) {
+  for (const v of vs) { const n = num(v); if (n !== null) return n; }
+  return null;
+}
+function liveScores(m) {
+  let sh = pick(m.scoreHome, m.homeScore, m.home_score, m.scoreH, m.goalsHome, m.homeGoals, m.hScore, m.hg, m.h);
+  let sa = pick(m.scoreAway, m.awayScore, m.away_score, m.scoreA, m.goalsAway, m.awayGoals, m.aScore, m.ag, m.a);
+  const sc = m.score != null ? m.score : (m.result != null ? m.result : m.scoreStr);
+  if ((sh === null || sa === null) && sc != null) {
+    if (typeof sc === 'object') {
+      sh = sh != null ? sh : pick(sc.home, sc.h, sc.fullTime && sc.fullTime.home, sc.current && sc.current.home, sc.live && sc.live.home);
+      sa = sa != null ? sa : pick(sc.away, sc.a, sc.fullTime && sc.fullTime.away, sc.current && sc.current.away, sc.live && sc.live.away);
+    } else if (typeof sc === 'string') {
+      const mm = sc.match(/(\d+)\s*[-:]\s*(\d+)/);
+      if (mm) { sh = sh != null ? sh : Number(mm[1]); sa = sa != null ? sa : Number(mm[2]); }
+    }
+  }
+  return { sh, sa };
+}
+
 const LIVE_STATUSES = new Set([2,6,7,8,9,10,37,38]);
 const FINISHED_STATUSES = new Set([3,43]);
 
 exports.handler = async function(event, context) {
   const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
+  const qp = (event && event.queryStringParameters) || {};
   try {
     const [groupResp, koResp, liveResp] = await Promise.all([
       fetch(`https://${WC_HOST}/wc/draw?stage=group`, {headers: HEADERS}),
@@ -47,14 +74,23 @@ exports.handler = async function(event, context) {
     const koData = koResp.ok ? await koResp.json() : {data:[]};
     const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
 
+    // DIAGNOSZTIKA: ?raw=live -> a /wc/live nyers elso nehany eleme, hogy lassuk a valodi mezoneveket
+    if (qp.raw === 'live') {
+      return { statusCode: 200, headers, body: JSON.stringify({
+        liveCount: (liveData.data || []).length,
+        sample: (liveData.data || []).slice(0, 6)
+      }, null, 2) };
+    }
+
     // Live meccsek: matchId → info + csapatnév → info
     const liveById = {};
     const liveByTeams = {};
     (liveData.data || []).forEach(m => {
+      const ls = liveScores(m);
       const info = {
-        minute: fmtMinute(m.minute),
-        scoreHome: m.scoreHome,
-        scoreAway: m.scoreAway,
+        minute: fmtMinute(m.minute != null ? m.minute : (m.time != null ? m.time : m.elapsed)),
+        scoreHome: ls.sh,
+        scoreAway: ls.sa,
         status: m.status,
         matchId: m.matchId,
       };
