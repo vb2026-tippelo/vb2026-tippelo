@@ -2603,11 +2603,10 @@ function rMatches(){
     const eff=(S.stMode==='official'?S.results:getEffectiveResults());
     const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
     const tc=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e63329';
-    const _gsit=groupSituation(S.results);
     const liveTable=`<div class="grp-mini-std">
       <div class="gms-cap">🔴 ${S.lang==='en'?'Actual standings':'Tényleges állás'}</div>
       <div class="gms-row gms-head"><span class="gms-pos">#</span><span class="gms-team">${S.lang==='en'?'Group '+grp.id:grp.id+'. csoport'}</span><span>M</span><span>GY</span><span>D</span><span>V</span><span>GK</span><span>P</span></div>
-      ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span>${i<2&&clinchPos(_gsit,grp.id,r.n,i)?`<span title="${i===0?(S.lang==='en'?'Group win secured':'Csoportgyőzelem bebiztosítva'):(S.lang==='en'?'Advancing secured':'Továbbjutás bebiztosítva')}" style="color:#2E9E5A;font-weight:800;margin-left:5px;font-size:11px">✓</span>`:''}</span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
+      ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span>${(()=>{const c=teamClinch(grp.id,r.n);return c.first?`<span title="${S.lang==='en'?'Group win secured':'Csoportgyőzelem bebiztosítva'}" style="color:#C8A84B;font-weight:800;margin-left:5px;font-size:11px">✓</span>`:c.adv?`<span title="${S.lang==='en'?'Advancing secured':'Továbbjutás bebiztosítva'}" style="color:#2E9E5A;font-weight:800;margin-left:5px;font-size:11px">✓</span>`:'';})()}</span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
     </div>`;
     const pred=S.predGroups?.[grp.id]||[];
     const predCol=`<div class="grp-mini-std">
@@ -2986,7 +2985,7 @@ function rStandings(){
           return `<div style="display:grid;grid-template-columns:3px 24px 1fr 28px 20px 20px 20px 44px 36px;align-items:center;gap:0;padding:7px 12px;background:${bg};border-left:3px solid ${leftC};${border}">
             <div></div>
             <div style="font-family:var(--font-bc);font-weight:700;font-size:11px;color:rgba(var(--ink-rgb),.35);text-align:center">${i+1}</div>
-            <div style="display:flex;align-items:center;gap:6px;padding-left:4px"><span>${fImg(tm.n,16)}</span><span style="font-family:var(--font-bc);font-weight:700;font-size:13px;color:var(--text-color);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(tm.n)}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;padding-left:4px"><span>${fImg(tm.n,16)}</span><span style="font-family:var(--font-bc);font-weight:700;font-size:13px;color:var(--text-color);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(tm.n)}</span>${(()=>{const c=teamClinch(g.id,tm.n);return c.first?'<span title="Csoportgyőzelem bebiztosítva" style="color:#C8A84B;font-weight:800;margin-left:4px;font-size:12px">✓</span>':c.adv?'<span title="Továbbjutás bebiztosítva" style="color:#2E9E5A;font-weight:800;margin-left:4px;font-size:12px">✓</span>':'';})()}</div>
             <div style="font-family:var(--font-bc);font-size:12px;color:rgba(var(--ink-rgb),.45);text-align:center">${tm.p}</div>
             <div style="font-family:var(--font-bc);font-size:12px;color:rgba(var(--ink-rgb),.45);text-align:center">${tm.w}</div>
             <div style="font-family:var(--font-bc);font-size:12px;color:rgba(var(--ink-rgb),.45);text-align:center">${tm.d}</div>
@@ -3205,6 +3204,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <li>📷 Az <b>ágrajz</b> (a projekció és a hivatalos is) <b>képként exportálható és megosztható</b> a „📷 Kép" gombbal — most már <b>zászlókkal</b> együtt.</li>
 <li>🔴 A projekcióban (a képen és a képernyőn is) <b>jelöljük az élő meccs alatt álló</b> helyezéseket (🔴), és a <b>már biztos</b> helyeket is ✓-vel (lezárult csoport, vagy matematikailag bebiztosított 1./2. hely).</li>
 <li>✅ A <b>már biztos csapatok</b> (bebiztosított csoportgyőztes/2. hely) automatikusan megjelennek a <b>meccseknél</b> és a <b>hivatalos ágrajzban</b> is — nem kell megvárni a csoportkör végét. A <b>tabellában</b> ✓ jelzi a bebiztosított helyezést.</li>
+<li>🧮 A bebiztosítás mostantól <b>menetrend-tudatos</b>: a hátralévő meccsek összes lehetséges kimenetelét végignézi. Külön jelöli az <b>arany ✓ csoportgyőzelmet</b> (biztos 1. hely) és a <b>zöld ✓ továbbjutást</b> (biztos top-2, de a pontos hely még nyitott) — így a 6 pontos, dobogós csapatok is láthatóan „továbbjutott" jelölést kapnak, akkor is, ha az 1. hely matematikailag még nem dőlt el.</li>
 </ul>
 <h3>2026.06.21.</h3>
 <ul>
@@ -3705,6 +3705,44 @@ function projMark(s){
   return s==='secured'?'<span style="color:#2E9E5A;font-weight:800;margin-right:3px">✓</span>'
        :s==='live'?'<span style="color:#CC2929;margin-right:2px;font-size:9px">●</span>':'';
 }
+// Menetrend-tudatos bebiztositas: felsorolja a hatralevo meccsek W/D/L kimeneteleit es minden
+// forgatokonyvben ellenorzi a helyezest. Konzervativ: pont-holtversenyt rontonak veszi.
+let _gcRef=null,_gcVal=null;
+function groupClinch(results){
+  if(_gcRef===results)return _gcVal;
+  _gcRef=results; _gcVal=computeGroupClinch(results||{}); return _gcVal;
+}
+function computeGroupClinch(results){
+  const out={};
+  GD.forEach(g=>{
+    const names=g.teams, ms=ALL.filter(m=>m.group===g.id);
+    const base={}; names.forEach(n=>base[n]=0);
+    const rem=[]; let live=false;
+    ms.forEach(m=>{const r=results[m.id];
+      if(r){ if(r.live)live=true; const rh=parseInt(r.homeGoals),ra=parseInt(r.awayGoals);
+        if(base[m.home]!=null&&base[m.away]!=null){ if(rh>ra)base[m.home]+=3; else if(rh===ra){base[m.home]++;base[m.away]++;} else base[m.away]+=3; } }
+      else rem.push(m);
+    });
+    const finished=rem.length===0;
+    const fl={},ad={},ab={}; names.forEach(n=>{fl[n]=true;ad[n]=true;ab[n]=true;}); // firstOk(sole 1st), advOk(top-2), aboveAlways(sosem 1.)
+    const k=rem.length;
+    if(k>5){ names.forEach(n=>{fl[n]=false;ad[n]=false;ab[n]=false;}); }
+    else{
+      const total=Math.pow(3,k);
+      for(let mask=0;mask<total;mask++){
+        const pts={...base}; let xx=mask;
+        for(let i=0;i<k;i++){ const o=xx%3; xx=(xx-o)/3; const m=rem[i];
+          if(o===0)pts[m.home]+=3; else if(o===1){pts[m.home]++;pts[m.away]++;} else pts[m.away]+=3; }
+        names.forEach(n=>{ let ge=0,gt=0; names.forEach(u=>{ if(u===n)return; if(pts[u]>=pts[n])ge++; if(pts[u]>pts[n])gt++; });
+          if(ge>0)fl[n]=false; if(ge>1)ad[n]=false; if(gt===0)ab[n]=false; });
+      }
+    }
+    const res={}; names.forEach(n=>{res[n]={first:fl[n],adv:ad[n],second:ad[n]&&ab[n]};});
+    out[g.id]={res,finished,live};
+  });
+  return out;
+}
+function teamClinch(gid,name){ const g=groupClinch(S.results)[gid]; return (g&&g.res[name])||{first:false,adv:false,second:false}; }
 // Projekcio: a jelenlegi (reszleges) allas alapjan kiszamolja a 32 koros parositasokat.
 function projectR32(results){
   const standings={};
@@ -3719,11 +3757,12 @@ function projectR32(results){
   const thirdFor={};
   hostOrder.forEach((h,i)=>{thirdFor[h]=row[i];});
   const sit=groupSituation(results);
+  const gc2=groupClinch(results);
   const allFin=GD.every(g=>sit[g.id].finished);
   const statusFor=(grp,pos,name)=>{
     if(!grp)return '';
     let sec;
-    if(pos===2) sec=allFin; else sec=clinchPos(sit,grp,name,pos);
+    if(pos===2) sec=allFin; else { const c=gc2[grp].res[name]||{}; sec=pos===0?!!c.first:!!c.second; }
     const lv=sit[grp]&&sit[grp].live&&!sec;
     return sec?'secured':(lv?'live':'');
   };
@@ -3754,9 +3793,9 @@ function r32Fixed(){
 }
 function computeR32Fixed(){
   const res=S.results||{};
-  const sit=groupSituation(res);
+  const gc=groupClinch(res);
   const std={}; GD.forEach(g=>{std[g.id]=calcStd(g.id,res,null);});
-  const allFin=GD.every(g=>sit[g.id].finished);
+  const allFin=GD.every(g=>gc[g.id].finished);
   let thirdFor=null;
   if(allFin){const pj=projectR32(res);if(pj)thirdFor=pj.thirdFor;}
   const out={};
@@ -3764,7 +3803,7 @@ function computeR32Fixed(){
     const sl=R32_SLOTS[fn],hL=sl[0],aL=sl[1];
     const sideTeam=(lbl,otherLbl)=>{
       const mm=lbl.match(/^([12])([A-L])$/);
-      if(mm){const g=mm[2],pos=mm[1]==='1'?0:1;const team=std[g][pos]&&std[g][pos].n;return team&&clinchPos(sit,g,team,pos)?team:null;}
+      if(mm){const g=mm[2],pos=mm[1]==='1'?0:1;const team=std[g][pos]&&std[g][pos].n; if(!team)return null; const c=gc[g].res[team]||{}; return (pos===0?c.first:c.second)?team:null;}
       if(allFin&&thirdFor){const host=otherLbl.match(/^[12]([A-L])$/)[1];const tg=thirdFor[host];return std[tg]&&std[tg][2]?std[tg][2].n:null;}
       return null;
     };
