@@ -2603,10 +2603,11 @@ function rMatches(){
     const eff=(S.stMode==='official'?S.results:getEffectiveResults());
     const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
     const tc=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e63329';
+    const _gsit=groupSituation(S.results);
     const liveTable=`<div class="grp-mini-std">
       <div class="gms-cap">🔴 ${S.lang==='en'?'Actual standings':'Tényleges állás'}</div>
       <div class="gms-row gms-head"><span class="gms-pos">#</span><span class="gms-team">${S.lang==='en'?'Group '+grp.id:grp.id+'. csoport'}</span><span>M</span><span>GY</span><span>D</span><span>V</span><span>GK</span><span>P</span></div>
-      ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span></span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
+      ${rows.map((r,i)=>`<div class="gms-row"><span class="gms-pos" style="color:${tc(i)} !important">${i+1}</span><span class="gms-team">${fImg(r.n,16)}<span class="gms-tnm">${teamName(r.n)}</span>${i<2&&clinchPos(_gsit,grp.id,r.n,i)?`<span title="${i===0?(S.lang==='en'?'Group win secured':'Csoportgyőzelem bebiztosítva'):(S.lang==='en'?'Advancing secured':'Továbbjutás bebiztosítva')}" style="color:#2E9E5A;font-weight:800;margin-left:5px;font-size:11px">✓</span>`:''}</span><span>${r.p}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span><span>${r.gd>0?'+':''}${r.gd}</span><span class="gms-pts">${r.pts}</span></div>`).join('')}
     </div>`;
     const pred=S.predGroups?.[grp.id]||[];
     const predCol=`<div class="grp-mini-std">
@@ -2675,7 +2676,11 @@ function rCard(m){
   const hl=S.highlightMatch===m.id;
 
   if(isTBD){
-    const hLbl=slotLabel(m.id,0),aLbl=slotLabel(m.id,1);
+    const f=m.stage==='r32'?(r32Fixed()[m.id]||null):null;
+    const hFix=f&&f.home?f.home:null, aFix=f&&f.away?f.away:null;
+    const tbdSide=(fix,side)=>fix
+      ?`<div class="mc-tbd-slot" style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-color)">${fImg(fix,24)} ${teamName(fix)} <span style="color:#2E9E5A;font-weight:800;font-size:13px">✓</span></div>`
+      :`<div class="mc-tbd-slot">${slotLabel(m.id,side)}</div>`;
     return `<div class="mcard locked" id="match-${m.id}">
     <div class="mc-top" style="display:flex;align-items:center;gap:10px;padding:9px 14px;flex-wrap:wrap">
       <span style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:2px 8px">${grpLbl}</span>
@@ -2684,9 +2689,9 @@ function rCard(m){
       ${venue?`<span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4)">📍 ${venue}</span>`:''}
     </div>
     <div class="mc-tbd-main">
-      <div class="mc-tbd-slot">${hLbl}</div>
+      ${tbdSide(hFix,0)}
       <div class="mc-tbd-vs">vs</div>
-      <div class="mc-tbd-slot">${aLbl}</div>
+      ${tbdSide(aFix,1)}
     </div>
   </div>`;
   }
@@ -3199,6 +3204,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <li>🔧 <b>Élő eredmény</b> javítás: a folyamatban lévő meccs állása nem ragad 0:0-n, az élő gólszámot megbízhatóbban olvassuk ki.</li>
 <li>📷 Az <b>ágrajz</b> (a projekció és a hivatalos is) <b>képként exportálható és megosztható</b> a „📷 Kép" gombbal — most már <b>zászlókkal</b> együtt.</li>
 <li>🔴 A projekcióban (a képen és a képernyőn is) <b>jelöljük az élő meccs alatt álló</b> helyezéseket (🔴), és a <b>már biztos</b> helyeket is ✓-vel (lezárult csoport, vagy matematikailag bebiztosított 1./2. hely).</li>
+<li>✅ A <b>már biztos csapatok</b> (bebiztosított csoportgyőztes/2. hely) automatikusan megjelennek a <b>meccseknél</b> és a <b>hivatalos ágrajzban</b> is — nem kell megvárni a csoportkör végét. A <b>tabellában</b> ✓ jelzi a bebiztosított helyezést.</li>
 </ul>
 <h3>2026.06.21.</h3>
 <ul>
@@ -3739,6 +3745,41 @@ function projectR32(results){
   }
   return {out,best8,thirdFor,standings,sit,allFin};
 }
+// A mar BIZTOS (matematikailag eldolt) R32 oldalak a vegleges (lezart) eredmenyek alapjan.
+// 1X/2X slot: ha a csoportgyoztes/2. hely bebiztositva. 3. helyezett slot: csak ha minden csoport lezarult.
+let _r32FixRef=null,_r32FixVal=null;
+function r32Fixed(){
+  if(_r32FixRef===S.results)return _r32FixVal||{};
+  _r32FixRef=S.results; _r32FixVal=computeR32Fixed(); return _r32FixVal;
+}
+function computeR32Fixed(){
+  const res=S.results||{};
+  const sit=groupSituation(res);
+  const std={}; GD.forEach(g=>{std[g.id]=calcStd(g.id,res,null);});
+  const allFin=GD.every(g=>sit[g.id].finished);
+  let thirdFor=null;
+  if(allFin){const pj=projectR32(res);if(pj)thirdFor=pj.thirdFor;}
+  const out={};
+  for(let fn=73;fn<=88;fn++){
+    const sl=R32_SLOTS[fn],hL=sl[0],aL=sl[1];
+    const sideTeam=(lbl,otherLbl)=>{
+      const mm=lbl.match(/^([12])([A-L])$/);
+      if(mm){const g=mm[2],pos=mm[1]==='1'?0:1;const team=std[g][pos]&&std[g][pos].n;return team&&clinchPos(sit,g,team,pos)?team:null;}
+      if(allFin&&thirdFor){const host=otherLbl.match(/^[12]([A-L])$/)[1];const tg=thirdFor[host];return std[tg]&&std[tg][2]?std[tg][2].n:null;}
+      return null;
+    };
+    const home=sideTeam(hL,aL),away=sideTeam(aL,hL);
+    if(home||away)out[fn]={home,away};
+  }
+  return out;
+}
+// Egy KO meccs csapatai: eloszor a hivatalos kitoltes (S.mt), aztan az R32 fix oldalak.
+function koTeams(m){
+  const ov=S.mt[m.id];
+  let home=ov&&ov.home?ov.home:null, away=ov&&ov.away?ov.away:null;
+  if((!home||!away)&&m.stage==='r32'){const f=r32Fixed()[m.id];if(f){if(!home)home=f.home||null;if(!away)away=f.away||null;}}
+  return {home,away};
+}
 async function autoFillKnockoutTeams(){
   const updates={};
   const r32=resolveR32Teams(S.results);
@@ -3910,31 +3951,30 @@ function wkBox(fn,cy,MH,MW,isFinal){
   const top=Math.round(cy-MH/2);
   const empty=`<div style="position:absolute;top:${top}px;left:1px;right:1px"><div class="wk-box"><div class="wk-hdr" style="opacity:.4">M${fn}</div><div class="wk-team"><span class="wk-tbd">TBD</span></div><div class="wk-sep"></div><div class="wk-team"><span class="wk-tbd">TBD</span></div></div></div>`;
   if(!m)return empty;
-  let home,away,isTBD,res,win;
+  let homeT,awayT,res,win,hSt='',aSt='';
   if(_bkProj){
     const p=_bkProj[fn];
-    home=p?p.home:null; away=p?p.away:null;
-    isTBD=!p; res=undefined; win=null;
+    homeT=p?p.home:null; awayT=p?p.away:null; res=undefined; win=null;
+    if(p){hSt=p.hStatus;aSt=p.aStatus;}
   }else{
-    const ov=S.mt[m.id];home=ov?.home||m.home;away=ov?.away||m.away;
-    isTBD=m.tbd&&!ov;
+    const kt=koTeams(m); homeT=kt.home; awayT=kt.away;
     res=getEffectiveResults()[m.id];
     win=res?getWinnerSide(m.id,res):null;
   }
+  const hSlot=!homeT, aSlot=!awayT;
   const venue=KO_VENUE[fn]||'';
   const koLbl=fmtKoTime(m);
-  const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
-  const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
-  const hFlag=(!isTBD&&home)?fImg(home,15):'';
-  const aFlag=(!isTBD&&away)?fImg(away,15):'';
-  const _pj=_bkProj?_bkProj[fn]:null;
-  const hMk=_pj?projMark(_pj.hStatus):'', aMk=_pj?projMark(_pj.aStatus):'';
+  const hLbl=homeT?teamName(homeT):slotLabel(m.id,0);
+  const aLbl=awayT?teamName(awayT):slotLabel(m.id,1);
+  const hFlag=homeT?fImg(homeT,15):'';
+  const aFlag=awayT?fImg(awayT,15):'';
+  const hMk=projMark(hSt), aMk=projMark(aSt);
   return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
     <div class="wk-box${isFinal?' wk-final-box':''}">
       <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span> · ${koLbl}${venue?` · ${venue}`:''}</div>
-      <div class="wk-team${win==='home'?' wk-win':''}${isTBD?' wk-slot':''}">${hMk}${hFlag}<span class="wk-tnm">${hLbl}</span>${res!==undefined?`<span class="wk-sc">${res.homeGoals}</span>`:''}</div>
+      <div class="wk-team${win==='home'?' wk-win':''}${hSlot?' wk-slot':''}">${hMk}${hFlag}<span class="wk-tnm">${hLbl}</span>${res!==undefined&&!hSlot?`<span class="wk-sc">${res.homeGoals}</span>`:''}</div>
       <div class="wk-sep"></div>
-      <div class="wk-team${win==='away'?' wk-win':''}${isTBD?' wk-slot':''}">${aMk}${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
+      <div class="wk-team${win==='away'?' wk-win':''}${aSlot?' wk-slot':''}">${aMk}${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined&&!aSlot?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
     </div>
   </div>`;
 }
@@ -4088,27 +4128,26 @@ function rBracketMobile(){
   function mobileBox(fn){
     const m=byFifaNum(fn);
     if(!m) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – TBD</div></div>`;
-    let home,away,isTBD,res,win;
+    let homeT,awayT,res,win,hSt='',aSt='';
     if(_bkProj){
       const p=_bkProj[fn];
-      home=p?p.home:null; away=p?p.away:null;
-      isTBD=!p; res=undefined; win=null;
+      homeT=p?p.home:null; awayT=p?p.away:null; res=undefined; win=null;
+      if(p){hSt=p.hStatus;aSt=p.aStatus;}
     }else{
-      const ov=S.mt[m.id];home=ov?.home||m.home;away=ov?.away||m.away;
-      isTBD=m.tbd&&!ov;
+      const kt=koTeams(m); homeT=kt.home; awayT=kt.away;
       res=getEffectiveResults()[m.id];
       win=res?getWinnerSide(m.id,res):null;
     }
     const venue=KO_VENUE[fn]||'',koLbl=fmtKoTime(m);
-    const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
-    const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
-    const _pj=_bkProj?_bkProj[fn]:null;
-    const hMk=_pj?projMark(_pj.hStatus):'', aMk=_pj?projMark(_pj.aStatus):'';
+    const hSlot=!homeT,aSlot=!awayT;
+    const hLbl=homeT?teamName(homeT):slotLabel(m.id,0);
+    const aLbl=awayT?teamName(awayT):slotLabel(m.id,1);
+    const hMk=projMark(hSt), aMk=projMark(aSt);
     return `<div class="bk-mob-card">
       <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venue:''}</div>
       <div class="bk-mob-teams">
-        <div class="bk-mob-team${win==='home'?' wk-win':''}">${hMk}${!isTBD&&home?fImg(home,18):''}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
-        <div class="bk-mob-team${win==='away'?' wk-win':''}">${aMk}${!isTBD&&away?fImg(away,18):''}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='home'?' wk-win':''}">${hMk}${homeT?fImg(homeT,18):''}<span>${hLbl}</span>${res!=null&&!hSlot?`<b>${res.homeGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='away'?' wk-win':''}">${aMk}${awayT?fImg(awayT,18):''}<span>${aLbl}</span>${res!=null&&!aSlot?`<b>${res.awayGoals}</b>`:''}</div>
       </div>
     </div>`;
   }
