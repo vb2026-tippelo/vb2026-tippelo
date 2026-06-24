@@ -1317,16 +1317,58 @@ async function loadActivityLog(){
 function calcStd(gid,results,mt){
   const grp=GD.find(g=>g.id===gid);
   const teams=grp.teams.map(n=>({n,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}));
-  ALL.filter(m=>m.group===gid).forEach(m=>{
+  const byName={}; teams.forEach(t=>{byName[t.n]=t;});
+  const gms=ALL.filter(m=>m.group===gid);
+  gms.forEach(m=>{
     const r=results[m.id];if(!r)return;
     const ov=mt?.[m.id],hN=ov?.home||m.home,aN=ov?.away||m.away;
-    const h=teams.find(t=>t.n===hN),a=teams.find(t=>t.n===aN);if(!h||!a)return;
+    const h=byName[hN],a=byName[aN];if(!h||!a)return;
     const rh=parseInt(r.homeGoals),ra=parseInt(r.awayGoals);
     h.p++;a.p++;h.gf+=rh;h.ga+=ra;a.gf+=ra;a.ga+=rh;
     if(rh>ra){h.w++;h.pts+=3;a.l++;}else if(rh===ra){h.d++;h.pts++;a.d++;a.pts++;}else{a.w++;a.pts+=3;h.l++;}
     h.gd=h.gf-h.ga;a.gd=a.gf-a.ga;
   });
-  return teams.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+  // FIFA holtverseny-sorrend: pont -> egymas elleni (pont, gk, lott gol; az erintettekre ujraalkalmazva)
+  //   -> osszesitett gk -> osszesitett lott gol. (Fair play / FIFA-ranglista adat hianyaban azok kimaradnak.)
+  function h2h(names){
+    const s={}; names.forEach(n=>{s[n]={pts:0,gf:0,ga:0,gd:0};});
+    const set=new Set(names);
+    gms.forEach(m=>{
+      const r=results[m.id];if(!r)return;
+      const ov=mt?.[m.id],hN=ov?.home||m.home,aN=ov?.away||m.away;
+      if(!set.has(hN)||!set.has(aN))return;
+      const rh=parseInt(r.homeGoals),ra=parseInt(r.awayGoals);
+      s[hN].gf+=rh;s[hN].ga+=ra;s[aN].gf+=ra;s[aN].ga+=rh;
+      if(rh>ra)s[hN].pts+=3;else if(rh===ra){s[hN].pts++;s[aN].pts++;}else s[aN].pts+=3;
+    });
+    names.forEach(n=>{s[n].gd=s[n].gf-s[n].ga;});
+    return s;
+  }
+  function rankTied(names,useH2H){
+    if(names.length<=1)return names.slice();
+    if(!useH2H)return names.slice().sort((a,b)=>byName[b].gd-byName[a].gd||byName[b].gf-byName[a].gf);
+    const s=h2h(names);
+    const key=n=>s[n].pts+'|'+s[n].gd+'|'+s[n].gf;
+    const sorted=names.slice().sort((a,b)=>s[b].pts-s[a].pts||s[b].gd-s[a].gd||s[b].gf-s[a].gf);
+    const out=[];let i=0;
+    while(i<sorted.length){
+      let j=i;while(j<sorted.length&&key(sorted[j])===key(sorted[i]))j++;
+      const sub=sorted.slice(i,j);
+      if(sub.length===1)out.push(sub[0]);
+      else if(sub.length<names.length)out.push(...rankTied(sub,true)); // a meg holtversenyben allokra ujra a-c
+      else out.push(...rankTied(sub,false));                          // teljes holtverseny -> ossz gk/gol
+      i=j;
+    }
+    return out;
+  }
+  const names=teams.map(t=>t.n).sort((a,b)=>byName[b].pts-byName[a].pts);
+  const ordered=[];let i=0;
+  while(i<names.length){
+    let j=i;while(j<names.length&&byName[names[j]].pts===byName[names[i]].pts)j++;
+    ordered.push(...rankTied(names.slice(i,j),true));
+    i=j;
+  }
+  return ordered.map(n=>byName[n]);
 }
 
 async function sG(key,shared=false){
@@ -2601,7 +2643,7 @@ function rMatches(){
   <div class="pill-row pill-row-nav">${gTabs.map(gt=>`<button class="pill ${sel===gt.id?'on':'off'}" data-g="${gt.id}">${sel===gt.id&&gt.id.length===1?(S.lang==='en'?'Group '+gt.id:gt.id+'. csoport'):gt.id.length===1?gt.id+'':gt.l}</button>`).join('')}</div>
   ${grp?(()=>{
     const eff=(S.stMode==='official'?S.results:getEffectiveResults());
-    const rows=calcStd(grp.id,eff,S.mt).slice().sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+    const rows=calcStd(grp.id,eff,S.mt);
     const tc=i=>i<2?'#2E9E5A':i===2?'#C8A84B':'#e63329';
     const liveTable=`<div class="grp-mini-std">
       <div class="gms-cap">🔴 ${S.lang==='en'?'Actual standings':'Tényleges állás'}</div>
@@ -3205,6 +3247,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <li>🔴 A projekcióban (a képen és a képernyőn is) <b>jelöljük az élő meccs alatt álló</b> helyezéseket (🔴), és a <b>már biztos</b> helyeket is ✓-vel (lezárult csoport, vagy matematikailag bebiztosított 1./2. hely).</li>
 <li>✅ A <b>már biztos csapatok</b> (bebiztosított csoportgyőztes/2. hely) automatikusan megjelennek a <b>meccseknél</b> és a <b>hivatalos ágrajzban</b> is — nem kell megvárni a csoportkör végét. A <b>tabellában</b> ✓ jelzi a bebiztosított helyezést.</li>
 <li>🧮 A bebiztosítás mostantól <b>menetrend-tudatos</b>: a hátralévő meccsek összes lehetséges kimenetelét végignézi. Külön jelöli az <b>arany ✓ csoportgyőzelmet</b> (biztos 1. hely) és a <b>zöld ✓ továbbjutást</b> (biztos top-2, de a pontos hely még nyitott) — így a 6 pontos, dobogós csapatok is láthatóan „továbbjutott" jelölést kapnak, akkor is, ha az 1. hely matematikailag még nem dőlt el.</li>
+<li>📐 A csoport-sorrend mostantól a <b>hivatalos FIFA holtverseny-szabályt</b> követi: pontegyenlőségnél előbb az <b>egymás elleni</b> eredmény dönt (egymás elleni pont, gólkülönbség, lőtt gól, az érintettekre újraalkalmazva), és csak utána az összesített gólkülönbség és lőtt gól. Ez pontosabb 2./3. helyezést (és így ágrajz-besorolást) ad a holtversenyes csoportokban.</li>
 </ul>
 <h3>2026.06.21.</h3>
 <ul>
