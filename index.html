@@ -3197,6 +3197,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <ul>
 <li>🔮 Az <b>Ágrajz</b> fülön új <b>projekció</b>: a jelenlegi állás szerint mi lenne a 32 közé jutás (a hivatalos FIFA harmadikhelyezett-elosztással), <b>ugyanúgy fa-ágrajzként megrajzolva</b>, mint a rendes ágrajz. Válthatsz <b>élő meccsek</b> és <b>csak lezárt meccsek</b> alapú nézet között.</li>
 <li>🔧 <b>Élő eredmény</b> javítás: a folyamatban lévő meccs állása nem ragad 0:0-n, az élő gólszámot megbízhatóbban olvassuk ki.</li>
+<li>📷 Az <b>ágrajz</b> (a projekció és a hivatalos is) <b>képként exportálható és megosztható</b> a „📷 Kép" gombbal.</li>
 </ul>
 <h3>2026.06.21.</h3>
 <ul>
@@ -3357,6 +3358,93 @@ async function shareH2HImage(){
     const file=new File([blob],'h2h.png',{type:'image/png'});
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Head-to-head'});return;}}catch(e){if(e&&e.name==='AbortError')return;}
     try{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='vb2026-h2h.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);SS({h2hCopied:true});setTimeout(()=>SS({h2hCopied:false}),2000);}catch(e){}
+  },'image/png');
+}
+async function shareBracketImage(useProj){
+  const en=S.lang==='en';
+  try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(e){}
+  const mode=S.projMode==='final'?'final':'live';
+  let proj=null;
+  if(useProj){
+    const results=mode==='final'?{...S.results}:getEffectiveResults();
+    proj=projectR32(results);
+    if(!proj){alert(en?'Not enough data to project yet.':'Még nincs elég adat a projekcióhoz.');return;}
+  }
+  const BC='"Barlow Condensed",sans-serif';
+  const boxW=250,boxH=72,vGap=22,gap=66,padX=60,headerH=150,footerH=64,sc=2;
+  const rounds=[
+    [74,77,73,75,83,84,81,82,76,78,79,80,86,88,85,87],
+    [89,90,93,94,91,92,95,96],
+    [97,98,99,100],
+    [101,102],
+    [104],
+  ];
+  const colX=r=>padX+r*(boxW+gap);
+  const yc=[]; yc[0]=rounds[0].map((_,i)=>headerH+boxH/2+i*(boxH+vGap));
+  for(let r=1;r<rounds.length;r++){yc[r]=rounds[r].map((_,j)=>(yc[r-1][2*j]+yc[r-1][2*j+1])/2);}
+  const contentBottom=yc[0][yc[0].length-1]+boxH/2;
+  const bronzeY=yc[4][0]+170;
+  const W=padX*2+5*boxW+4*gap;
+  const H=Math.max(contentBottom,bronzeY+boxH/2)+footerH;
+  const cv=document.createElement('canvas');cv.width=W*sc;cv.height=H*sc;
+  const x=cv.getContext('2d');x.scale(sc,sc);
+  x.fillStyle='#0A0A0A';x.fillRect(0,0,W,H);
+  x.fillStyle='#C8A84B';x.fillRect(0,0,W,9);
+  x.textBaseline='alphabetic';x.textAlign='left';
+  x.fillStyle='#C8A84B';x.font='700 40px '+BC;
+  const title=useProj?(en?'BRACKET — PROJECTION':'ÁGRAJZ — PROJEKCIÓ'):(en?'KNOCKOUT BRACKET':'KIESÉSES ÁGRAJZ');
+  x.fillText(title,padX,72);
+  let sub='VB 2026 TIPPELŐ';
+  if(useProj)sub+=' · '+(mode==='final'?(en?'finished matches':'lezárt meccsek'):(en?'live standings':'élő állás'));
+  x.fillStyle='rgba(240,237,230,.5)';x.font='600 18px sans-serif';x.fillText(sub,padX,102);
+  const rr=(bx,by,w,h,r)=>{x.beginPath();x.moveTo(bx+r,by);x.arcTo(bx+w,by,bx+w,by+h,r);x.arcTo(bx+w,by+h,bx,by+h,r);x.arcTo(bx,by+h,bx,by,r);x.arcTo(bx,by,bx+w,by,r);x.closePath();};
+  const clip=(s,max)=>{let t=String(s);while(x.measureText(t).width>max&&t.length>2)t=t.slice(0,-2);return t===String(s)?t:t+'…';};
+  const strip=s=>String(s).replace(/<[^>]*>/g,'');
+  function boxData(fn){
+    const m=byFifaNum(fn);if(!m)return null;
+    let home,away,isTBD,res;
+    if(useProj){const p=proj.out[fn];home=p?p.home:null;away=p?p.away:null;isTBD=!p;res=undefined;}
+    else{const ov=S.mt[m.id];home=ov?.home||m.home;away=ov?.away||m.away;isTBD=m.tbd&&!ov;res=getEffectiveResults()[m.id];}
+    const h=isTBD?strip(slotLabel(m.id,0)):(home?teamName(home):'—');
+    const a=isTBD?strip(slotLabel(m.id,1)):(away?teamName(away):'—');
+    const win=res?getWinnerSide(m.id,res):null;
+    return {fn,h,a,hs:res?String(res.homeGoals):'',as:res?String(res.awayGoals):'',win,isTBD};
+  }
+  function teamRow(bx,w,ty,name,score,winFlag,tbd){
+    x.textAlign='left';
+    x.fillStyle=winFlag?'#2E9E5A':(tbd?'rgba(240,237,230,.4)':'#F0EDE6');
+    x.font=(winFlag?'700 ':'600 ')+'18px '+BC;
+    x.fillText(clip(name,w-58),bx+12,ty);
+    if(score!==''){x.textAlign='right';x.fillStyle=winFlag?'#2E9E5A':'rgba(240,237,230,.7)';x.font='700 18px '+BC;x.fillText(score,bx+w-12,ty);}
+  }
+  function drawBox(fn,cx,yCenter,isFinal){
+    const d=boxData(fn);if(!d)return;
+    const by=yCenter-boxH/2;
+    x.fillStyle='#141414';rr(cx,by,boxW,boxH,8);x.fill();
+    x.strokeStyle=isFinal?'#C8A84B':'rgba(212,175,55,.35)';x.lineWidth=isFinal?2:1;rr(cx,by,boxW,boxH,8);x.stroke();
+    x.textAlign='left';x.fillStyle='rgba(240,237,230,.32)';x.font='600 11px '+BC;x.fillText('M'+fn,cx+12,by+16);
+    x.beginPath();x.strokeStyle='rgba(240,237,230,.08)';x.lineWidth=1;x.moveTo(cx+10,by+24);x.lineTo(cx+boxW-10,by+24);x.stroke();
+    teamRow(cx,boxW,by+45,d.h,d.hs,d.win==='home',d.isTBD);
+    teamRow(cx,boxW,by+65,d.a,d.as,d.win==='away',d.isTBD);
+  }
+  x.strokeStyle='rgba(212,175,55,.30)';x.lineWidth=1.5;
+  for(let r=1;r<rounds.length;r++){
+    rounds[r].forEach((_,j)=>{
+      const a=yc[r-1][2*j],b=yc[r-1][2*j+1],p=yc[r][j];
+      const fx=colX(r-1)+boxW,px=colX(r),mx=(fx+px)/2;
+      x.beginPath();x.moveTo(fx,a);x.lineTo(mx,a);x.moveTo(fx,b);x.lineTo(mx,b);x.moveTo(mx,a);x.lineTo(mx,b);x.moveTo(mx,p);x.lineTo(px,p);x.stroke();
+    });
+  }
+  rounds.forEach((arr,r)=>arr.forEach((fn,i)=>drawBox(fn,colX(r),yc[r][i],r===4)));
+  x.textAlign='left';x.fillStyle='rgba(240,237,230,.5)';x.font='700 14px '+BC;x.fillText('🥉 '+(en?'3RD PLACE':'3. HELYÉRT'),colX(4),bronzeY-boxH/2-8);
+  drawBox(103,colX(4),bronzeY,false);
+  x.textAlign='center';x.fillStyle='rgba(240,237,230,.3)';x.font='500 18px sans-serif';x.fillText('vb26tipp.forma1fitnesz.hu',W/2,H-26);
+  cv.toBlob(async(blob)=>{
+    if(!blob)return;
+    const fname=useProj?'vb2026-agrajz-projekcio.png':'vb2026-agrajz.png';
+    const file=new File([blob],fname,{type:'image/png'});
+    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'VB 2026 Tippelő'});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+    try{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}catch(e){}
   },'image/png');
 }
 async function shareRecap(){
@@ -3810,7 +3898,7 @@ function rProjBracket(){
   const played=grpMatches.filter(m=>results[m.id]).length;
   const liveCount=mode==='live'?grpMatches.filter(m=>results[m.id]&&results[m.id].live).length:0;
   const btn=(m,ic,lab)=>`<button data-projmode="${m}" style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;cursor:pointer;border-radius:8px;border:1px solid ${mode===m?'#C8A84B':'var(--border)'};background:${mode===m?'rgba(200,168,75,.15)':'transparent'};color:${mode===m?'#C8A84B':'rgba(var(--ink-rgb),.6)'}">${ic} ${lab}</button>`;
-  const toggle=`<div style="display:flex;gap:6px;margin-bottom:12px">${btn('live','🔴',en?'Live standings':'Élő állás')}${btn('final','✅',en?'Finished only':'Csak lezárt')}</div>`;
+  const toggle=`<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">${btn('live','🔴',en?'Live standings':'Élő állás')}${btn('final','✅',en?'Finished only':'Csak lezárt')}<button data-bkimg="proj" style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(var(--ink-rgb),.6);margin-left:auto">📷 ${en?'Image':'Kép'}</button></div>`;
   const proj=projectR32(results);
   const head=`<div class="proj-h">🔮 ${en?'Projected Round of 32 (by current standings)':'Projektált 32 közé jutás (a jelenlegi állás szerint)'}</div>`;
   if(!proj){
@@ -3921,7 +4009,7 @@ function rBracket(){
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
     ${rProjBracket()}
-    <div class="sect" style="margin-top:34px">${en?'Official bracket':'Hivatalos ágrajz'}</div>
+    <div class="sect" style="margin-top:34px;display:flex;align-items:center;justify-content:space-between;gap:10px">${en?'Official bracket':'Hivatalos ágrajz'}<button data-bkimg="official" style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(var(--ink-rgb),.6)">📷 ${en?'Image':'Kép'}</button></div>
     ${rBracketTree()}
   </div>
   ${rBracketMobile()}
@@ -5231,6 +5319,7 @@ function bindMain(hw){
   }));
   document.querySelectorAll('[data-bkr]').forEach(b=>b.addEventListener('click',e=>SS({bkRound:e.currentTarget.dataset.bkr})));
   document.querySelectorAll('[data-projmode]').forEach(b=>b.addEventListener('click',e=>SS({projMode:e.currentTarget.dataset.projmode})));
+  document.querySelectorAll('[data-bkimg]').forEach(b=>b.addEventListener('click',e=>shareBracketImage(e.currentTarget.dataset.bkimg==='proj')));
   document.querySelectorAll('[data-expstats]').forEach(b=>b.addEventListener('click',async e=>{
     e.stopPropagation();
     const mid=parseInt(e.currentTarget.dataset.expstats);
