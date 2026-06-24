@@ -3197,7 +3197,8 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <ul>
 <li>🔮 Az <b>Ágrajz</b> fülön új <b>projekció</b>: a jelenlegi állás szerint mi lenne a 32 közé jutás (a hivatalos FIFA harmadikhelyezett-elosztással), <b>ugyanúgy fa-ágrajzként megrajzolva</b>, mint a rendes ágrajz. Válthatsz <b>élő meccsek</b> és <b>csak lezárt meccsek</b> alapú nézet között.</li>
 <li>🔧 <b>Élő eredmény</b> javítás: a folyamatban lévő meccs állása nem ragad 0:0-n, az élő gólszámot megbízhatóbban olvassuk ki.</li>
-<li>📷 Az <b>ágrajz</b> (a projekció és a hivatalos is) <b>képként exportálható és megosztható</b> a „📷 Kép" gombbal.</li>
+<li>📷 Az <b>ágrajz</b> (a projekció és a hivatalos is) <b>képként exportálható és megosztható</b> a „📷 Kép" gombbal — most már <b>zászlókkal</b> együtt.</li>
+<li>🔴 A projekcióban (a képen és a képernyőn is) <b>jelöljük az élő meccs alatt álló</b> helyezéseket (🔴), és a <b>már biztos</b> helyeket is ✓-vel (lezárult csoport, vagy matematikailag bebiztosított 1./2. hely).</li>
 </ul>
 <h3>2026.06.21.</h3>
 <ul>
@@ -3371,7 +3372,7 @@ async function shareBracketImage(useProj){
     if(!proj){alert(en?'Not enough data to project yet.':'Még nincs elég adat a projekcióhoz.');return;}
   }
   const BC='"Barlow Condensed",sans-serif';
-  const boxW=250,boxH=72,vGap=22,gap=66,padX=60,headerH=150,footerH=64,sc=2;
+  const boxW=250,boxH=72,vGap=22,gap=66,padX=60,headerH=150,footerH=84,sc=2;
   const rounds=[
     [74,77,73,75,83,84,81,82,76,78,79,80,86,88,85,87],
     [89,90,93,94,91,92,95,96],
@@ -3402,19 +3403,23 @@ async function shareBracketImage(useProj){
   const strip=s=>String(s).replace(/<[^>]*>/g,'');
   function boxData(fn){
     const m=byFifaNum(fn);if(!m)return null;
-    let home,away,isTBD,res;
-    if(useProj){const p=proj.out[fn];home=p?p.home:null;away=p?p.away:null;isTBD=!p;res=undefined;}
+    let home,away,isTBD,res,hSt='',aSt='';
+    if(useProj){const p=proj.out[fn];home=p?p.home:null;away=p?p.away:null;isTBD=!p;res=undefined;if(p){hSt=p.hStatus;aSt=p.aStatus;}}
     else{const ov=S.mt[m.id];home=ov?.home||m.home;away=ov?.away||m.away;isTBD=m.tbd&&!ov;res=getEffectiveResults()[m.id];}
     const h=isTBD?strip(slotLabel(m.id,0)):(home?teamName(home):'—');
     const a=isTBD?strip(slotLabel(m.id,1)):(away?teamName(away):'—');
     const win=res?getWinnerSide(m.id,res):null;
-    return {fn,h,a,hs:res?String(res.homeGoals):'',as:res?String(res.awayGoals):'',win,isTBD};
+    return {fn,h,a,hName:isTBD?null:home,aName:isTBD?null:away,hs:res?String(res.homeGoals):'',as:res?String(res.awayGoals):'',win,isTBD,hSt,aSt};
   }
-  function teamRow(bx,w,ty,name,score,winFlag,tbd){
-    x.textAlign='left';
-    x.fillStyle=winFlag?'#2E9E5A':(tbd?'rgba(240,237,230,.4)':'#F0EDE6');
-    x.font=(winFlag?'700 ':'600 ')+'18px '+BC;
-    x.fillText(clip(name,w-58),bx+12,ty);
+  function teamRow(bx,w,ty,nm,label,score,winFlag,tbd,st){
+    let sx=bx+12;
+    if(st==='live'){x.fillStyle='#CC2929';x.font='700 13px '+BC;x.textAlign='left';x.fillText('●',sx,ty-1);sx+=15;}
+    else if(st==='secured'){x.fillStyle='#2E9E5A';x.font='800 16px '+BC;x.textAlign='left';x.fillText('✓',sx,ty);sx+=16;}
+    const im=nm?flags[nm]:null;
+    if(im){try{x.drawImage(im,sx,ty-13,24,18);}catch(e){}sx+=30;}
+    x.textAlign='left';x.fillStyle=winFlag?'#2E9E5A':(tbd?'rgba(240,237,230,.4)':'#F0EDE6');x.font=(winFlag?'700 ':'600 ')+'18px '+BC;
+    const room=(bx+w-12)-sx-(score!==''?26:0);
+    x.fillText(clip(label,room),sx,ty);
     if(score!==''){x.textAlign='right';x.fillStyle=winFlag?'#2E9E5A':'rgba(240,237,230,.7)';x.font='700 18px '+BC;x.fillText(score,bx+w-12,ty);}
   }
   function drawBox(fn,cx,yCenter,isFinal){
@@ -3424,9 +3429,15 @@ async function shareBracketImage(useProj){
     x.strokeStyle=isFinal?'#C8A84B':'rgba(212,175,55,.35)';x.lineWidth=isFinal?2:1;rr(cx,by,boxW,boxH,8);x.stroke();
     x.textAlign='left';x.fillStyle='rgba(240,237,230,.32)';x.font='600 11px '+BC;x.fillText('M'+fn,cx+12,by+16);
     x.beginPath();x.strokeStyle='rgba(240,237,230,.08)';x.lineWidth=1;x.moveTo(cx+10,by+24);x.lineTo(cx+boxW-10,by+24);x.stroke();
-    teamRow(cx,boxW,by+45,d.h,d.hs,d.win==='home',d.isTBD);
-    teamRow(cx,boxW,by+65,d.a,d.as,d.win==='away',d.isTBD);
+    teamRow(cx,boxW,by+45,d.hName,d.h,d.hs,d.win==='home',d.isTBD,d.hSt);
+    teamRow(cx,boxW,by+65,d.aName,d.a,d.as,d.win==='away',d.isTBD,d.aSt);
   }
+  // zaszlok elotoltese (CORS-biztos: ha nincs CORS-fejlec, az img hibara fut es kihagyjuk -> nincs tainted canvas)
+  const _names=new Set();
+  [...rounds.flat(),103].forEach(fn=>{const d=boxData(fn);if(d){if(d.hName)_names.add(d.hName);if(d.aName)_names.add(d.aName);}});
+  const flags={};
+  await Promise.all([..._names].map(nm=>new Promise(res=>{const code=CC[nm];if(!code){res();return;}try{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{flags[nm]=im;res();};im.onerror=()=>res();im.src='https://flagcdn.com/w80/'+code+'.png';}catch(e){res();}})));
+  if(useProj){x.textAlign='left';x.font='600 15px sans-serif';x.fillStyle='#CC2929';x.fillText('●',padX,130);x.fillStyle='rgba(240,237,230,.55)';x.fillText(en?' live now':' élő meccs',padX+12,130);x.fillStyle='#2E9E5A';x.fillText('✓',padX+150,130);x.fillStyle='rgba(240,237,230,.55)';x.fillText(en?' secured':' biztos hely',padX+164,130);}
   x.strokeStyle='rgba(212,175,55,.30)';x.lineWidth=1.5;
   for(let r=1;r<rounds.length;r++){
     rounds[r].forEach((_,j)=>{
@@ -3653,8 +3664,42 @@ function resolveR32Teams(results){
   }
   return out;
 }
+// Csoport-helyzet: ki van élő meccsben, lezárult-e a csoport, és matematikai bebiztosítás.
+function groupSituation(results){
+  const sit={};
+  GD.forEach(g=>{
+    const ms=ALL.filter(m=>m.group===g.id);
+    const teams={}; g.teams.forEach(n=>teams[n]={pts:0,rem:0});
+    let played=0,live=false;
+    ms.forEach(m=>{
+      const r=results[m.id];
+      if(!r){ if(teams[m.home])teams[m.home].rem++; if(teams[m.away])teams[m.away].rem++; return; }
+      played++; if(r.live)live=true;
+      const rh=parseInt(r.homeGoals),ra=parseInt(r.awayGoals);
+      if(teams[m.home]&&teams[m.away]){
+        if(rh>ra)teams[m.home].pts+=3; else if(rh===ra){teams[m.home].pts++;teams[m.away].pts++;} else teams[m.away].pts+=3;
+      }
+    });
+    sit[g.id]={finished:played===ms.length, live, teams, names:g.teams.slice()};
+  });
+  return sit;
+}
+function clinchPos(sit,gid,name,pos){ // pos: 0 = csoportgyőztes, 1 = 2. hely
+  const s=sit[gid]; if(!s)return false;
+  if(s.finished)return true;
+  const T=s.teams[name]; if(!T)return false;
+  const tmin=T.pts, tmax=T.pts+3*T.rem;
+  const others=s.names.filter(n=>n!==name).map(n=>s.teams[n]);
+  if(pos===0) return others.every(u=>(u.pts+3*u.rem)<tmin); // senki sem érheti el a jelenlegi pontját -> biztos 1.
+  const canReach=others.filter(u=>(u.pts+3*u.rem)>=tmin).length; // legfeljebb 1 lehet felette
+  const surelyAbove=others.some(u=>u.pts>tmax);                  // valaki biztosan felette -> nem lehet 1.
+  return canReach<=1 && surelyAbove;                             // -> biztos 2.
+}
+function projMark(s){
+  return s==='secured'?'<span style="color:#2E9E5A;font-weight:800;margin-right:3px">✓</span>'
+       :s==='live'?'<span style="color:#CC2929;margin-right:2px;font-size:9px">●</span>':'';
+}
 // Projekcio: a jelenlegi (reszleges) allas alapjan kiszamolja a 32 koros parositasokat.
-// Nem var minden meccsre - a pillanatnyi csoportallasokbol dolgozik.
 function projectR32(results){
   const standings={};
   GD.forEach(g=>{standings[g.id]=calcStd(g.id,results,null);});
@@ -3667,6 +3712,15 @@ function projectR32(results){
   const hostOrder=['A','B','D','E','G','I','K','L'];
   const thirdFor={};
   hostOrder.forEach((h,i)=>{thirdFor[h]=row[i];});
+  const sit=groupSituation(results);
+  const allFin=GD.every(g=>sit[g.id].finished);
+  const statusFor=(grp,pos,name)=>{
+    if(!grp)return '';
+    let sec;
+    if(pos===2) sec=allFin; else sec=clinchPos(sit,grp,name,pos);
+    const lv=sit[grp]&&sit[grp].live&&!sec;
+    return sec?'secured':(lv?'live':'');
+  };
   const out={};
   for(let fifaNum=73;fifaNum<=88;fifaNum++){
     const[hLbl,aLbl]=R32_SLOTS[fifaNum];
@@ -3676,11 +3730,14 @@ function projectR32(results){
       return null;
     };
     let home=resolveSide(hLbl),away=resolveSide(aLbl);
-    if(home===null){const hl=aLbl.match(/^[12]([A-L])$/)[1];home=standings[thirdFor[hl]][2].n;}
-    if(away===null){const hl=hLbl.match(/^[12]([A-L])$/)[1];away=standings[thirdFor[hl]][2].n;}
-    out[fifaNum]={home,away,hLbl,aLbl};
+    let hGrp=null,hPos,aGrp=null,aPos;
+    const hm=hLbl.match(/^([12])([A-L])$/); if(hm){hGrp=hm[2];hPos=hm[1]==='1'?0:1;} else hPos=2;
+    const am=aLbl.match(/^([12])([A-L])$/); if(am){aGrp=am[2];aPos=am[1]==='1'?0:1;} else aPos=2;
+    if(home===null){const hl=aLbl.match(/^[12]([A-L])$/)[1];home=standings[thirdFor[hl]][2].n;hGrp=thirdFor[hl];hPos=2;}
+    if(away===null){const hl=hLbl.match(/^[12]([A-L])$/)[1];away=standings[thirdFor[hl]][2].n;aGrp=thirdFor[hl];aPos=2;}
+    out[fifaNum]={home,away,hLbl,aLbl,hStatus:statusFor(hGrp,hPos,home),aStatus:statusFor(aGrp,aPos,away)};
   }
-  return {out,best8,thirdFor,standings};
+  return {out,best8,thirdFor,standings,sit,allFin};
 }
 async function autoFillKnockoutTeams(){
   const updates={};
@@ -3870,12 +3927,14 @@ function wkBox(fn,cy,MH,MW,isFinal){
   const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
   const hFlag=(!isTBD&&home)?fImg(home,15):'';
   const aFlag=(!isTBD&&away)?fImg(away,15):'';
+  const _pj=_bkProj?_bkProj[fn]:null;
+  const hMk=_pj?projMark(_pj.hStatus):'', aMk=_pj?projMark(_pj.aStatus):'';
   return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
     <div class="wk-box${isFinal?' wk-final-box':''}">
       <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span> · ${koLbl}${venue?` · ${venue}`:''}</div>
-      <div class="wk-team${win==='home'?' wk-win':''}${isTBD?' wk-slot':''}">${hFlag}<span class="wk-tnm">${hLbl}</span>${res!==undefined?`<span class="wk-sc">${res.homeGoals}</span>`:''}</div>
+      <div class="wk-team${win==='home'?' wk-win':''}${isTBD?' wk-slot':''}">${hMk}${hFlag}<span class="wk-tnm">${hLbl}</span>${res!==undefined?`<span class="wk-sc">${res.homeGoals}</span>`:''}</div>
       <div class="wk-sep"></div>
-      <div class="wk-team${win==='away'?' wk-win':''}${isTBD?' wk-slot':''}">${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
+      <div class="wk-team${win==='away'?' wk-win':''}${isTBD?' wk-slot':''}">${aMk}${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
     </div>
   </div>`;
 }
@@ -4043,11 +4102,13 @@ function rBracketMobile(){
     const venue=KO_VENUE[fn]||'',koLbl=fmtKoTime(m);
     const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
     const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
+    const _pj=_bkProj?_bkProj[fn]:null;
+    const hMk=_pj?projMark(_pj.hStatus):'', aMk=_pj?projMark(_pj.aStatus):'';
     return `<div class="bk-mob-card">
       <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venue:''}</div>
       <div class="bk-mob-teams">
-        <div class="bk-mob-team${win==='home'?' wk-win':''}">${!isTBD&&home?fImg(home,18):''}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
-        <div class="bk-mob-team${win==='away'?' wk-win':''}">${!isTBD&&away?fImg(away,18):''}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='home'?' wk-win':''}">${hMk}${!isTBD&&home?fImg(home,18):''}<span>${hLbl}</span>${res!=null?`<b>${res.homeGoals}</b>`:''}</div>
+        <div class="bk-mob-team${win==='away'?' wk-win':''}">${aMk}${!isTBD&&away?fImg(away,18):''}<span>${aLbl}</span>${res!=null?`<b>${res.awayGoals}</b>`:''}</div>
       </div>
     </div>`;
   }
