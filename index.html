@@ -3195,7 +3195,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
-<li>🔮 Az <b>Ágrajz</b> fülön új <b>projekció</b>: a jelenlegi állás szerint mi lenne a 32 közé jutás (a hivatalos FIFA harmadikhelyezett-elosztással). Válthatsz <b>élő meccsek</b> és <b>csak lezárt meccsek</b> alapú nézet között.</li>
+<li>🔮 Az <b>Ágrajz</b> fülön új <b>projekció</b>: a jelenlegi állás szerint mi lenne a 32 közé jutás (a hivatalos FIFA harmadikhelyezett-elosztással), <b>ugyanúgy fa-ágrajzként megrajzolva</b>, mint a rendes ágrajz. Válthatsz <b>élő meccsek</b> és <b>csak lezárt meccsek</b> alapú nézet között.</li>
 <li>🔧 <b>Élő eredmény</b> javítás: a folyamatban lévő meccs állása nem ragad 0:0-n, az élő gólszámot megbízhatóbban olvassuk ki.</li>
 </ul>
 <h3>2026.06.21.</h3>
@@ -3735,6 +3735,7 @@ function fifaNumOf(m){
   if(m.stage==='final')return 104;
   return null;
 }
+let _bkProj=null; // ha be van allitva, a wkBox/mobileBox a projektalt R32 csapatokat rajzolja
 function byFifaNum(fn){
   if(fn>=73&&fn<=88)return ALL.find(m=>m.stage==='r32'&&m.mn===fn-72)||null;
   if(fn>=89&&fn<=96)return ALL.find(m=>m.stage==='r16'&&m.mn===fn-88)||null;
@@ -3764,10 +3765,17 @@ function wkBox(fn,cy,MH,MW,isFinal){
   const top=Math.round(cy-MH/2);
   const empty=`<div style="position:absolute;top:${top}px;left:1px;right:1px"><div class="wk-box"><div class="wk-hdr" style="opacity:.4">M${fn}</div><div class="wk-team"><span class="wk-tbd">TBD</span></div><div class="wk-sep"></div><div class="wk-team"><span class="wk-tbd">TBD</span></div></div></div>`;
   if(!m)return empty;
-  const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
-  const isTBD=m.tbd&&!ov;
-  const res=getEffectiveResults()[m.id];
-  const win=res?getWinnerSide(m.id,res):null;
+  let home,away,isTBD,res,win;
+  if(_bkProj){
+    const p=_bkProj[fn];
+    home=p?p.home:null; away=p?p.away:null;
+    isTBD=!p; res=undefined; win=null;
+  }else{
+    const ov=S.mt[m.id];home=ov?.home||m.home;away=ov?.away||m.away;
+    isTBD=m.tbd&&!ov;
+    res=getEffectiveResults()[m.id];
+    win=res?getWinnerSide(m.id,res):null;
+  }
   const venue=KO_VENUE[fn]||'';
   const koLbl=fmtKoTime(m);
   const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
@@ -3808,33 +3816,25 @@ function rProjBracket(){
   if(!proj){
     return `<div class="proj-wrap">${head}${toggle}<div style="font-size:12.5px;color:rgba(var(--ink-rgb),.45)">${en?'Not enough data yet to project.':'Még nincs elég adat a projekcióhoz.'}</div></div>`;
   }
-  const order=[73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88];
-  const cards=order.map(n=>{
-    const mm=proj.out[n];
-    return `<div class="proj-card">
-      <div class="proj-mn">M${n}</div>
-      <div class="proj-teams">
-        <span class="proj-team">${fImg(mm.home,16)} ${teamName(mm.home)}</span>
-        <span class="proj-vs">–</span>
-        <span class="proj-team">${fImg(mm.away,16)} ${teamName(mm.away)}</span>
-      </div>
-      <div class="proj-slot">${projSlotTxt(mm.hLbl,en)} · ${projSlotTxt(mm.aLbl,en)}</div>
-    </div>`;
-  }).join('');
   const thirds=`${en?'Advancing 3rd-placed groups':'Továbbjutó 3. helyezett csoportok'}: ${proj.best8.map(g=>'3'+g).join(', ')}`;
   const meta=`${played}/${grpMatches.length} ${en?'group matches counted':'csoportmeccs beszámítva'}${liveCount?` (${liveCount} ${en?'live':'élő'})`:''} · ${thirds}`;
   const note=en
-    ?'Note: order uses points, goal difference, then goals scored; head-to-head and fair-play tie-breaks are simplified. Rounds beyond the Round of 32 depend on actual results.'
-    :'Megjegyzés: a sorrend pont, gólkülönbség, majd lőtt gól alapján készül; az egymás elleni és fair-play döntés egyszerűsített. A 32 közé jutás utáni körök a valódi eredményektől függenek.';
+    ?'Only the Round of 32 is projected from the standings (order: points, goal difference, goals scored; head-to-head/fair-play simplified). Later rounds show the slot positions and fill from real results.'
+    :'Az állásból csak a 32 közé jutást vetítjük előre (sorrend: pont, gólkülönbség, lőtt gól; az egymás elleni/fair-play egyszerűsített). A későbbi körök a helyeket mutatják, és a valódi eredményekből töltődnek.';
+  _bkProj=proj.out;
+  let tree;
+  try{ tree=rBracketTree()+rBracketMobile(); }
+  catch(e){ tree=`<div style="color:rgba(var(--ink-rgb),.5);font-size:12px">${en?'Could not draw the projected bracket.':'A projektált ágrajz rajzolása nem sikerült.'}</div>`; }
+  finally{ _bkProj=null; }
   return `<div class="proj-wrap">
     ${head}
     ${toggle}
     <div style="font-size:11px;color:rgba(var(--ink-rgb),.45);margin-bottom:10px">${meta}</div>
-    <div class="proj-grid">${cards}</div>
+    ${tree}
     <div style="font-size:11px;color:rgba(var(--ink-rgb),.4);margin-top:10px;line-height:1.5">${note}</div>
   </div>`;
 }
-function rBracket(){
+function rBracketTree(){
   const BH=60,MW=172,sc='rgba(212,175,55,0.35)',sw=1.5;
   const _cw=(document.querySelector('.bc-center')?.clientWidth||document.getElementById('root')?.clientWidth||window.innerWidth)-44;
   const CW=Math.max(16,Math.min(340,Math.round((_cw-5*MW)/4)));
@@ -3905,11 +3905,7 @@ function rBracket(){
   const avW=Math.max(600,(document.getElementById('root')?.clientWidth||window.innerWidth)-24);
   const avH=Math.max(400,window.innerHeight-220);
   const zoom=Math.min(1,_cw/bkW).toFixed(3);
-  return `<div>
-    <div class="sect">${t('bracket_t')}</div>
-    <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
-    ${rProjBracket()}
-    <div class="bk-desktop" style="overflow:hidden">
+  return `<div class="bk-desktop" style="overflow:hidden">
       <div class="bk-scale" style="display:inline-block;transform-origin:top left">
         ${hdrRow}
         <div style="display:flex">
@@ -3917,10 +3913,20 @@ function rBracket(){
           ${rightCol}
         </div>
       </div>
-    </div>
+    </div>`;
+}
+function rBracket(){
+  const en=S.lang==='en';
+  return `<div>
+    <div class="sect">${t('bracket_t')}</div>
+    <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
+    ${rProjBracket()}
+    <div class="sect" style="margin-top:34px">${en?'Official bracket':'Hivatalos ágrajz'}</div>
+    ${rBracketTree()}
   </div>
   ${rBracketMobile()}
-  ${rScorers()}`;}
+  ${rScorers()}`;
+}
 
 function rBracketMobile(){
   const rounds=[
@@ -3935,10 +3941,17 @@ function rBracketMobile(){
   function mobileBox(fn){
     const m=byFifaNum(fn);
     if(!m) return `<div class="bk-mob-card"><div class="wk-hdr" style="opacity:.4">M${fn} – TBD</div></div>`;
-    const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
-    const isTBD=m.tbd&&!ov;
-    const res=getEffectiveResults()[m.id];
-    const win=res?getWinnerSide(m.id,res):null;
+    let home,away,isTBD,res,win;
+    if(_bkProj){
+      const p=_bkProj[fn];
+      home=p?p.home:null; away=p?p.away:null;
+      isTBD=!p; res=undefined; win=null;
+    }else{
+      const ov=S.mt[m.id];home=ov?.home||m.home;away=ov?.away||m.away;
+      isTBD=m.tbd&&!ov;
+      res=getEffectiveResults()[m.id];
+      win=res?getWinnerSide(m.id,res):null;
+    }
     const venue=KO_VENUE[fn]||'',koLbl=fmtKoTime(m);
     const hLbl=isTBD?slotLabel(m.id,0):(home?teamName(home):'TBD');
     const aLbl=isTBD?slotLabel(m.id,1):(away?teamName(away):'TBD');
