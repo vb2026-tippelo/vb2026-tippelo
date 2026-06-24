@@ -3724,6 +3724,14 @@ function computeGroupClinch(results){
       else rem.push(m);
     });
     const finished=rem.length===0;
+    if(finished){
+      // Lezart csoport: a holtverseny mar eldolt (gk/lott gol) -> a vegleges sorrend szamit.
+      const std=calcStd(g.id,results,null);
+      const res={}; names.forEach(n=>{res[n]={first:false,adv:false,second:false};});
+      if(std[0]&&res[std[0].n])res[std[0].n]={first:true,adv:true,second:false};
+      if(std[1]&&res[std[1].n])res[std[1].n]={first:false,adv:true,second:true};
+      out[g.id]={res,finished:true,live}; return;
+    }
     const fl={},ad={},ab={}; names.forEach(n=>{fl[n]=true;ad[n]=true;ab[n]=true;}); // firstOk(sole 1st), advOk(top-2), aboveAlways(sosem 1.)
     const k=rem.length;
     if(k>5){ names.forEach(n=>{fl[n]=false;ad[n]=false;ab[n]=false;}); }
