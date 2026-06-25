@@ -1516,6 +1516,15 @@ async function init(){
   let nko={};
   try{ if(ko && Object.keys(ko).length){ await sS('wc_ko',{},true); await sS('wc_sched_ver',SCHED_VER,true); } }catch(e){}
   const hasTok=!!localStorage.getItem('wc_tok');
+  // Biztositjuk, hogy a ket fo liga pontozas-szerkeszto adminja hetesi.endre legyen.
+  {
+    let lgChanged=false;
+    nl=nl.map(l=>{
+      if((l.id==='lg_amerika2026'||l.id==='lg_forma1_2026'||l.name==='Irány Amerika'||l.name==='Forma 1')&&l.ownerId!=='hetesi.endre'){lgChanged=true;return {...l,ownerId:'hetesi.endre'};}
+      return l;
+    });
+    if(lgChanged&&hasTok){try{await sS('wc_lg',nl,true);}catch(e){}}
+  }
   let cu=sess?.uid?ul.find(x=>x.id===sess.uid)||null:null;
   // Az uj (szerveroldali) rendszerhez belepesi jegy (token) kell. Ha van regi munkamenet,
   // de meg nincs token, egyszeri ujra-belepest kerunk, hogy a mentesek a lezaras utan is mukodjenek.
@@ -3269,6 +3278,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
+<li>🛠️ <b>Ligák – pontozás javítás</b>: a liga pontozás-mezői mostantól szerkeszthetők (eddig a rájuk kattintás véletlenül a liga tabellájára navigált). A két fő liga („Irány Amerika", „Forma 1") szerkesztő admin​ja Hetesi Endre.</li>
 <li>🔮 Az <b>Ágrajz</b> fülön új <b>projekció</b>: a jelenlegi állás szerint mi lenne a 32 közé jutás (a hivatalos FIFA harmadikhelyezett-elosztással), <b>ugyanúgy fa-ágrajzként megrajzolva</b>, mint a rendes ágrajz. Válthatsz <b>élő meccsek</b> és <b>csak lezárt meccsek</b> alapú nézet között.</li>
 <li>🔧 <b>Élő eredmény</b> javítás: a folyamatban lévő meccs állása nem ragad 0:0-n, az élő gólszámot megbízhatóbban olvassuk ki.</li>
 <li>📷 Az <b>ágrajz</b> (a projekció és a hivatalos is) <b>képként exportálható és megosztható</b> a „📷 Kép" gombbal — most már <b>zászlókkal</b> együtt.</li>
@@ -4978,7 +4988,7 @@ function rLeagues(){
       ${isOwner?`<button class="btn-sm gold" data-editlg="${l.id}">${isEditing?t('close_btn'):t('edit_scoring')}</button>`:''}
       ${!isOwner?`<button class="btn-sm red" data-leave="${l.id}">${t('leave_league')}</button>`:''}
     </div>
-    ${isEditing?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(var(--ink-rgb),.1)">
+    ${isEditing?`<div onclick="event.stopPropagation()" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(var(--ink-rgb),.1)">
       <div style="font-size:13px;font-weight:700;color:#c9a84c;margin-bottom:10px">${t('edit_scoring_h')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         ${[{id:'elgSp',l:'⭐ '+t('perfect_full'),v:numOr(sco.perfect,8)},{id:'elgSrgd',l:'🎯 '+t('resultgd_full'),v:numOr(sco.resultGD,5)},{id:'elgSr',l:'✓ '+t('outcome_full'),v:numOr(sco.result,3)},{id:'elgSog',l:'~ '+t('onegoal_full'),v:numOr(sco.oneGoal,1)},{id:'elgSw',l:'🏆 '+t('winner_full'),v:numOr(sco.winner,25)},{id:'elgSt',l:'⚽ '+t('topscorer_full'),v:numOr(sco.topScorer,25)},{id:'elgSko',l:'🔄 '+t('ko_multiplier'),v:numOr(sco.ko,2)}].map(f=>`<div><label style="font-size:11.5px;color:rgba(var(--ink-rgb),.5);display:block;margin-bottom:3px">${f.l}</label><input class="inp" id="${f.id}" type="number" min="0" value="${f.v}" style="padding:8px;font-size:16px;font-weight:800"></div>`).join('')}
