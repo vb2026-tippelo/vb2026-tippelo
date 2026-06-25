@@ -3273,7 +3273,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <li>🔴 A projekcióban (a képen és a képernyőn is) <b>jelöljük az élő meccs alatt álló</b> helyezéseket (🔴), és a <b>már biztos</b> helyeket is ✓-vel (lezárult csoport, vagy matematikailag bebiztosított 1./2. hely).</li>
 <li>✅ A <b>már biztos csapatok</b> (bebiztosított csoportgyőztes/2. hely) automatikusan megjelennek a <b>meccseknél</b> és a <b>hivatalos ágrajzban</b> is — nem kell megvárni a csoportkör végét. A <b>tabellában</b> ✓ jelzi a bebiztosított helyezést.</li>
 <li>🧮 A bebiztosítás mostantól <b>menetrend-tudatos</b>: a hátralévő meccsek összes lehetséges kimenetelét végignézi. Külön jelöli az <b>arany ✓ csoportgyőzelmet</b> (biztos 1. hely) és a <b>zöld ✓ továbbjutást</b> (biztos top-2, de a pontos hely még nyitott) — így a 6 pontos, dobogós csapatok is láthatóan „továbbjutott" jelölést kapnak, akkor is, ha az 1. hely matematikailag még nem dőlt el.</li>
-<li>🎚️ A <b>Predikció</b> fülön a kattintós mód mellett <b>„Pontozós (auto)"</b> mód: csapatonként <b>pontot (csúszka) és gólkülönbséget</b> állítasz be. A <b>lejátszott (lezárt) csoportok a valós eredményre rögzülnek</b> (gk-val), a folyamatban lévők <b>a jelenlegi állásról indulnak</b> (a már megszerzett pont a minimum). Ha minden csoport kész, a 8 legjobb 3. helyezettet <b>automatikusan kiszámolja</b> (3. helyezett-tabella pont+gk szerint), és <b>megrajzolja az ágrajzot</b> — már csak a kieséses győzteseket kell tippelni.</li>
+<li>🎚️ A <b>Predikció</b> fülön a kattintós mód mellett <b>„Pontozós (auto)"</b> mód: csapatonként <b>pontot (csúszka) és gólkülönbséget</b> állítasz be. A <b>lejátszott (lezárt) csoportok a valós eredményre rögzülnek</b> (gk-val), a folyamatban lévők <b>a jelenlegi állásról indulnak</b> (a már megszerzett pont a minimum). Ha minden csoport kész, a 8 legjobb 3. helyezettet <b>automatikusan kiszámolja</b> (3. helyezett-tabella pont+gk szerint), és <b>megrajzolja az ágrajzot</b> — már csak a kieséses győzteseket kell tippelni. A csúszka csak a <b>matematikailag lehetséges</b> pontig állítható (jelenlegi pont + 3 × hátralévő meccs).</li>
 <li>📐 A csoport-sorrend mostantól a <b>hivatalos FIFA holtverseny-szabályt</b> követi: pontegyenlőségnél előbb az <b>egymás elleni</b> eredmény dönt (egymás elleni pont, gólkülönbség, lőtt gól, az érintettekre újraalkalmazva), és csak utána az összesített gólkülönbség és lőtt gól.</li>
 </ul>
 <h3>2026.06.21.</h3>
@@ -3991,18 +3991,24 @@ async function togglePredTeam(gid,team){
   await savePredict();
 }
 // --- Alternativ kitoltes: pontozas (csuszka) ---
+let _cgsRef=null,_cgsVal={};
 function curGroupStats(gid){
-  const m={}; calcStd(gid,S.results,null).forEach(t=>{m[t.n]={pts:t.pts,gd:t.gd,p:t.p};}); return m;
+  if(_cgsRef!==S.results){_cgsRef=S.results;_cgsVal={};}
+  if(_cgsVal[gid])return _cgsVal[gid];
+  const m={}; calcStd(gid,S.results,null).forEach(t=>{m[t.n]={pts:t.pts,gd:t.gd,p:t.p};}); return _cgsVal[gid]=m;
 }
 function groupHasResult(gid){ return ALL.some(m=>m.group===gid&&S.results[m.id]); }
 function curPtsFloor(gid,team){ const c=curGroupStats(gid)[team]; return c?c.pts:0; }
+function teamRemaining(gid,team){ return ALL.filter(m=>m.group===gid&&(m.home===team||m.away===team)&&!S.results[m.id]).length; }
+function predPtsCeil(gid,team){ return Math.min(9, curPtsFloor(gid,team)+3*teamRemaining(gid,team)); } // matematikai maximum
 function predPtsFor(gid,team){
+  const floor=curPtsFloor(gid,team), ceil=predPtsCeil(gid,team);
   const p=S.predPts[gid];
-  if(p&&p[team]!=null)return Math.max(p[team],curPtsFloor(gid,team));
+  if(p&&p[team]!=null)return Math.min(Math.max(p[team],floor),ceil);
   const cur=curGroupStats(gid)[team];
   if(cur&&cur.p>0)return cur.pts;                 // reszben lejatszott -> jelenlegi pont
   const ord=S.predGroups[gid];
-  if(ord&&ord.length===4){const i=ord.indexOf(team);if(i>=0)return [9,6,3,1][i];}
+  if(ord&&ord.length===4){const i=ord.indexOf(team);if(i>=0)return Math.min([9,6,3,1][i],ceil);}
   return 0;
 }
 function predGdFor(gid,team){
@@ -4025,7 +4031,8 @@ function deriveOrderFromMaps(gid,pm,gm){
   });
 }
 async function setPredPts(gid,team,pts){
-  const pm=groupPtsMap(gid); pm[team]=Math.max(pts,curPtsFloor(gid,team)); const gm=groupGdMap(gid);
+  const floor=curPtsFloor(gid,team), ceil=predPtsCeil(gid,team);
+  const pm=groupPtsMap(gid); pm[team]=Math.min(Math.max(pts,floor),ceil); const gm=groupGdMap(gid);
   SS({predPts:{...S.predPts,[gid]:pm},predGd:{...S.predGd,[gid]:gm},predGroups:{...S.predGroups,[gid]:deriveOrderFromMaps(gid,pm,gm)},predThird8:[],predKO:{}});
   await savePredict();
 }
@@ -4088,10 +4095,10 @@ function predAutoCards(){
     }
     const pm=groupPtsMap(g.id), gm=groupGdMap(g.id);
     const order=deriveOrderFromMaps(g.id,pm,gm);
-    const rows=order.map((team,idx)=>{const rank=idx+1;const floor=curPtsFloor(g.id,team);const pv=Math.max(pm[team],floor);return `<div class="pred-pts-row r${rank}">
+    const rows=order.map((team,idx)=>{const rank=idx+1;const floor=curPtsFloor(g.id,team);const ceil=predPtsCeil(g.id,team);const pv=Math.min(Math.max(pm[team],floor),ceil);return `<div class="pred-pts-row r${rank}">
       <span class="pred-rank-badge r${rank}">${rank}</span>
       ${fImg(team,18)}<span class="pred-pts-nm">${teamName(team)}</span>
-      <input type="range" min="${floor}" max="9" value="${pv}" class="pred-pts-slider" data-predpts="${g.id}|${team}" oninput="this.nextElementSibling.textContent=this.value">
+      <input type="range" min="${floor}" max="${ceil}" value="${pv}" class="pred-pts-slider" data-predpts="${g.id}|${team}" oninput="this.nextElementSibling.textContent=this.value">
       <span class="pred-pts-val">${pv}</span>
       <span class="pred-gk-lbl">GK</span><input type="number" value="${gm[team]}" step="1" class="pred-gk-inp" data-predgd="${g.id}|${team}">
     </div>`;}).join('');
@@ -4165,7 +4172,7 @@ async function savePredKO(fifaNum,side){
   await savePredict();
 }
 async function resetPredict(){
-  SS({predGroups:{},predThird8:[],predKO:{}});
+  SS({predGroups:{},predThird8:[],predKO:{},predPts:{},predGd:{}});
   await savePredict();
 }
 function fifaNumOf(m){
