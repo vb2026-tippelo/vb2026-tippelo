@@ -965,6 +965,9 @@ const VENUE_COORDS={'Mexikóváros':[19.433,-99.133],'Guadalajara':[20.682,-103.
 const VENUE_TZ={'Mexikóváros':'America/Mexico_City','Guadalajara':'America/Mexico_City','Monterrey':'America/Monterrey','Toronto':'America/Toronto','Vancouver':'America/Vancouver','Los Angeles':'America/Los_Angeles','San Francisco':'America/Los_Angeles','Seattle':'America/Los_Angeles','New York':'America/New_York','Boston':'America/New_York','Philadelphia':'America/New_York','Atlanta':'America/New_York','Miami':'America/New_York','Houston':'America/Chicago','Dallas':'America/Chicago','Kansas City':'America/Chicago'};
 // Fedett stadion? (🏛️=fedett, 🏟️=nyitott)
 const VENUE_DOME={'Los Angeles':true,'Vancouver':true,'Atlanta':true,'Houston':true,'Dallas':true};
+// Hivatalos stadion + pontos város (a megjelenítéshez); kulcs = a belső városnév.
+const VENUE_FULL={'Los Angeles':'SoFi Stadium, Inglewood','San Francisco':"Levi's Stadium, Santa Clara",'Seattle':'Lumen Field, Seattle','Vancouver':'BC Place, Vancouver','Dallas':'AT&T Stadium, Arlington','Houston':'NRG Stadium, Houston','Kansas City':'Arrowhead Stadium, Kansas City','Mexikóváros':'Estadio Azteca, Mexikóváros','Monterrey':'Estadio BBVA, Guadalupe','Guadalajara':'Estadio Akron, Zapopan','Atlanta':'Mercedes-Benz Stadium, Atlanta','Boston':'Gillette Stadium, Foxborough','New York':'MetLife Stadium, East Rutherford','Philadelphia':'Lincoln Financial Field, Philadelphia','Miami':'Hard Rock Stadium, Miami Gardens','Toronto':'BMO Field, Toronto'};
+const venueFull=v=>VENUE_FULL[v]||v;
 const WMO_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
 async function fetchTodayWeather(){
   const now=Date.now(),HD=8,horizon=now+HD*86400*1000;
@@ -2768,7 +2771,7 @@ function rCard(m){
       <span style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:2px 8px">${grpLbl}</span>
       <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fdLocal(m)}${localTime?` · ${localTime} ${S.lang==='en'?'(local)':'(helyi)'}`:''}${koLbl?` · 🇭🇺 ${koLbl}`:''}</span>
       ${isKO?'<span style="font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:.5px;background:rgba(var(--ink-rgb),.06);border:1px solid rgba(200,168,75,.4);color:#C8A84B;padding:2px 7px">×2 KO</span>':''}
-      ${venue?`<span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4)">📍 ${venue}</span>`:''}
+      ${venue?`<span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4)">📍 ${venueFull(venue)}</span>`:''}
     </div>
     <div class="mc-tbd-main">
       ${tbdSide(hFix,0)}
@@ -2784,7 +2787,7 @@ function rCard(m){
       <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fdLocal(m)}${localTime?` · ${localTime} ${S.lang==='en'?'(local)':'(helyi)'}`:''}${koLbl?` · 🇭🇺 ${koLbl}`:''}</span>
       ${live?`<span style="background:#CC2929;color:#fff;font-family:var(--font-bc);font-weight:800;font-size:10px;letter-spacing:1.5px;padding:2px 7px;display:inline-flex;align-items:center;gap:4px;animation:pulse 1.5s infinite"><span style="width:5px;height:5px;border-radius:50%;background:#fff"></span>${t('live_badge')}${live.minute!==undefined&&live.minute!==''?' '+live.minute:''}</span>`:''}
       ${isKO?'<span style="font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:.5px;background:rgba(var(--ink-rgb),.06);border:1px solid rgba(200,168,75,.4);color:#C8A84B;padding:2px 7px">×2 KO</span>':''}
-      <span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">${venue?`<span>📍 ${venue} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.4)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''}${wx?`<span>${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''}</span>
+      <span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">${venue?`<span>📍 ${venueFull(venue)} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.4)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''}${wx?`<span>${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''}</span>
     </div>
     <div class="mc-main" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:18px 18px 12px">
       <div style="display:flex;align-items:center;gap:12px;min-width:0">${fImg(home,38)}<span class="mc-tname" style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${S.favTeam&&S.favTeam===home?'⭐ ':''}${teamName(home)}</span></div>
@@ -3282,6 +3285,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
+<li>🏟️ <b>Pontos stadionnevek</b>: a meccskártyákon és az ágrajzon a helyszín mostantól a hivatalos stadionnévvel és várossal jelenik meg (pl. „📍 Gillette Stadium, Foxborough", „NRG Stadium, Houston", „Estadio BBVA, Guadalupe") a rövid városnév helyett.</li>
 <li>📅 <b>Kieséses menetrend pontosítva</b>: a hivatalos FIFA/Wikipédia menetrend alapján több kieséses meccs <b>helyszíne és kezdési ideje</b> javítva lett (a meccs-sorszámok nem időrendben követik egymást, ezért pár helyen elcsúszott). Pl. Brazília–Japán (M76): <b>Houston, jún. 29. 12:00 helyi · 🇭🇺 19:00</b>.</li>
 <li>🕐 <b>Meccsidők – helyi és budapesti idő</b>: a <b>Meccsek</b> fülön minden meccsnél látszik a <b>helyszín helyi ideje</b> (a hivatalos FIFA-menetrend szerint) <b>és</b> a <b>budapesti idő</b> is (🇭🇺) — pl. „jún. 29. 19:00 (helyi) · 🇭🇺 03:00". Az <b>Ágrajz</b> fülön egységesen a <b>budapesti idő</b> és a pontos helyszín szerepel.</li>
 <li>🛠️ <b>Ligák – pontozás javítás</b>: a liga pontozás-mezői mostantól szerkeszthetők (eddig a rájuk kattintás véletlenül a liga tabellájára navigált). A két fő liga („Irány Amerika", „Forma 1") szerkesztő admin​ja Hetesi Endre.</li>
@@ -4252,7 +4256,7 @@ function wkBox(fn,cy,MH,MW,isFinal){
   const hMk=projMark(hSt), aMk=projMark(aSt);
   return `<div style="position:absolute;top:${top}px;left:1px;right:1px">
     <div class="wk-box${isFinal?' wk-final-box':''}">
-      <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span> · ${koLbl}${venue?` · ${venue}`:''}</div>
+      <div class="wk-hdr"><span style="color:rgba(var(--ink-rgb),.3)">M${fn}</span> · ${koLbl}${venue?` · ${venueFull(venue)}`:''}</div>
       <div class="wk-team${win==='home'?' wk-win':''}${hSlot?' wk-slot':''}">${hMk}${hFlag}<span class="wk-tnm">${hLbl}</span>${res!==undefined&&!hSlot?`<span class="wk-sc">${res.homeGoals}</span>`:''}</div>
       <div class="wk-sep"></div>
       <div class="wk-team${win==='away'?' wk-win':''}${aSlot?' wk-slot':''}">${aMk}${aFlag}<span class="wk-tnm">${aLbl}</span>${res!==undefined&&!aSlot?`<span class="wk-sc">${res.awayGoals}</span>`:''}</div>
@@ -4425,7 +4429,7 @@ function rBracketMobile(){
     const aLbl=awayT?teamName(awayT):slotLabel(m.id,1);
     const hMk=projMark(hSt), aMk=projMark(aSt);
     return `<div class="bk-mob-card">
-      <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venue:''}</div>
+      <div class="wk-hdr">M${fn}${koLbl?' · '+koLbl:''}${venue?' · '+venueFull(venue):''}</div>
       <div class="bk-mob-teams">
         <div class="bk-mob-team${win==='home'?' wk-win':''}">${hMk}${homeT?fImg(homeT,18):''}<span>${hLbl}</span>${res!=null&&!hSlot?`<b>${res.homeGoals}</b>`:''}</div>
         <div class="bk-mob-team${win==='away'?' wk-win':''}">${aMk}${awayT?fImg(awayT,18):''}<span>${aLbl}</span>${res!=null&&!aSlot?`<b>${res.awayGoals}</b>`:''}</div>
