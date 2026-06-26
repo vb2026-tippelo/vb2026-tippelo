@@ -2626,7 +2626,7 @@ function rLiveNow(){
   if(!liveMatches.length)return '';
   const uid=S.user.id;
   return `<div style="background:linear-gradient(135deg,rgba(230,51,41,.18),rgba(230,51,41,.06));border:1px solid rgba(230,51,41,.4);border-radius:14px;padding:16px;margin-bottom:18px">
-    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}</div>
+    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}<button onclick="event.stopPropagation();fetchLiveScores()" style="margin-left:auto;background:rgba(230,51,41,.15);border:1px solid rgba(230,51,41,.4);color:#ff6b5e;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">${S.liveLoading?'⏳':'🔄'}</button></div>
     ${liveMatches.map(({m,sc})=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
