@@ -221,6 +221,13 @@ exports.handler = async function(event, context) {
       emitted.add(`${hk}|${ak}`); emitted.add(`${ak}|${hk}`);
     });
 
+    if (qp.raw === 'out') {
+      return { statusCode: 200, headers, body: JSON.stringify({
+        liveCount: matches.filter(m => m.live).length,
+        live: matches.filter(m => m.live).map(m => ({ home: m.home, away: m.away, h: m.h, a: m.a, minute: m.minute, src: m.src }))
+      }, null, 2) };
+    }
+
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
