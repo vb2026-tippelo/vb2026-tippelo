@@ -1446,7 +1446,7 @@ async function sS(key,value,shared=false){
 }
 
 let S={
-  loading:true,user:null,users:[],tips:{},results:{},mt:{},ko:{},leagues:[],special:{},adminSpec:{},
+  loading:true,loadErr:false,user:null,users:[],tips:{},results:{},mt:{},ko:{},leagues:[],special:{},adminSpec:{},
   view:'matches',sg:todayGroupId()||'A',
   aStage:'group',editRId:null,editRIn:{h:'',a:''},editTId:null,editTIn:{h:'',a:''},editKoId:null,editKoIn:'',
   authMode:'login',authErr:'',authLoad:false,authU:'',authP:'',authDN:'',
@@ -1493,10 +1493,18 @@ async function loadScorers(depth){
 }
 
 async function init(){
-  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds,wcVenues,chat,announce]=await Promise.all([
+  const _docs=()=>Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
     sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true),sG('wc_venues',true),sG('wc_chat',true),sG('wc_announce',true)
   ]);
+  const _to=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
+  let _loaded=null;
+  for(let attempt=0;attempt<3 && !_loaded;attempt++){
+    if(attempt>0)await new Promise(r=>setTimeout(r,1200*attempt));
+    try{ _loaded=await _to(_docs(),11000); }catch(e){ console.error('init betöltés hiba (próba '+(attempt+1)+')',e); }
+  }
+  if(!_loaded){ SS({loading:false,loadErr:true}); return; }
+  const[users,tips,results,sess,mt,leagues,special,adminSpec,impFlag,ko,live,impFlag2,theme,lang,wcIds,wcVenues,chat,announce]=_loaded;
   let ul=users||[];
   if(!ul.find(x=>x.un==='admin')){ul=[...ul,{id:'usr_admin',un:'admin',dn:'Admin',pw:await makePwField('admin123'),isAdmin:true,av:'👑'}];await sS('wc_u',ul,true);}
   let nt=tips||{},nr=results||{},nsp=special||{},nl=leagues||[];
@@ -2269,6 +2277,7 @@ function render(){
     document.documentElement.style.colorScheme=S.theme==='dark'?'dark':'light';
     document.documentElement.lang=S.lang||'hu';
     const root=document.getElementById('root');
+    if(S.loadErr){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:24px;text-align:center"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(56)}</div><div style="color:rgba(var(--ink-rgb),.65);font-size:15px;max-width:280px;line-height:1.5">${S.lang==='en'?'Could not load right now (connection issue). Please try again.':'Most nem sikerült betölteni (kapcsolati hiba). Próbáld újra.'}</div><button onclick="location.reload()" style="background:#C8A84B;color:#0A0A0A;border:none;border-radius:10px;padding:11px 22px;font-family:var(--font-bc);font-weight:700;font-size:14px;letter-spacing:1px;text-transform:uppercase;cursor:pointer">${S.lang==='en'?'🔄 Reload':'🔄 Újratöltés'}</button></div>`;return;}
     if(S.loading){root.innerHTML=`<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="filter:drop-shadow(0 4px 20px rgba(201,168,76,.4))">${trophyIcon(60)}</div><div style="color:rgba(var(--ink-rgb),.5);font-size:16px">Betöltés...</div></div>`;return;}
     if(!S.user){root.innerHTML=rAuth();bindAuth();return;}
     const uid=S.user.id,hw=(!S.special?.[`${uid}_w`]||!S.special?.[`${uid}_t`])&&!tournamentStarted();
@@ -3285,6 +3294,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
+<li>🛟 <b>Betöltés stabilitása</b>: ha a kapcsolat egy pillanatra beragad, az app már nem áll meg örökre a „Betöltés..." képernyőn — automatikusan újrapróbálkozik, és ha végképp nem megy, „Újratöltés" gombot kínál a végtelen pörgés helyett.</li>
 <li>🏟️ <b>Pontos stadionnevek</b>: a meccskártyákon és az ágrajzon a helyszín mostantól a hivatalos stadionnévvel és várossal jelenik meg (pl. „📍 Gillette Stadium, Foxborough", „NRG Stadium, Houston", „Estadio BBVA, Guadalupe") a rövid városnév helyett.</li>
 <li>📅 <b>Kieséses menetrend pontosítva</b>: a hivatalos FIFA/Wikipédia menetrend alapján több kieséses meccs <b>helyszíne és kezdési ideje</b> javítva lett (a meccs-sorszámok nem időrendben követik egymást, ezért pár helyen elcsúszott). Pl. Brazília–Japán (M76): <b>Houston, jún. 29. 12:00 helyi · 🇭🇺 19:00</b>.</li>
 <li>🕐 <b>Meccsidők – helyi és budapesti idő</b>: a <b>Meccsek</b> fülön minden meccsnél látszik a <b>helyszín helyi ideje</b> (a hivatalos FIFA-menetrend szerint) <b>és</b> a <b>budapesti idő</b> is (🇭🇺) — pl. „jún. 29. 19:00 (helyi) · 🇭🇺 03:00". Az <b>Ágrajz</b> fülön egységesen a <b>budapesti idő</b> és a pontos helyszín szerepel.</li>
