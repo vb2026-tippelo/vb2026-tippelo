@@ -2824,12 +2824,15 @@ function rCard(m){
     ${(()=>{
       const allU=S.users.filter(u=>!u.isAdmin);
       const tipsCount=allU.map(u=>S.tips[`${u.id}_${m.id}`]).filter(Boolean).length;
-      const wcId=S.wcIds?.[m.id];
+      const koMs2=koDate?koDate.getTime():0;
+      const luSoon=koMs2&&(koMs2-Date.now()<90*60*1000);
+      const showLU=!isTBD&&(!!live||!!res||isPast||!!luSoon);
+      const luData=`${encodeURIComponent(home)}|${encodeURIComponent(away)}|${m.date||''}`;
       const btns=[];
       if(tipsCount>=2)btns.push(`<button class="mc-actbtn" data-exptips="${m.id}">👥 ${S.expandTips===m.id?'Bezár ▴':'Mindenki tippje ▾'}</button>`);
-      if(wcId){
-        btns.push(`<button class="mc-actbtn" data-explineup="${m.id}" data-wcid="${wcId}">${S.expandLineup===m.id?'Bezár ▴':'👕 Felállás'}</button>`);
-        btns.push(`<button class="mc-actbtn" data-expstats="${m.id}" data-wcid="${wcId}">${S.expandStats===m.id?'Bezár ▴':'📊 Statisztika'}</button>`);
+      if(showLU){
+        btns.push(`<button class="mc-actbtn" data-explineup="${m.id}" data-lu="${luData}">${S.expandLineup===m.id?'Bezár ▴':'👕 Felállás'}</button>`);
+        btns.push(`<button class="mc-actbtn" data-expstats="${m.id}" data-lu="${luData}">${S.expandStats===m.id?'Bezár ▴':'📊 Statisztika'}</button>`);
       }
       return btns.length?`<div class="mc-actions">${btns.join('')}</div>`:'';
     })()}
@@ -2880,11 +2883,13 @@ function rCard(m){
       </div>`;
     })()}
     ${(()=>{
-      const wcId=S.wcIds?.[m.id];
-      if(!wcId)return '';
+      const koMs3=koDate?koDate.getTime():0;
+      const showLU=!isTBD&&(!!live||!!res||isPast||(koMs3&&(koMs3-Date.now()<90*60*1000)));
+      if(!showLU)return '';
       const isExp=S.expandLineup===m.id;
       const lu=S.lineups?.[m.id];
-      const expHtml=isExp&&lu?`<div style="padding:8px 14px 12px;border-top:1px solid rgba(var(--ink-rgb),.06)">
+      const luEmpty=lu&&lu.empty;
+      const expHtml=isExp&&lu&&!luEmpty?`<div style="padding:8px 14px 12px;border-top:1px solid rgba(var(--ink-rgb),.06)">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           ${['home','away'].map(side=>{
             const starters=lu.startingXI?.[side]||[];
@@ -2909,13 +2914,14 @@ function rCard(m){
             </div>`;
           }).join('')}
         </div>
-      </div>`:isExp&&!lu?`<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`:'';
+      </div>`:isExp&&luEmpty?`<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">${S.lang==='en'?'No lineup available yet':'Nincs még felállás'}</div>`:isExp?`<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`:'';
       return `<div>
         ${expHtml}
         ${(()=>{
           if(S.expandStats!==m.id)return '';
           const st=S.stats?.[m.id];
           if(!st)return `<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">Betöltés...</div>`;
+          if(st.empty)return `<div style="padding:10px 14px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4)">${S.lang==='en'?'No stats available yet':'Nincs még statisztika'}</div>`;
           const STAT_HU={
             'Expected goals (xG)':'Várható gólok (xG)',
             'Ball possession':'Labdabirtoklás',
@@ -3296,6 +3302,10 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
   valtozasok:{
     title:'Frissítési napló',
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
+<h3>2026.06.26.</h3>
+<ul>
+<li>👕📊 <b>Felállás és statisztika új forrásból</b>: a meccskártyák felállás- és statisztika-adatai mostantól megbízhatóbb (ESPN) forrásból jönnek. A gombok élő, frissen befejezett és hamarosan kezdődő meccseknél jelennek meg; ha az adat még nem érhető el, „Nincs még felállás/statisztika" üzenet látszik a végtelen betöltés helyett.</li>
+</ul>
 <h3>2026.06.24.</h3>
 <ul>
 <li>📱 <b>iPhone/Safari élő eredmény javítás</b>: egy értesítési hiba miatt iOS-en az élő állás beragadhatott a változó eredményeknél — ez javítva, mostantól iPhone-on is pontosan frissül.</li>
@@ -5737,30 +5747,32 @@ function bindMain(hw){
   document.querySelectorAll('[data-expstats]').forEach(b=>b.addEventListener('click',async e=>{
     e.stopPropagation();
     const mid=parseInt(e.currentTarget.dataset.expstats);
-    const wcId=e.currentTarget.dataset.wcid;
+    const lu=e.currentTarget.dataset.lu||'';
     if(S.expandStats===mid){SS({expandStats:null});return;}
     SS({expandStats:mid,expandLineup:null});
-    if(!S.stats?.[mid]&&wcId){
+    if((!S.stats?.[mid]||S.stats[mid].empty)&&lu){
       try{
+        const[h,a,d0]=lu.split('|');
         const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
-        const r=await fetch(`${base}/.netlify/functions/stats?matchId=${wcId}`);
+        const r=await fetch(`${base}/.netlify/functions/stats?home=${h}&away=${a}&date=${d0||''}&t=${Date.now()}`,{cache:'no-store'});
         const d=await r.json();
-        if(d.data)SS({stats:{...S.stats,[mid]:d.data}});
+        SS({stats:{...S.stats,[mid]:d.data||{empty:1}}});
       }catch(e2){}
     }
   }));
   document.querySelectorAll('[data-explineup]').forEach(b=>b.addEventListener('click',async e=>{
     e.stopPropagation();
     const mid=parseInt(e.currentTarget.dataset.explineup);
-    const wcId=e.currentTarget.dataset.wcid;
+    const lu=e.currentTarget.dataset.lu||'';
     if(S.expandLineup===mid){SS({expandLineup:null});return;}
     SS({expandLineup:mid});
-    if(!S.lineups?.[mid]&&wcId){
+    if((!S.lineups?.[mid]||S.lineups[mid].empty)&&lu){
       try{
+        const[h,a,d0]=lu.split('|');
         const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
-        const r=await fetch(`${base}/.netlify/functions/lineups?matchId=${wcId}`);
+        const r=await fetch(`${base}/.netlify/functions/lineups?home=${h}&away=${a}&date=${d0||''}&t=${Date.now()}`,{cache:'no-store'});
         const d=await r.json();
-        if(d.data)SS({lineups:{...S.lineups,[mid]:d.data}});
+        SS({lineups:{...S.lineups,[mid]:d.data||{empty:1}}});
       }catch(e2){}
     }
   }));
