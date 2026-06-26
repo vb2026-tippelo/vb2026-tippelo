@@ -1,5 +1,5 @@
 // VB 2026 Tippelő service worker
-const CACHE = 'vb2026-v2';
+const CACHE = 'vb2026-v3';
 const SHELL = ['/', '/index.html', '/manifest.json', '/trophy.png'];
 
 self.addEventListener('install', (e) => {
