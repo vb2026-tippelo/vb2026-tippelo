@@ -2651,7 +2651,7 @@ function rNext24h(){
     <div class="n24-list">${ms.map(m=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
-      const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString(S.lang==='en'?'en-GB':'hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit',timeZone:vtz(m)}):'';
+      const koTime=S.ko[m.id]||m.koDefault,koLbl=koTime?new Date(koTime).toLocaleString(S.lang==='en'?'en-GB':'hu-HU',{weekday:'short',hour:'2-digit',minute:'2-digit',timeZone:userTz()}):'';
       const navSel=m.group||(m.stage==='bronze'?'final':m.stage);
       return `<div class="sml-item" data-gomatch="${m.id}" data-grp="${navSel}">
         <div class="sml-top">
@@ -2766,9 +2766,9 @@ function rCard(m){
     return `<div class="mcard locked" id="match-${m.id}">
     <div class="mc-top" style="display:flex;align-items:center;gap:10px;padding:9px 14px;flex-wrap:wrap">
       <span style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:2px 8px">${grpLbl}</span>
-      <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fdLocal(m)}${localTime?` · ${localTime}`:''}</span>
+      <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fdLocal(m)}${localTime?` · ${localTime} ${S.lang==='en'?'(local)':'(helyi)'}`:''}${koLbl?` · 🇭🇺 ${koLbl}`:''}</span>
       ${isKO?'<span style="font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:.5px;background:rgba(var(--ink-rgb),.06);border:1px solid rgba(200,168,75,.4);color:#C8A84B;padding:2px 7px">×2 KO</span>':''}
-      ${venue?`<span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4)">📍 ${venue}${koLbl?` · 🇭🇺 ${koLbl}`:''}</span>`:''}
+      ${venue?`<span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4)">📍 ${venue}</span>`:''}
     </div>
     <div class="mc-tbd-main">
       ${tbdSide(hFix,0)}
@@ -2781,10 +2781,10 @@ function rCard(m){
   return `<div class="mcard${locked?' locked':''}" id="match-${m.id}" style="${hl?'box-shadow:0 0 0 3px #c9a84c;':''}">
     <div class="mc-top" style="display:flex;align-items:center;gap:10px;padding:9px 14px;flex-wrap:wrap">
       <span style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#C8A84B;border:1px solid rgba(200,168,75,.4);padding:2px 8px">${grpLbl}</span>
-      <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fdLocal(m)}${localTime?` · ${localTime}`:''}</span>
+      <span style="font-family:var(--font-bc);font-size:11px;letter-spacing:.5px;color:rgba(var(--ink-rgb),.45)">📅 ${fdLocal(m)}${localTime?` · ${localTime} ${S.lang==='en'?'(local)':'(helyi)'}`:''}${koLbl?` · 🇭🇺 ${koLbl}`:''}</span>
       ${live?`<span style="background:#CC2929;color:#fff;font-family:var(--font-bc);font-weight:800;font-size:10px;letter-spacing:1.5px;padding:2px 7px;display:inline-flex;align-items:center;gap:4px;animation:pulse 1.5s infinite"><span style="width:5px;height:5px;border-radius:50%;background:#fff"></span>${t('live_badge')}${live.minute!==undefined&&live.minute!==''?' '+live.minute:''}</span>`:''}
       ${isKO?'<span style="font-family:var(--font-bc);font-weight:700;font-size:10px;letter-spacing:.5px;background:rgba(var(--ink-rgb),.06);border:1px solid rgba(200,168,75,.4);color:#C8A84B;padding:2px 7px">×2 KO</span>':''}
-      <span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">${venue?`<span>📍 ${venue}${koLbl?` · 🇭🇺 ${koLbl}`:''} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.4)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''}${wx?`<span>${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''}</span>
+      <span style="margin-left:auto;font-family:var(--font-bc);font-size:10px;letter-spacing:.3px;color:rgba(var(--ink-rgb),.4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">${venue?`<span>📍 ${venue} · <span style="color:${isDome?'#6fa3ff':'rgba(var(--ink-rgb),.4)'}">${isDome?'🏛️ fedett':'🏟️ nyitott'}</span></span>`:''}${wx?`<span>${wx.icon} ${wx.temp}°C${wx.precip>20?` · 💧${wx.precip}%`:''}</span>`:''}</span>
     </div>
     <div class="mc-main" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:18px 18px 12px">
       <div style="display:flex;align-items:center;gap:12px;min-width:0">${fImg(home,38)}<span class="mc-tname" style="font-family:var(--font-bc);font-weight:700;font-size:18px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${S.favTeam&&S.favTeam===home?'⭐ ':''}${teamName(home)}</span></div>
@@ -3282,7 +3282,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
-<li>🕐 <b>Meccsidők a helyszín ideje szerint</b>: a meccsek dátuma és kezdési ideje mostantól a <b>helyszín helyi idejében</b> jelenik meg (ahogy a hivatalos FIFA-menetrend is mutatja) — pl. Brazília–Japán: jún. 29. 19:00 · Monterrey. A magyar nézési idő (🇭🇺) kisebb betűvel a helyszín mellett látható.</li>
+<li>🕐 <b>Meccsidők – helyi és budapesti idő</b>: a <b>Meccsek</b> fülön minden meccsnél látszik a <b>helyszín helyi ideje</b> (a hivatalos FIFA-menetrend szerint) <b>és</b> a <b>budapesti idő</b> is (🇭🇺) — pl. „jún. 29. 19:00 (helyi) · 🇭🇺 03:00". Az <b>Ágrajz</b> fülön egységesen a <b>budapesti idő</b> és a pontos helyszín szerepel.</li>
 <li>🛠️ <b>Ligák – pontozás javítás</b>: a liga pontozás-mezői mostantól szerkeszthetők (eddig a rájuk kattintás véletlenül a liga tabellájára navigált). A két fő liga („Irány Amerika", „Forma 1") szerkesztő admin​ja Hetesi Endre.</li>
 <li>🔮 Az <b>Ágrajz</b> fülön új <b>projekció</b>: a jelenlegi állás szerint mi lenne a 32 közé jutás (a hivatalos FIFA harmadikhelyezett-elosztással), <b>ugyanúgy fa-ágrajzként megrajzolva</b>, mint a rendes ágrajz. Válthatsz <b>élő meccsek</b> és <b>csak lezárt meccsek</b> alapú nézet között.</li>
 <li>🔧 <b>Élő eredmény</b> javítás: a folyamatban lévő meccs állása nem ragad 0:0-n, az élő gólszámot megbízhatóbban olvassuk ki.</li>
@@ -4216,8 +4216,8 @@ function fmtKoTime(m){
   const koTime=S.ko[m.id]||m.koDefault;
   if(!koTime)return '';
   const d=new Date(koTime);
-  const datePart=d.toLocaleDateString(S.lang==='en'?'en-GB':'hu-HU',{month:'short',day:'numeric',timeZone:vtz(m)});
-  const timePart=d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:vtz(m)});
+  const datePart=d.toLocaleDateString(S.lang==='en'?'en-GB':'hu-HU',{month:'short',day:'numeric',timeZone:userTz()});
+  const timePart=d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:userTz()});
   return `${datePart} ${timePart}`;
 }
 function slotLabel(matchId,side){
@@ -4706,8 +4706,9 @@ function rMyTips(){
         const isLive=!!S.live[m.id];
         const koT=S.ko[m.id]||m.koDefault;
         const timeStr=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:vtz(m)}):'';
+        const timeBp=koT?new Date(koT).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',timeZone:userTz()}):'';
         return `<div class="mt-row" style="display:grid;grid-template-columns:48px 1fr 72px 72px 90px 36px;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(var(--ink-rgb),.06);background:var(--bg-card)">
-          <div class="mt-c-date" style="font-family:var(--font-bc);font-size:10px;color:rgba(var(--ink-rgb),.3);line-height:1.4">${fdLocal(m)}<br>${timeStr}</div>
+          <div class="mt-c-date" style="font-family:var(--font-bc);font-size:10px;color:rgba(var(--ink-rgb),.3);line-height:1.35">${fdLocal(m)}<br>${timeStr}${timeBp?`<br>🇭🇺 ${timeBp}`:''}</div>
           <div class="mt-c-match" style="display:flex;align-items:center;gap:8px;padding:0 8px">
             <span>${teamFlag(home)}</span>
             <span style="font-family:var(--font-bc);font-weight:600;font-size:13px;color:var(--text-color);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${teamName(home)}</span>
