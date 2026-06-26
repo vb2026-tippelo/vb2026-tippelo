@@ -1822,10 +1822,14 @@ async function applyFinishedMatches(apiMatches){
     }
   });
 
-  const tasks=[sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true)];
+  // wc_live-ot csak akkor írjuk, ha tényleg változott az élő állás — így nem terheljük
+  // feleslegesen a Firestore írási kvótáját (sok felhasználónál ez fontos).
+  const liveChanged=JSON.stringify(live)!==JSON.stringify(S.live||{});
+  const tasks=[];
+  if(liveChanged)tasks.push(sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true));
   if(applied.length)tasks.push(sS('wc_r',nr,true));
   if(Object.keys(wcIds).length)tasks.push(sS('wc_ids',wcIds,true));
-  await Promise.all(tasks);
+  if(tasks.length)await Promise.all(tasks);
   SS({wcIds});
   if(applied.length){SS({results:nr});await autoFillKnockoutTeams();}
   return{applied,results:applied.length?nr:S.results,live};
@@ -3294,7 +3298,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
-<li>🛟 <b>Betöltés stabilitása</b>: ha a kapcsolat egy pillanatra beragad, az app már nem áll meg örökre a „Betöltés..." képernyőn — automatikusan újrapróbálkozik, és ha végképp nem megy, „Újratöltés" gombot kínál a végtelen pörgés helyett.</li>
+<li>⚡ <b>Élő eredmény frissítés javítva</b>: mostantól megbízható (ESPN) forrásból, és a frissen lehúzott állást nem írja vissza egy esetleg beragadt korábbi érték — így az élő meccsek eredménye pontosan és időben frissül. A háttér-szinkron is kíméletesebb lett (csak változáskor ír), hogy bírja a sok felhasználót.</li>: ha a kapcsolat egy pillanatra beragad, az app már nem áll meg örökre a „Betöltés..." képernyőn — automatikusan újrapróbálkozik, és ha végképp nem megy, „Újratöltés" gombot kínál a végtelen pörgés helyett.</li>
 <li>🏟️ <b>Pontos stadionnevek</b>: a meccskártyákon és az ágrajzon a helyszín mostantól a hivatalos stadionnévvel és várossal jelenik meg (pl. „📍 Gillette Stadium, Foxborough", „NRG Stadium, Houston", „Estadio BBVA, Guadalupe") a rövid városnév helyett.</li>
 <li>📅 <b>Kieséses menetrend pontosítva</b>: a hivatalos FIFA/Wikipédia menetrend alapján több kieséses meccs <b>helyszíne és kezdési ideje</b> javítva lett (a meccs-sorszámok nem időrendben követik egymást, ezért pár helyen elcsúszott). Pl. Brazília–Japán (M76): <b>Houston, jún. 29. 12:00 helyi · 🇭🇺 19:00</b>.</li>
 <li>🕐 <b>Meccsidők – helyi és budapesti idő</b>: a <b>Meccsek</b> fülön minden meccsnél látszik a <b>helyszín helyi ideje</b> (a hivatalos FIFA-menetrend szerint) <b>és</b> a <b>budapesti idő</b> is (🇭🇺) — pl. „jún. 29. 19:00 (helyi) · 🇭🇺 03:00". Az <b>Ágrajz</b> fülön egységesen a <b>budapesti idő</b> és a pontos helyszín szerepel.</li>
@@ -6001,7 +6005,10 @@ setInterval(async()=>{
   if(!S.user)return;
   try{
     const[r,t,sp,lg,mt,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true),sG('wc_live',true)]);
-    SS({results:r||S.results,tips:t||S.tips,special:sp||S.special,leagues:lg||S.leagues,mt:mt||S.mt,live:live?.scores||S.live,liveUpdatedAt:live?.updatedAt||S.liveUpdatedAt});
+    // Az eltárolt élő állást CSAK akkor vesszük át, ha frissebb a sajátunknál (időbélyeg) —
+    // így egy beragadt/elavult wc_live nem nyomja vissza a frissen lehúzott állást.
+    const storedNewer = live && live.updatedAt && (!S.liveUpdatedAt || new Date(live.updatedAt).getTime() > new Date(S.liveUpdatedAt).getTime());
+    SS({results:r||S.results,tips:t||S.tips,special:sp||S.special,leagues:lg||S.leagues,mt:mt||S.mt,...(storedNewer?{live:live.scores||S.live,liveUpdatedAt:live.updatedAt}:{})});
     refreshLiveIfStale();
     if(S.user?.isAdmin)autoFillKnockoutTeams();
   }catch(e){}
