@@ -117,11 +117,13 @@ exports.handler = async function(event, context) {
           liveInfo = liveByTeams[`${hKey}|${aKey}`] || null;
         }
 
-        const isLive = LIVE_STATUSES.has(m.status) || (liveInfo && LIVE_STATUSES.has(liveInfo.status));
         const isFinished = FINISHED_STATUSES.has(m.status);
-
-        const scoreH = liveInfo && isLive ? (liveInfo.scoreHome ?? m.scoreHome ?? 0) : (m.scoreHome ?? 0);
-        const scoreA = liveInfo && isLive ? (liveInfo.scoreAway ?? m.scoreAway ?? 0) : (m.scoreAway ?? 0);
+        // Ha a meccs egyaltalan szerepel a /wc/live feedben, elonek tekintjuk (kiveve ha mar befejezett),
+        // hogy ne essunk vissza a lassabb /wc/draw vegpont elavult allasara.
+        const isLive = !isFinished && (LIVE_STATUSES.has(m.status) || (liveInfo && LIVE_STATUSES.has(liveInfo.status)) || !!liveInfo);
+        // Mindig a friss live-feed allast reszesitjuk elonyben, ha van ervenyes ertek.
+        const scoreH = (liveInfo && liveInfo.scoreHome != null) ? liveInfo.scoreHome : (m.scoreHome ?? 0);
+        const scoreA = (liveInfo && liveInfo.scoreAway != null) ? liveInfo.scoreAway : (m.scoreAway ?? 0);
 
         return {
           home: mapTeam(m.home),
