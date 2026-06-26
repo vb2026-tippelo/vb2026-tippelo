@@ -1541,7 +1541,7 @@ async function init(){
   // de meg nincs token, egyszeri ujra-belepest kerunk, hogy a mentesek a lezaras utan is mukodjenek.
   if(cu && !hasTok){ try{localStorage.removeItem('wc_s');}catch(e){} cu=null; }
   SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{},chat:chat||{},announce:announce||null});
-  refreshLiveIfStale();
+  refreshLiveIfStale(true);
   autoFillKnockoutTeams();
   maybeJoinFromUrl();
   maybeStartTour();

@@ -200,6 +200,27 @@ exports.handler = async function(event, context) {
         };
       });
 
+    // ESPN-kiegeszites: az olyan ELO/befejezett ESPN meccsek, amik nem szerepelnek a draw-ban,
+    // igy az ESPN onmagaban is eleg a pontos eredmenyhez (a draw esetleges hianya nem szamit).
+    const emitted = new Set();
+    matches.forEach(mm => {
+      const h = (mm.home||'').toLowerCase().trim(), a = (mm.away||'').toLowerCase().trim();
+      emitted.add(`${h}|${a}`); emitted.add(`${a}|${h}`);
+    });
+    Object.values(espnByTeams).forEach(e => {
+      const hk = e.home.toLowerCase().trim(), ak = e.away.toLowerCase().trim();
+      if (emitted.has(`${hk}|${ak}`)) return;
+      if (e.scoreHome == null && e.scoreAway == null) return;
+      matches.push({
+        home: e.home, away: e.away, homeEn: e.home, awayEn: e.away,
+        h: e.scoreHome ?? 0, a: e.scoreAway ?? 0,
+        status: '', minute: e.minute || '',
+        live: e.isLive, finished: e.isFinished, scheduled: false,
+        kickoff: null, matchId: null, src: 'espn-only',
+      });
+      emitted.add(`${hk}|${ak}`); emitted.add(`${ak}|${hk}`);
+    });
+
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
