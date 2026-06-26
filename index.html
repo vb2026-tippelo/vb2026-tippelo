@@ -1549,7 +1549,7 @@ async function init(){
     loadPredict(cu.id);
     // Értesítés állapot betöltése
     sG('wc_notif_'+cu.id,false).then(v=>{
-      if(v&&Notification.permission==='granted'){SS({notifOn:true});scheduleNotifs();}
+      if(v&&typeof Notification!=='undefined'&&Notification.permission==='granted'){SS({notifOn:true});scheduleNotifs();}
     });
   }
   fetchTodayWeather();
@@ -1745,7 +1745,7 @@ async function removeMember(lgId,memberId){
   await sS('wc_lg',nl,true);SS({leagues:nl});
 }
 function pushGoalNotif(m,h,a,scorer,minute){
-  if(Notification.permission!=='granted')return;
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
   const title=`⚽ GÓL! ${teamName(m.home)} ${h}–${a} ${teamName(m.away)}`;
   const body=`${teamName(scorer)} gól${minute?' · '+minute:''}`;
   try{
@@ -1848,24 +1848,6 @@ async function fetchLiveScores(){
       liveDebug:{total:(data.matches||[]).length,byStatus,koSynced:koCount,sample:(data.matches||[]).slice(0,5).map(x=>`${x.home} ${x.homeScore??'-'}:${x.awayScore??'-'} ${x.away} (${x.status})`)},
       liveErr:applied.length?'':'Nincs új, automatikusan rögzíthető befejezett meccs.'});
   }catch(e){SS({liveLoading:false,liveErr:'Nem sikerült elérni a frissítő szolgáltatást.'});}
-}
-async function liveDebugTest(){
-  let msg='';
-  try{
-    const url=(location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores')+'?t='+Date.now();
-    const resp=await fetch(url,{cache:'no-store'});
-    msg+='HTTP '+resp.status+'\n';
-    const data=await resp.json();
-    if(data.error){alert('HTTP '+resp.status+'\nHIBA: '+data.error);return;}
-    const ms=data.matches||[];
-    msg+='meccs:'+ms.length+' · élő:'+ms.filter(m=>m.live).length+'\n';
-    const fn=ms.find(m=>JSON.stringify(m).includes('Franc'));
-    msg+=(fn?('FRA: '+fn.home+' '+fn.h+':'+fn.a+' '+fn.away+' live='+fn.live):'FRA NINCS a listában')+'\n';
-    const{results,live}=await applyFinishedMatches(ms);
-    SS({results,live,liveUpdatedAt:new Date().toISOString()});
-    msg+='S.live: '+(Object.entries(S.live).map(([k,v])=>k+'→'+v.h+':'+v.a).join(', ')||'üres');
-  }catch(e){msg+='KIVÉTEL: '+((e&&e.message)||e);}
-  alert(msg);
 }
 async function refreshLiveIfStale(force=false){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
@@ -2644,7 +2626,7 @@ function rLiveNow(){
   if(!liveMatches.length)return '';
   const uid=S.user.id;
   return `<div style="background:linear-gradient(135deg,rgba(230,51,41,.18),rgba(230,51,41,.06));border:1px solid rgba(230,51,41,.4);border-radius:14px;padding:16px;margin-bottom:18px">
-    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}<button onclick="event.stopPropagation();liveDebugTest()" style="margin-left:auto;background:rgba(230,51,41,.15);border:1px solid rgba(230,51,41,.4);color:#ff6b5e;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">${S.liveLoading?'⏳':'🔄'}</button></div>
+    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}<button onclick="event.stopPropagation();fetchLiveScores()" style="margin-left:auto;background:rgba(230,51,41,.15);border:1px solid rgba(230,51,41,.4);color:#ff6b5e;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">${S.liveLoading?'⏳':'🔄'}</button></div>
     ${liveMatches.map(({m,sc})=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
@@ -3316,6 +3298,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.24.</h3>
 <ul>
+<li>📱 <b>iPhone/Safari élő eredmény javítás</b>: egy értesítési hiba miatt iOS-en az élő állás beragadhatott a változó eredményeknél — ez javítva, mostantól iPhone-on is pontosan frissül.</li>
 <li>⚡ <b>Élő eredmény frissítés javítva</b>: mostantól megbízható (ESPN) forrásból, és a frissen lehúzott állást nem írja vissza egy esetleg beragadt korábbi érték — így az élő meccsek eredménye pontosan és időben frissül. A háttér-szinkron is kíméletesebb lett (csak változáskor ír), hogy bírja a sok felhasználót.</li>: ha a kapcsolat egy pillanatra beragad, az app már nem áll meg örökre a „Betöltés..." képernyőn — automatikusan újrapróbálkozik, és ha végképp nem megy, „Újratöltés" gombot kínál a végtelen pörgés helyett.</li>
 <li>🏟️ <b>Pontos stadionnevek</b>: a meccskártyákon és az ágrajzon a helyszín mostantól a hivatalos stadionnévvel és várossal jelenik meg (pl. „📍 Gillette Stadium, Foxborough", „NRG Stadium, Houston", „Estadio BBVA, Guadalupe") a rövid városnév helyett.</li>
 <li>📅 <b>Kieséses menetrend pontosítva</b>: a hivatalos FIFA/Wikipédia menetrend alapján több kieséses meccs <b>helyszíne és kezdési ideje</b> javítva lett (a meccs-sorszámok nem időrendben követik egymást, ezért pár helyen elcsúszott). Pl. Brazília–Japán (M76): <b>Houston, jún. 29. 12:00 helyi · 🇭🇺 19:00</b>.</li>
@@ -5988,7 +5971,7 @@ async function togglePushNotif(){
   }
 }
 function scheduleNotifs(){
-  if(!S.notifOn||Notification.permission!=='granted')return;
+  if(!S.notifOn||typeof Notification==='undefined'||Notification.permission!=='granted')return;
   const now=Date.now();
   ALL.forEach(m=>{
     const ko=S.ko[m.id]||m.koDefault;
