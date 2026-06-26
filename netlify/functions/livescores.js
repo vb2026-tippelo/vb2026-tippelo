@@ -1,9 +1,10 @@
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '1a897c26b1msh3a5cd4defcc5714p150cd7jsn31d90b539f03';
 const WC_HOST = 'world-cup-2026-live-api.p.rapidapi.com';
 const HEADERS = { 'x-rapidapi-key': RAPIDAPI_KEY, 'x-rapidapi-host': WC_HOST };
+const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
 
 const EN_TEAM = {
-  'Mexico':'Mexikó','South Africa':'Dél-Afrika','South Korea':'Dél-Korea',
+  'Mexico':'Mexikó','South Africa':'Dél-Afrika','South Korea':'Dél-Korea','Korea Republic':'Dél-Korea',
   'Czechia':'Csehország','Czech Republic':'Csehország','Canada':'Kanada',
   'Bosnia and Herzegovina':'Bosznia-Hercegovina','Bosnia & Herzegovina':'Bosznia-Hercegovina',
   'Qatar':'Katar','Switzerland':'Svájc','Brazil':'Brazília','Morocco':'Marokkó',
@@ -12,8 +13,8 @@ const EN_TEAM = {
   'Germany':'Németország','Curaçao':'Curaçao','Curacao':'Curaçao',
   "Ivory Coast":'Elefántcsontpart',"Côte d'Ivoire":'Elefántcsontpart',
   'Ecuador':'Ecuador','Netherlands':'Hollandia','Japan':'Japán','Sweden':'Svédország',
-  'Tunisia':'Tunézia','Belgium':'Belgium','Egypt':'Egyiptom','Iran':'Irán',
-  'New Zealand':'Új-Zéland','Spain':'Spanyolország','Cape Verde':'Zöld-foki-sz.',
+  'Tunisia':'Tunézia','Belgium':'Belgium','Egypt':'Egyiptom','Iran':'Irán','IR Iran':'Irán',
+  'New Zealand':'Új-Zéland','Spain':'Spanyolország','Cape Verde':'Zöld-foki-sz.','Cabo Verde':'Zöld-foki-sz.',
   'Saudi Arabia':'Szaúd-Arábia','Uruguay':'Uruguay','France':'Franciaország',
   'Senegal':'Szenegál','Iraq':'Irak','Norway':'Norvégia','Argentina':'Argentína',
   'Algeria':'Algéria','Austria':'Ausztria','Jordan':'Jordánia','Portugal':'Portugália',
@@ -23,15 +24,15 @@ const EN_TEAM = {
 };
 
 const mapTeam = en => EN_TEAM[en] || en;
+const tkey = en => mapTeam((en||'').trim()).toLowerCase().trim();
 
 function fmtMinute(val) {
   if (val === null || val === undefined) return '';
   const s = String(val).trim();
-  if (!s || s === '0') return '';
-  return s.includes('\'') ? s : s + '\'';
+  if (!s || s === '0' || s === "0'") return '';
+  return s.includes("'") ? s : s + "'";
 }
 
-// --- robusztus gol-kinyeres: tobbfele mezonevet es "2-0" string format is kezel ---
 function num(v) {
   if (v === null || v === undefined || v === '') return null;
   const n = Number(v);
@@ -60,29 +61,73 @@ function liveScores(m) {
 const LIVE_STATUSES = new Set([2,6,7,8,9,10,37,38]);
 const FINISHED_STATUSES = new Set([3,43]);
 
+function ymd(d){ return d.toISOString().slice(0,10).replace(/-/g,''); }
+function espnUrl(){
+  const now = new Date();
+  const y = new Date(now.getTime() - 36*3600*1000);
+  const t = new Date(now.getTime() + 24*3600*1000);
+  return `${ESPN_BASE}?dates=${ymd(y)}-${ymd(t)}&limit=100`;
+}
+function parseEspn(json){
+  const out = {};
+  const events = (json && json.events) || [];
+  events.forEach(ev => {
+    const comp = (ev.competitions && ev.competitions[0]) || null;
+    if (!comp) return;
+    const st = (comp.status && comp.status.type) || {};
+    const state = st.state; // pre / in / post
+    const isLive = state === 'in';
+    const isFinished = state === 'post' || st.completed === true;
+    const cs = comp.competitors || [];
+    const homeC = cs.find(c => c.homeAway === 'home');
+    const awayC = cs.find(c => c.homeAway === 'away');
+    if (!homeC || !awayC) return;
+    const hn = mapTeam(((homeC.team && (homeC.team.displayName || homeC.team.name)) || '').trim());
+    const an = mapTeam(((awayC.team && (awayC.team.displayName || awayC.team.name)) || '').trim());
+    if (!hn || !an) return;
+    const info = {
+      home: hn, away: an,
+      scoreHome: num(homeC.score),
+      scoreAway: num(awayC.score),
+      isLive, isFinished,
+      minute: isLive ? fmtMinute(comp.status && comp.status.displayClock) : ''
+    };
+    out[`${hn.toLowerCase().trim()}|${an.toLowerCase().trim()}`] = info;
+  });
+  return out;
+}
+
 exports.handler = async function(event, context) {
   const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
   const qp = (event && event.queryStringParameters) || {};
   try {
-    const [groupResp, koResp, liveResp] = await Promise.all([
-      fetch(`https://${WC_HOST}/wc/draw?stage=group`, {headers: HEADERS}),
-      fetch(`https://${WC_HOST}/wc/draw?stage=ko`, {headers: HEADERS}),
-      fetch(`https://${WC_HOST}/wc/live`, {headers: HEADERS}),
+    const [groupResp, koResp, liveResp, espnResp] = await Promise.all([
+      fetch(`https://${WC_HOST}/wc/draw?stage=group`, {headers: HEADERS}).catch(()=>null),
+      fetch(`https://${WC_HOST}/wc/draw?stage=ko`, {headers: HEADERS}).catch(()=>null),
+      fetch(`https://${WC_HOST}/wc/live`, {headers: HEADERS}).catch(()=>null),
+      fetch(espnUrl(), {headers:{'accept':'application/json'}}).catch(()=>null),
     ]);
 
-    const groupData = groupResp.ok ? await groupResp.json() : {data:[]};
-    const koData = koResp.ok ? await koResp.json() : {data:[]};
-    const liveData = liveResp.ok ? await liveResp.json() : {data:[]};
+    const groupData = groupResp && groupResp.ok ? await groupResp.json() : {data:[]};
+    const koData = koResp && koResp.ok ? await koResp.json() : {data:[]};
+    const liveData = liveResp && liveResp.ok ? await liveResp.json() : {data:[]};
+    const espnData = espnResp && espnResp.ok ? await espnResp.json() : {events:[]};
 
-    // DIAGNOSZTIKA: ?raw=live -> a /wc/live nyers elso nehany eleme, hogy lassuk a valodi mezoneveket
+    const espnByTeams = parseEspn(espnData);
+
     if (qp.raw === 'live') {
       return { statusCode: 200, headers, body: JSON.stringify({
         liveCount: (liveData.data || []).length,
         sample: (liveData.data || []).slice(0, 6)
       }, null, 2) };
     }
+    if (qp.raw === 'espn') {
+      return { statusCode: 200, headers, body: JSON.stringify({
+        espnEvents: (espnData.events || []).length,
+        parsed: espnByTeams
+      }, null, 2) };
+    }
 
-    // Live meccsek: matchId → info + csapatnév → info
     const liveById = {};
     const liveByTeams = {};
     (liveData.data || []).forEach(m => {
@@ -95,7 +140,6 @@ exports.handler = async function(event, context) {
         matchId: m.matchId,
       };
       if (m.matchId) liveById[m.matchId] = info;
-      // Csapatnév alapú index (mindkét irányban)
       const hKey = (m.home||'').toLowerCase().trim();
       const aKey = (m.away||'').toLowerCase().trim();
       if (hKey && aKey) {
@@ -107,23 +151,36 @@ exports.handler = async function(event, context) {
     const allRaw = [...(groupData.data||[]), ...(koData.data||[])];
 
     const matches = allRaw
-      .filter(m => m.matchId || m.scoreHome !== null || LIVE_STATUSES.has(m.status))
+      .filter(m => {
+        const hk = tkey(m.home), ak = tkey(m.away);
+        return m.matchId || m.scoreHome !== null || LIVE_STATUSES.has(m.status)
+          || espnByTeams[`${hk}|${ak}`] || espnByTeams[`${ak}|${hk}`];
+      })
       .map(m => {
-        // Live info keresés: matchId alapján először, utána csapatnév alapján
+        const hk = tkey(m.home), ak = tkey(m.away);
+        let espn = espnByTeams[`${hk}|${ak}`]; let espnFlip = false;
+        if (!espn) { espn = espnByTeams[`${ak}|${hk}`]; if (espn) espnFlip = true; }
+
         let liveInfo = (m.matchId && liveById[m.matchId]) || null;
         if (!liveInfo) {
-          const hKey = (m.home||'').toLowerCase().trim();
-          const aKey = (m.away||'').toLowerCase().trim();
-          liveInfo = liveByTeams[`${hKey}|${aKey}`] || null;
+          liveInfo = liveByTeams[`${(m.home||'').toLowerCase().trim()}|${(m.away||'').toLowerCase().trim()}`] || null;
         }
 
-        const isFinished = FINISHED_STATUSES.has(m.status);
-        // Ha a meccs egyaltalan szerepel a /wc/live feedben, elonek tekintjuk (kiveve ha mar befejezett),
-        // hogy ne essunk vissza a lassabb /wc/draw vegpont elavult allasara.
-        const isLive = !isFinished && (LIVE_STATUSES.has(m.status) || (liveInfo && LIVE_STATUSES.has(liveInfo.status)) || !!liveInfo);
-        // Mindig a friss live-feed allast reszesitjuk elonyben, ha van ervenyes ertek.
-        const scoreH = (liveInfo && liveInfo.scoreHome != null) ? liveInfo.scoreHome : (m.scoreHome ?? 0);
-        const scoreA = (liveInfo && liveInfo.scoreAway != null) ? liveInfo.scoreAway : (m.scoreAway ?? 0);
+        let isLive, isFinished, scoreH, scoreA, minute;
+
+        if (espn && (espn.scoreHome != null || espn.scoreAway != null)) {
+          scoreH = espnFlip ? (espn.scoreAway ?? 0) : (espn.scoreHome ?? 0);
+          scoreA = espnFlip ? (espn.scoreHome ?? 0) : (espn.scoreAway ?? 0);
+          isLive = espn.isLive;
+          isFinished = espn.isFinished;
+          minute = espn.minute || '';
+        } else {
+          isFinished = FINISHED_STATUSES.has(m.status);
+          isLive = !isFinished && (LIVE_STATUSES.has(m.status) || (liveInfo && LIVE_STATUSES.has(liveInfo.status)) || !!liveInfo);
+          scoreH = (liveInfo && liveInfo.scoreHome != null) ? liveInfo.scoreHome : (m.scoreHome ?? 0);
+          scoreA = (liveInfo && liveInfo.scoreAway != null) ? liveInfo.scoreAway : (m.scoreAway ?? 0);
+          minute = liveInfo?.minute || '';
+        }
 
         return {
           home: mapTeam(m.home),
@@ -133,28 +190,29 @@ exports.handler = async function(event, context) {
           h: scoreH,
           a: scoreA,
           status: m.statusText,
-          minute: liveInfo?.minute || '',
+          minute,
           live: isLive,
           finished: isFinished,
-          scheduled: m.status === 1,
+          scheduled: m.status === 1 && !isLive && !isFinished,
           kickoff: m.kickoff,
-          matchId: liveInfo?.matchId || m.matchId || null,
+          matchId: (liveInfo && liveInfo.matchId) || m.matchId || null,
+          src: (espn && (espn.scoreHome != null || espn.scoreAway != null)) ? 'espn' : (liveInfo ? 'rapidlive' : 'draw'),
         };
       });
-
-    console.log(`Live meccsek: ${Object.keys(liveById).length}, draw total: ${allRaw.length}`);
 
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
         matches,
         updatedAt: new Date().toISOString(),
-        source: 'wc2026api',
+        source: 'espn+wc2026api',
         wcCount: matches.length,
         liveCount: matches.filter(m => m.live).length,
+        espnCount: Object.keys(espnByTeams).length,
       })
     };
   } catch(err) {
     return {statusCode:500, headers, body: JSON.stringify({error: err.message})};
   }
 };
+
