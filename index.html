@@ -1837,7 +1837,7 @@ async function applyFinishedMatches(apiMatches){
 async function fetchLiveScores(){
   SS({liveLoading:true,liveErr:'',liveFound:[],liveDebug:null});
   try{
-    const resp=await fetch(location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores');
+    const resp=await fetch((location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores')+'?t='+Date.now(),{cache:'no-store'});
     const data=await resp.json();
     if(!resp.ok||data.error){SS({liveLoading:false,liveErr:data.error||'Hiba történt a lekérés során.'});return;}
     const byStatus={};
@@ -1853,7 +1853,7 @@ async function refreshLiveIfStale(force=false){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
   if(!force&&Date.now()-last<60*1000)return; // 1 perc, kivéve force
   try{
-    const resp=await fetch(location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores');
+    const resp=await fetch((location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores')+'?t='+Date.now(),{cache:'no-store'});
     const data=await resp.json();
     if(!resp.ok||data.error||!data.matches)return;
     const{results,live}=await applyFinishedMatches(data.matches);

@@ -72,7 +72,7 @@ function parseEspn(json){
 }
 
 exports.handler = async function(event, context) {
-  const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
+  const headers = {'Access-Control-Allow-Origin':'*','Content-Type':'application/json','Cache-Control':'no-store, no-cache, must-revalidate, max-age=0'};
   const qp = (event && event.queryStringParameters) || {};
   try {
     const resp = await fetch(espnUrl(), { headers: { 'accept': 'application/json' } });
