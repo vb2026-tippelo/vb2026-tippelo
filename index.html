@@ -1849,6 +1849,24 @@ async function fetchLiveScores(){
       liveErr:applied.length?'':'Nincs új, automatikusan rögzíthető befejezett meccs.'});
   }catch(e){SS({liveLoading:false,liveErr:'Nem sikerült elérni a frissítő szolgáltatást.'});}
 }
+async function liveDebugTest(){
+  let msg='';
+  try{
+    const url=(location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores')+'?t='+Date.now();
+    const resp=await fetch(url,{cache:'no-store'});
+    msg+='HTTP '+resp.status+'\n';
+    const data=await resp.json();
+    if(data.error){alert('HTTP '+resp.status+'\nHIBA: '+data.error);return;}
+    const ms=data.matches||[];
+    msg+='meccs:'+ms.length+' · élő:'+ms.filter(m=>m.live).length+'\n';
+    const fn=ms.find(m=>JSON.stringify(m).includes('Franc'));
+    msg+=(fn?('FRA: '+fn.home+' '+fn.h+':'+fn.a+' '+fn.away+' live='+fn.live):'FRA NINCS a listában')+'\n';
+    const{results,live}=await applyFinishedMatches(ms);
+    SS({results,live,liveUpdatedAt:new Date().toISOString()});
+    msg+='S.live: '+(Object.entries(S.live).map(([k,v])=>k+'→'+v.h+':'+v.a).join(', ')||'üres');
+  }catch(e){msg+='KIVÉTEL: '+((e&&e.message)||e);}
+  alert(msg);
+}
 async function refreshLiveIfStale(force=false){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
   if(!force&&Date.now()-last<60*1000)return; // 1 perc, kivéve force
@@ -2626,7 +2644,7 @@ function rLiveNow(){
   if(!liveMatches.length)return '';
   const uid=S.user.id;
   return `<div style="background:linear-gradient(135deg,rgba(230,51,41,.18),rgba(230,51,41,.06));border:1px solid rgba(230,51,41,.4);border-radius:14px;padding:16px;margin-bottom:18px">
-    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}<button onclick="event.stopPropagation();fetchLiveScores()" style="margin-left:auto;background:rgba(230,51,41,.15);border:1px solid rgba(230,51,41,.4);color:#ff6b5e;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">${S.liveLoading?'⏳':'🔄'}</button></div>
+    <div style="font-size:15px;font-weight:800;color:#ff6b5e;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e63329;animation:pulse 1.5s infinite"></span>${t('live_now')}<button onclick="event.stopPropagation();liveDebugTest()" style="margin-left:auto;background:rgba(230,51,41,.15);border:1px solid rgba(230,51,41,.4);color:#ff6b5e;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">${S.liveLoading?'⏳':'🔄'}</button></div>
     ${liveMatches.map(({m,sc})=>{
       const ov=S.mt[m.id],home=ov?.home||m.home,away=ov?.away||m.away;
       const tip=S.tips[`${uid}_${m.id}`];
