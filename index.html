@@ -551,8 +551,9 @@ select.inp,select.inp-light{appearance:none;cursor:pointer}
 .bk-mob{display:none}
 @media(max-width:900px){.bk-desktop{display:none}.bk-mob{display:block}}
 .wk-box{background:#fff;border:1px solid #ddd;padding:4px 0}
-.wk-hdr{font-family:var(--font-bc);font-size:9px;font-weight:700;color:#bbb;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;background:#F7F5F0;border-bottom:1px solid #eee}
+.wk-hdr{font-family:var(--font-bc);font-size:9px;font-weight:700;color:#bbb;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;background:#F7F5F0;border-bottom:1px solid #eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wk-team{padding:5px 8px;display:flex;align-items:center;gap:5px;font-family:var(--font-bc);font-weight:600;font-size:12px;color:#0A0A0A;letter-spacing:.3px}
+.wk-tnm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wk-tbd{color:#bbb}
 .wk-sep{height:1px;background:#eee}
 .wk-score{font-family:var(--font-bc);font-weight:900;font-size:13px;color:#0A0A0A;min-width:20px;text-align:right;margin-left:auto}
@@ -3297,6 +3298,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
 <h3>2026.06.27.</h3>
 <ul>
+<li>🏆 <b>Ágrajz megjelenítés javítva</b>: a kieséses fa-nézetben a meccskártyák már nem csúsznak egymásra — a hosszú stadion- és csapatnevek egy sorba kerülnek, és nagyobb a kártyák közti térköz, így minden jól olvasható.</li>
 <li>⚽ <b>Góllövőlista új forrásból</b>: a góllövő- és gólpassz-adatok mostantól megbízhatóbb (ESPN) forrásból, a meccsenkénti gólesemények alapján állnak össze (öngól és tizenegyes-szétlövés helyesen kihagyva).</li>
 <li>🔋 <b>Gyorsabb, takarékosabb háttér-szinkron</b>: az app mostantól csak akkor frissít a háttérben, ha a fül látható, és élő/közelgő meccs van — egyébként ritkábban. Háttérbe tett fülön szünetel. Ettől gyorsabb és kevésbé terheli a szervert (sok felhasználónál is stabil marad). Visszatéréskor azonnal frissül.</li>
 <li>📡 <b>Központi élő-eredmény</b>: az élő állást mostantól egyetlen szerveroldali folyamat frissíti, a kliensek pedig csak olvassák — így mindenki ugyanazt a friss eredményt látja, kevesebb hálózati terheléssel. (Ha a központi forrás épp nem elérhető, az app automatikusan közvetlen tartalékforrásra vált.)</li>
@@ -4335,7 +4337,7 @@ function rBracketTree(){
   const BH=60,MW=172,sc='rgba(212,175,55,0.35)',sw=1.5;
   const _cw=(document.querySelector('.bc-center')?.clientWidth||document.getElementById('root')?.clientWidth||window.innerWidth)-44;
   const CW=Math.max(16,Math.min(340,Math.round((_cw-5*MW)/4)));
-  const N=8,HC=BH+14,H=N*HC; // egy fél magassága
+  const N=8,HC=BH+28,H=N*HC; // egy fél magassága (a +28 térköz, hogy a kártya tartalma elférjen, ne csússzon egymásra)
   const TH=H*2; // teljes magasság
   function cy(round,i){return (i*2+1)*Math.pow(2,round)*HC/2;}
 
