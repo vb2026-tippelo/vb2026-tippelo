@@ -3302,6 +3302,11 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
   valtozasok:{
     title:'Frissítési napló',
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
+<h3>2026.06.27.</h3>
+<ul>
+<li>⚽ <b>Góllövőlista új forrásból</b>: a góllövő- és gólpassz-adatok mostantól megbízhatóbb (ESPN) forrásból, a meccsenkénti gólesemények alapján állnak össze (öngól és tizenegyes-szétlövés helyesen kihagyva).</li>
+<li>🔋 <b>Gyorsabb, takarékosabb háttér-szinkron</b>: az app mostantól csak akkor frissít a háttérben, ha a fül látható, és élő/közelgő meccs van — egyébként ritkábban. Háttérbe tett fülön szünetel. Ettől gyorsabb és kevésbé terheli a szervert (sok felhasználónál is stabil marad). Visszatéréskor azonnal frissül.</li>
+</ul>
 <h3>2026.06.26.</h3>
 <ul>
 <li>👕📊 <b>Felállás és statisztika új forrásból</b>: a meccskártyák felállás- és statisztika-adatai mostantól megbízhatóbb (ESPN) forrásból jönnek. A gombok élő, frissen befejezett és hamarosan kezdődő meccseknél jelennek meg; ha az adat még nem érhető el, „Nincs még felállás/statisztika" üzenet látszik a végtelen betöltés helyett.</li>
@@ -3309,7 +3314,8 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <h3>2026.06.24.</h3>
 <ul>
 <li>📱 <b>iPhone/Safari élő eredmény javítás</b>: egy értesítési hiba miatt iOS-en az élő állás beragadhatott a változó eredményeknél — ez javítva, mostantól iPhone-on is pontosan frissül.</li>
-<li>⚡ <b>Élő eredmény frissítés javítva</b>: mostantól megbízható (ESPN) forrásból, és a frissen lehúzott állást nem írja vissza egy esetleg beragadt korábbi érték — így az élő meccsek eredménye pontosan és időben frissül. A háttér-szinkron is kíméletesebb lett (csak változáskor ír), hogy bírja a sok felhasználót.</li>: ha a kapcsolat egy pillanatra beragad, az app már nem áll meg örökre a „Betöltés..." képernyőn — automatikusan újrapróbálkozik, és ha végképp nem megy, „Újratöltés" gombot kínál a végtelen pörgés helyett.</li>
+<li>⚡ <b>Élő eredmény frissítés javítva</b>: mostantól megbízható (ESPN) forrásból, és a frissen lehúzott állást nem írja vissza egy esetleg beragadt korábbi érték — így az élő meccsek eredménye pontosan és időben frissül. A háttér-szinkron is kíméletesebb lett (csak változáskor ír), hogy bírja a sok felhasználót.</li>
+<li>🔄 <b>Betöltés-akadás javítva</b>: ha a kapcsolat egy pillanatra beragad, az app már nem áll meg örökre a „Betöltés…" képernyőn — automatikusan újrapróbálkozik, és ha végképp nem megy, „Újratöltés" gombot kínál a végtelen pörgés helyett.</li>
 <li>🏟️ <b>Pontos stadionnevek</b>: a meccskártyákon és az ágrajzon a helyszín mostantól a hivatalos stadionnévvel és várossal jelenik meg (pl. „📍 Gillette Stadium, Foxborough", „NRG Stadium, Houston", „Estadio BBVA, Guadalupe") a rövid városnév helyett.</li>
 <li>📅 <b>Kieséses menetrend pontosítva</b>: a hivatalos FIFA/Wikipédia menetrend alapján több kieséses meccs <b>helyszíne és kezdési ideje</b> javítva lett (a meccs-sorszámok nem időrendben követik egymást, ezért pár helyen elcsúszott). Pl. Brazília–Japán (M76): <b>Houston, jún. 29. 12:00 helyi · 🇭🇺 19:00</b>.</li>
 <li>🕐 <b>Meccsidők – helyi és budapesti idő</b>: a <b>Meccsek</b> fülön minden meccsnél látszik a <b>helyszín helyi ideje</b> (a hivatalos FIFA-menetrend szerint) <b>és</b> a <b>budapesti idő</b> is (🇭🇺) — pl. „jún. 29. 19:00 (helyi) · 🇭🇺 03:00". Az <b>Ágrajz</b> fülön egységesen a <b>budapesti idő</b> és a pontos helyszín szerepel.</li>
@@ -6009,23 +6015,55 @@ function scheduleNotifs(){
 }
 
 // Live frissítés: 60mp-ként, force=true ha van élő meccs
+// Aktív időablak: van élő meccs, vagy max 10 percen belül kezdődik, vagy max 150 perce kezdődött.
+// Ezen kívül szinte semmi nem változik, ezért ritkábban szinkronizálunk (Firestore-kvóta kímélése).
+function liveWindow(){
+  if(Object.keys(S.live||{}).length>0)return true;
+  const now=Date.now();
+  return ALL.some(m=>{
+    const ko=S.ko[m.id]||m.koDefault;if(!ko)return false;
+    const t=new Date(ko).getTime();
+    return (t-now)<10*60*1000 && (now-t)<150*60*1000;
+  });
+}
+// Élő eredmény (ESPN) frissítés — CSAK látható fülön és aktív időablakban.
 setInterval(()=>{
-  if(!S.user)return;
-  const hasLive=Object.keys(S.live||{}).length>0;
-  refreshLiveIfStale(hasLive);
+  if(!S.user||document.hidden)return;
+  if(!liveWindow())return;
+  refreshLiveIfStale(Object.keys(S.live||{}).length>0);
 },60*1000);
+// Firestore háttér-szinkron — CSAK látható fülön. Aktívkor 30 mp-enként a gyakran változó
+// kulcsok (eredmény/tipp/élő), egyébként ~3 percenként; a ritkán változó kulcsokat
+// (special/ligák/mt) csak a lassú (~3 perces) körben olvassuk. Így ~6-8x kevesebb olvasás.
+let _syncTick=0;
 setInterval(async()=>{
-  if(!S.user)return;
+  if(!S.user||document.hidden)return;
+  _syncTick++;
+  const active=liveWindow();
+  if(!active && (_syncTick%6!==0))return;   // inaktívkor csak minden 6. kör (~3 perc)
+  const slowCycle=(_syncTick%6===0);        // ritkán változó kulcsok ~3 percenként
   try{
-    const[r,t,sp,lg,mt,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true),sG('wc_live',true)]);
+    const[r,t,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_live',true)]);
     // Az eltárolt élő állást CSAK akkor vesszük át, ha frissebb a sajátunknál (időbélyeg) —
     // így egy beragadt/elavult wc_live nem nyomja vissza a frissen lehúzott állást.
     const storedNewer = live && live.updatedAt && (!S.liveUpdatedAt || new Date(live.updatedAt).getTime() > new Date(S.liveUpdatedAt).getTime());
-    SS({results:r||S.results,tips:t||S.tips,special:sp||S.special,leagues:lg||S.leagues,mt:mt||S.mt,...(storedNewer?{live:live.scores||S.live,liveUpdatedAt:live.updatedAt}:{})});
-    refreshLiveIfStale();
+    const patch={results:r||S.results,tips:t||S.tips};
+    if(storedNewer){patch.live=live.scores||S.live;patch.liveUpdatedAt=live.updatedAt;}
+    if(slowCycle){
+      const[sp,lg,mt]=await Promise.all([sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true)]);
+      patch.special=sp||S.special;patch.leagues=lg||S.leagues;patch.mt=mt||S.mt;
+    }
+    SS(patch);
+    if(active)refreshLiveIfStale();
     if(S.user?.isAdmin)autoFillKnockoutTeams();
   }catch(e){}
 },30000);
+// Amikor a felhasználó visszatér a fülre: azonnali élő-frissítés + a következő kör teljes olvasás.
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden||!S.user)return;
+  _syncTick=5;
+  if(liveWindow())refreshLiveIfStale(true);
+});
 
 _r=render;render();init();loadGA();loadScorers();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}
