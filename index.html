@@ -1796,7 +1796,12 @@ async function applyFinishedMatches(apiMatches){
     const flip=(S.mt[lm.id]?.home||lm.home)===huAway;
     const h=flip?aGoal:hGoal, a=flip?hGoal:aGoal;
     if(isFinished&&!nr[lm.id]){
-      nr[lm.id]={homeGoals:h,awayGoals:a};
+      const rec={homeGoals:h,awayGoals:a};
+      // Kieseses meccs: a tovabbjuto / mod / 11-es allas automatikusan az ESPN-bol (a flip-pel forgatva).
+      if(am.adv==='home'||am.adv==='away') rec.adv = flip ? (am.adv==='home'?'away':'home') : am.adv;
+      if(am.via==='aet'||am.via==='pen') rec.via=am.via;
+      if(am.penH!=null&&am.penA!=null){ rec.penH=flip?am.penA:am.penH; rec.penA=flip?am.penH:am.penA; }
+      nr[lm.id]=rec;
       applied.push({mid:lm.id,home:lm.home,away:lm.away,h,a});
     } else if(isLive){
       // Gól detektálás: ha az állás változott az előző live állapothoz képest
