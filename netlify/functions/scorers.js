@@ -93,8 +93,11 @@ exports.handler = async function(event){
       if(!reset){ try{ const snap=await ref.get(); if(snap.exists){ const v=JSON.parse(snap.data().value); if(v&&v.src==='espn'&&v.matches)cache=v; } }catch(_){} }
     }
     const matches=cache.matches||{};
-    const full = reset || Object.keys(matches).length===0; // elso ESPN-futas / reset: teljes torna
-    const discovered=await discover(full);
+    const full = reset || Object.keys(matches).length===0; // a mentesi feltetelhez
+    // A felderites MINDIG a teljes tornat nezi (4 konnyu scoreboard-hivas), kulonben a
+    // backfill elakadna a regebbi meccseknel. A draga summary-hivasokat a `final`-cache
+    // es a MAX_PER_RUN keret vedi, igy ez nem terhelo.
+    const discovered=await discover(true);
     const toProcess=discovered.filter(e=>(e.state==='in'||e.state==='post')&&!(matches[e.id]&&matches[e.id].final));
     const batch=toProcess.slice(0,MAX_PER_RUN);
 
