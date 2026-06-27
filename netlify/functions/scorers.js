@@ -82,9 +82,10 @@ async function matchGoals(eventId){
 }
 
 exports.handler = async function(event){
-  const headers={'Access-Control-Allow-Origin':'*','Content-Type':'application/json'};
+  const headers={'Access-Control-Allow-Origin':'*','Content-Type':'application/json','Cache-Control':'no-store'};
   const qp=(event&&event.queryStringParameters)||{};
   const reset=!!qp.reset;
+  const doProcess = !!qp.process || reset; // CSAK a cron dolgoz fel; a kliens a Firestore-bol olvas
   try{
     let cache={matches:{},updatedAt:null,src:'espn'};
     let ref=null;
@@ -93,23 +94,30 @@ exports.handler = async function(event){
       if(!reset){ try{ const snap=await ref.get(); if(snap.exists){ const v=JSON.parse(snap.data().value); if(v&&v.src==='espn'&&v.matches)cache=v; } }catch(_){} }
     }
     const matches=cache.matches||{};
-    const full = reset || Object.keys(matches).length===0; // a mentesi feltetelhez
-    // A felderites MINDIG a teljes tornat nezi (4 konnyu scoreboard-hivas), kulonben a
-    // backfill elakadna a regebbi meccseknel. A draga summary-hivasokat a `final`-cache
-    // es a MAX_PER_RUN keret vedi, igy ez nem terhelo.
-    const discovered=await discover(true);
-    const toProcess=discovered.filter(e=>(e.state==='in'||e.state==='post')&&!(matches[e.id]&&matches[e.id].final));
-    const batch=toProcess.slice(0,MAX_PER_RUN);
+    let updatedAt=cache.updatedAt, pending=0;
 
-    const res=await Promise.all(batch.map(async e=>{ try{ const sc=await matchGoals(e.id); return {e,sc}; }catch(_){ return null; } }));
-    res.forEach(r=>{
-      if(!r||!r.sc)return;
-      const extracted=Object.values(r.sc).reduce((s,v)=>s+(v.goals||0),0);
-      // ne veglegesitsuk azt a befejezett meccset, ahol a tabla szerint van gol, de nem talaltunk (lehet meg lag)
-      const final = r.e.state==='post' && !((r.e.goals||0)>0 && extracted===0);
-      matches[r.e.id]={sc:r.sc, final};
-    });
+    if(doProcess){
+      const full = reset || Object.keys(matches).length===0;
+      // A felderites MINDIG a teljes tornat nezi (4 konnyu scoreboard-hivas), kulonben a
+      // backfill elakadna a regebbi meccseknel. A draga summary-hivasokat a `final`-cache
+      // es a MAX_PER_RUN keret vedi. Az elo meccsek final=false -> minden korben frissulnek.
+      const discovered=await discover(true);
+      const toProcess=discovered.filter(e=>(e.state==='in'||e.state==='post')&&!(matches[e.id]&&matches[e.id].final));
+      const batch=toProcess.slice(0,MAX_PER_RUN);
+      const res=await Promise.all(batch.map(async e=>{ try{ const sc=await matchGoals(e.id); return {e,sc}; }catch(_){ return null; } }));
+      res.forEach(r=>{
+        if(!r||!r.sc)return;
+        const extracted=Object.values(r.sc).reduce((s,v)=>s+(v.goals||0),0);
+        const final = r.e.state==='post' && !((r.e.goals||0)>0 && extracted===0);
+        matches[r.e.id]={sc:r.sc, final};
+      });
+      updatedAt=new Date().toISOString();
+      const newCache={matches,updatedAt,src:'espn'};
+      if((batch.length||reset||full)&&ref){ try{ await ref.set({value:JSON.stringify(newCache)}); }catch(_){} }
+      pending=Math.max(0,toProcess.length-batch.length);
+    }
 
+    // Aggregalas a (frissitett vagy gyorsitotarazott) cache-bol — ez gyors, nincs API-hivas.
     const players={};
     Object.values(matches).forEach(md=>{
       const sc=(md&&md.sc)||{};
@@ -119,15 +127,10 @@ exports.handler = async function(event){
         players[k].goals+=v.goals||0; players[k].assists+=v.assists||0;
       });
     });
-
-    const newCache={matches,updatedAt:new Date().toISOString(),src:'espn'};
-    if((batch.length||reset||full)&&ref){ try{ await ref.set({value:JSON.stringify(newCache)}); }catch(_){} }
-
     const list=Object.values(players).filter(p=>p.goals>0)
       .sort((a,b)=>b.goals-a.goals||b.assists-a.assists||a.name.localeCompare(b.name));
-    const pending=Math.max(0,toProcess.length-batch.length);
 
-    return {statusCode:200,headers,body:JSON.stringify({ok:true,scorers:list,updatedAt:newCache.updatedAt,processed:Object.keys(matches).length,pending})};
+    return {statusCode:200,headers,body:JSON.stringify({ok:true,scorers:list,updatedAt,processed:Object.keys(matches).length,pending})};
   }catch(e){
     return {statusCode:500,headers,body:JSON.stringify({ok:false,error:e.message})};
   }

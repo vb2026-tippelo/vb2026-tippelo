@@ -1477,26 +1477,45 @@ function loadGA(){
   gtag('config',id);
 }
 
-// ---- Goallovolista betoltese a szerverrol (inkrementalis, gyorsitotarazott) ----
-async function loadScorers(depth){
-  depth=depth||0;
-  if(S.scorersLoading&&depth===0)return;
-  SS({scorersLoading:true});
+// ---- Halk hibanaplo (admin szamara): kliensoldali hibakat kapunk el egy capped tombbe ----
+window.__errLog = (function(){ try{ return JSON.parse(localStorage.getItem('wc_errlog')||'[]'); }catch(_){ return []; } })();
+function __pushErr(kind,msg,extra){
   try{
-    const r=await fetch(AUTH_BASE+'/scorers');
-    if(r.ok){const d=await r.json();if(d&&d.ok){
-      SS({scorers:d.scorers||[],scorersLoaded:true,scorersUpdatedAt:d.updatedAt,scorersLoading:false});
-      if(d.pending>0&&depth<4){setTimeout(()=>loadScorers(depth+1),1500);}
-      return;
-    }}
+    window.__errLog.unshift({t:new Date().toISOString(),kind,msg:String(msg||'').slice(0,300),extra:extra?String(extra).slice(0,200):''});
+    window.__errLog=window.__errLog.slice(0,30);
+    localStorage.setItem('wc_errlog',JSON.stringify(window.__errLog));
+  }catch(_){}
+}
+window.addEventListener('error',e=>{ __pushErr('error', e&&e.message, ((e&&e.filename)||'')+':'+((e&&e.lineno)||'')); });
+window.addEventListener('unhandledrejection',e=>{ const r=e&&e.reason; __pushErr('promise', (r&&r.message)||r||'unhandledrejection'); });
+window.__clearErr=function(){ window.__errLog=[]; try{localStorage.removeItem('wc_errlog');}catch(_){}; if(typeof SS==='function')SS({}); };
+
+// ---- Goallovolista: a szerveroldali cron altal frissitett Firestore-gyorsitotarat
+// olvassuk es helyben osszegezzuk (nincs kliensenkenti nehez feldolgozas / Netlify-hivas). ----
+async function loadScorers(){
+  try{
+    const cache=await sG('wc_scorers',true);
+    if(cache&&cache.matches){
+      const players={};
+      Object.values(cache.matches).forEach(md=>{
+        const sc=(md&&md.sc)||{};
+        Object.keys(sc).forEach(k=>{
+          const v=sc[k];
+          if(!players[k])players[k]={name:v.name,team:v.team,goals:0,assists:0};
+          players[k].goals+=v.goals||0; players[k].assists+=v.assists||0;
+        });
+      });
+      const list=Object.values(players).filter(p=>p.goals>0)
+        .sort((a,b)=>b.goals-a.goals||(b.assists||0)-(a.assists||0)||a.name.localeCompare(b.name));
+      SS({scorers:list,scorersLoaded:true,scorersUpdatedAt:cache.updatedAt});
+    } else { SS({scorersLoaded:true}); }
   }catch(e){}
-  SS({scorersLoading:false});
 }
 
 async function init(){
   const _docs=()=>Promise.all([
     sG('wc_u',true),sG('wc_t',true),sG('wc_r',true),sG('wc_s',false),sG('wc_mt',true),
-    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),sG('wc_live',true),sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),sG('wc_ids',true),sG('wc_venues',true),sG('wc_chat',true),sG('wc_announce',true)
+    sG('wc_lg',true),sG('wc_sp',true),sG('wc_asp',true),sG('wc_import_2026_v1',true),sG('wc_ko',true),Promise.resolve(null)/*wc_live: a cron-feedbol jon, betoltesnel nem kell*/,sG('wc_import_frasen_v1',true),sG('wc_theme',false),sG('wc_lang',false),Promise.resolve(null)/*wc_ids: ESPN-nel nem hasznalt*/,Promise.resolve(null)/*wc_venues: csak statikus helyszinek*/,sG('wc_chat',true),sG('wc_announce',true)
   ]);
   const _to=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
   let _loaded=null;
@@ -3308,6 +3327,11 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
   valtozasok:{
     title:'Frissítési napló',
     html:`<p>Itt követheted, mi újult meg az alkalmazásban. A legfrissebb változások vannak felül.</p>
+<h3>2026.06.28.</h3>
+<ul>
+<li>⚽ <b>Élő góllövőlista</b>: meccs közben mostantól szinte azonnal (kb. 1–2 percen belül) felkerül a góllövő a listára, amikor gólt szerez — a frissítést egy szerveroldali folyamat végzi, a kliensek pedig csak a kész listát olvassák, így gyorsabb a betöltés és kisebb a terhelés.</li>
+<li>🥅 <b>Kieséses meccs vége automatikus</b>: a 90 perces állás, a továbbjutó és a mód (hosszabbítás / tizenegyesek + 11-es állás) mostantól teljesen automatikusan, kézi beavatkozás nélkül kerül rögzítésre.</li>
+</ul>
 <h3>2026.06.27.</h3>
 <ul>
 <li>🥅 <b>Hosszabbítás / tizenegyesek a kieséses szakaszban</b>: ha egy meccs rendes időben döntetlen, és hosszabbítás vagy tizenegyes-szétlövés dönt, az ágrajz mostantól a tényleges <b>továbbjutót</b> lépteti tovább, a meccskártya pedig jelzi: „Hosszabbítás után" vagy „Tizenegyesekkel (4–2) · ➡ továbbjutó". Fontos: a <b>pontozásban továbbra is csak a 90 perces eredmény számít</b> — a hosszabbítás/tizenegyesek csak a továbbjutást és a jelzést érintik.</li>
@@ -5506,6 +5530,15 @@ function rAdmin(){
   const ms=ALL.filter(m=>m.stage===S.aStage);
   return `<div>
   ${rActivityLog()}
+  ${(()=>{ const es=window.__errLog||[]; return `
+  <div class="sect">🐞 ${S.lang==='en'?'Error log':'Hibanapló'}</div>
+  <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+      <div style="font-size:12.5px;color:rgba(var(--ink-rgb),.55)">${S.lang==='en'?'Recent client-side errors (last 30, this device only).':'Legutóbbi kliensoldali hibák (utolsó 30, csak ezen az eszközön).'}</div>
+      ${es.length?`<button class="btn-sm" onclick="window.__clearErr&&window.__clearErr()">${S.lang==='en'?'Clear':'Törlés'}</button>`:''}
+    </div>
+    ${es.length? es.map(x=>`<div style="font-size:11px;font-family:monospace;color:rgba(var(--ink-rgb),.6);padding:5px 0;border-bottom:1px solid var(--border);word-break:break-word"><span style="color:rgba(var(--ink-rgb),.4)">${(x.t||'').slice(5,19).replace('T',' ')}</span> <b>${esc(x.kind||'')}</b> ${esc(x.msg||'')}${x.extra?` <span style="color:rgba(var(--ink-rgb),.35)">(${esc(x.extra)})</span>`:''}</div>`).join('') : `<div style="font-size:12px;color:rgba(var(--ink-rgb),.4)">${S.lang==='en'?'No errors recorded. 🎉':'Nincs rögzített hiba. 🎉'}</div>`}
+  </div>`; })()}
   <div class="sect">💾 ${S.lang==='en'?'Backup':'Biztonsági mentés'}</div>
   <div style="background:rgba(var(--ink-rgb),.04);border-radius:12px;padding:14px;margin-bottom:16px">
     <div style="font-size:12.5px;color:rgba(var(--ink-rgb),.55);margin-bottom:12px">${S.lang==='en'?'Download a full JSON backup of all game data, or restore from a backup file (overwrites the included data).':'Tölts le egy teljes JSON mentést minden játékadatról, vagy állíts vissza egy mentésfájlból (felülírja a benne lévő adatokat).'}</div>
@@ -6058,7 +6091,7 @@ setInterval(()=>{
 // Firestore háttér-szinkron — CSAK látható fülön. Aktívkor 30 mp-enként a gyakran változó
 // kulcsok (eredmény/tipp/élő), egyébként ~3 percenként; a ritkán változó kulcsokat
 // (special/ligák/mt) csak a lassú (~3 perces) körben olvassuk. Így ~6-8x kevesebb olvasás.
-let _syncTick=0;
+let _syncTick=0,_lastScorers=0;
 setInterval(async()=>{
   if(!S.user||document.hidden)return;
   _syncTick++;
@@ -6074,6 +6107,7 @@ setInterval(async()=>{
     }
     SS(patch);
     if(active)refreshLiveIfStale();   // ez olvassa a szerveroldali élő-feedet (vagy ESPN-fallback)
+    if(active && Date.now()-_lastScorers>90000){ _lastScorers=Date.now(); loadScorers(); } // élő gól ~1-2 perc alatt felkerül
     if(S.user?.isAdmin)autoFillKnockoutTeams();
   }catch(e){}
 },30000);

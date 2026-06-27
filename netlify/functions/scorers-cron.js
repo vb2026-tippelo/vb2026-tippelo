@@ -1,4 +1,4 @@
-// Ütemezett góllövőlista-frissítő — 5 percenként fut, de csak meccs-időablakban
+// Ütemezett góllövőlista-frissítő — PERCENKÉNT fut, de csak meccs-időablakban
 // hív API-t. Az "őr" a beépített menetrendet használja (0 API-hívás), és csak
 // kezdés −10 perctől +3 óráig triggereli a meglévő /scorers végpontot.
 const { schedule } = require('@netlify/functions');
@@ -22,7 +22,7 @@ const handler = async function () {
   if (!inMatchWindow(now)) {
     return { statusCode: 200, body: 'skip: nincs meccs-ablak' };
   }
-  const base = (process.env.URL || 'https://vb2026-endre.netlify.app') + '/.netlify/functions/scorers';
+  const base = (process.env.URL || 'https://vb2026-endre.netlify.app') + '/.netlify/functions/scorers?process=1';
   let pending = 0, runs = 0;
   // Egy hívás max. 25 meccset dolgoz fel; ha sok gyűlt fel, párszor ismétlünk.
   do {
@@ -38,4 +38,4 @@ const handler = async function () {
   return { statusCode: 200, body: 'frissitve runs=' + runs + ' pending=' + pending };
 };
 
-exports.handler = schedule('*/5 * * * *', handler);
+exports.handler = schedule('* * * * *', handler);
