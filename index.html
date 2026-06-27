@@ -1540,7 +1540,7 @@ async function init(){
   // Az uj (szerveroldali) rendszerhez belepesi jegy (token) kell. Ha van regi munkamenet,
   // de meg nincs token, egyszeri ujra-belepest kerunk, hogy a mentesek a lezaras utan is mukodjenek.
   if(cu && !hasTok){ try{localStorage.removeItem('wc_s');}catch(e){} cu=null; }
-  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:live?.scores||{},liveUpdatedAt:live?.updatedAt||null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{},chat:chat||{},announce:announce||null});
+  SS({loading:false,users:ul,tips:nt,results:nr,mt:mt||{},ko:nko,leagues:nl,special:nsp,adminSpec:adminSpec||{},user:cu,profDN:cu?.dn||'',profAv:cu?.av||'⚽',live:{},liveUpdatedAt:null,theme:S.theme,lang:S.lang,notifOn:false,wcIds:wcIds||{},wcVenues:wcVenues||{},chat:chat||{},announce:announce||null});
   refreshLiveIfStale(true);
   autoFillKnockoutTeams();
   maybeJoinFromUrl();
@@ -1822,15 +1822,12 @@ async function applyFinishedMatches(apiMatches){
     }
   });
 
-  // wc_live-ot csak akkor írjuk, ha tényleg változott az élő állás — így nem terheljük
-  // feleslegesen a Firestore írási kvótáját (sok felhasználónál ez fontos).
-  const liveChanged=JSON.stringify(live)!==JSON.stringify(S.live||{});
+  // A kliens MÁR NEM írja a wc_live-ot: az élő állást a szerveroldali cron írja egy
+  // helyre (wc_live_feed), amit a kliensek csak OLVASNAK. Így megszűnik a percenkénti,
+  // sok klienstől érkező írás-roham. Az új, befejezett eredményt (wc_r) továbbra is mentjük.
   const tasks=[];
-  if(liveChanged)tasks.push(sS('wc_live',{updatedAt:new Date().toISOString(),scores:live},true));
   if(applied.length)tasks.push(sS('wc_r',nr,true));
-  if(Object.keys(wcIds).length)tasks.push(sS('wc_ids',wcIds,true));
   if(tasks.length)await Promise.all(tasks);
-  SS({wcIds});
   if(applied.length){SS({results:nr});await autoFillKnockoutTeams();}
   return{applied,results:applied.length?nr:S.results,live};
 }
@@ -1853,10 +1850,22 @@ async function refreshLiveIfStale(force=false){
   const last=S.liveUpdatedAt?new Date(S.liveUpdatedAt).getTime():0;
   if(!force&&Date.now()-last<60*1000)return; // 1 perc, kivéve force
   try{
-    const resp=await fetch((location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores')+'?t='+Date.now(),{cache:'no-store'});
-    const data=await resp.json();
-    if(!resp.ok||data.error||!data.matches)return;
-    const{results,live}=await applyFinishedMatches(data.matches);
+    let matches=null;
+    // 1) Elsődlegesen a szerveroldali cron-feed (1 Firestore-olvasás, nincs külön ESPN-hívás kliensenként).
+    try{
+      const feed=await sG('wc_live_feed',true);
+      if(feed&&Array.isArray(feed.matches)&&feed.updatedAt&&(Date.now()-new Date(feed.updatedAt).getTime()<3*60*1000)){
+        matches=feed.matches;
+      }
+    }catch(_){}
+    // 2) Ha nincs friss feed (cron még nem futott / hiba): közvetlen ESPN — tartalék.
+    if(!matches){
+      const resp=await fetch((location.hostname.includes('netlify')?'/.netlify/functions/livescores':'https://vb2026-endre.netlify.app/.netlify/functions/livescores')+'?t='+Date.now(),{cache:'no-store'});
+      const data=await resp.json();
+      if(!resp.ok||data.error||!data.matches)return;
+      matches=data.matches;
+    }
+    const{results,live}=await applyFinishedMatches(matches);
     SS({results,live,liveUpdatedAt:new Date().toISOString()});
   }catch(e){}
 }
@@ -2143,22 +2152,6 @@ function getLbBoard(){
     const r=calcUser(u.id,S.tips,eff,S.mt,S.special,S.adminSpec,cfg);return{...u,...r};
   }).sort((a,b)=>b.pts-a.pts||b.pf-a.pf||b.rgd-a.rgd||b.tipped-a.tipped);
   return {board,lgN};
-}
-
-async function syncVenuesFromAPI(){
-  SS({venuesLoading:true});
-  try{
-    const base=location.hostname.includes('netlify')?'':'https://vb2026-endre.netlify.app';
-    const r=await fetch(`${base}/.netlify/functions/venues`);
-    const d=await r.json();
-    if(d.venues&&d.count>0){
-      // wcVenues: matchId → venue name
-      await sS('wc_venues',d.venues,true);
-      SS({wcVenues:d.venues,venuesSynced:d.count,venuesLoading:false});
-    }else{
-      SS({venuesLoading:false});
-    }
-  }catch(e){SS({venuesLoading:false});}
 }
 
 function exportLbCsv(){
@@ -3306,6 +3299,7 @@ Weboldal: <a href="https://forma1fitnesz.hu" target="_blank">forma1fitnesz.hu</a
 <ul>
 <li>⚽ <b>Góllövőlista új forrásból</b>: a góllövő- és gólpassz-adatok mostantól megbízhatóbb (ESPN) forrásból, a meccsenkénti gólesemények alapján állnak össze (öngól és tizenegyes-szétlövés helyesen kihagyva).</li>
 <li>🔋 <b>Gyorsabb, takarékosabb háttér-szinkron</b>: az app mostantól csak akkor frissít a háttérben, ha a fül látható, és élő/közelgő meccs van — egyébként ritkábban. Háttérbe tett fülön szünetel. Ettől gyorsabb és kevésbé terheli a szervert (sok felhasználónál is stabil marad). Visszatéréskor azonnal frissül.</li>
+<li>📡 <b>Központi élő-eredmény</b>: az élő állást mostantól egyetlen szerveroldali folyamat frissíti, a kliensek pedig csak olvassák — így mindenki ugyanazt a friss eredményt látja, kevesebb hálózati terheléssel. (Ha a központi forrás épp nem elérhető, az app automatikusan közvetlen tartalékforrásra vált.)</li>
 </ul>
 <h3>2026.06.26.</h3>
 <ul>
@@ -5538,7 +5532,6 @@ function rAdmin(){
         <div style="font-size:12px;color:rgba(var(--ink-rgb),.5);margin-top:3px">Lekéri az összes meccs helyszínét a World Cup API-ból és elmenti. Egyszer kell futtatni.</div>
         ${S.venuesSynced?`<div style="font-size:12px;color:#00b050;margin-top:4px">✓ ${S.venuesSynced} helyszín szinkronizálva</div>`:''}
       </div>
-      <button class="btn-sm" id="syncVenuesBtn" style="background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:#4a9eff">${S.venuesLoading?'⏳ Folyamatban...':'📍 Helyszínek szinkronizálása'}</button>
     </div>
   </div>${stgs.map(s=>`<button class="pill ${S.aStage===s.id?'on':'off'}" data-as="${s.id}">${s.l}</button>`).join('')}</div>
   <div>${ms.map(m=>{
@@ -5815,7 +5808,6 @@ function bindMain(hw){
   document.querySelectorAll('[data-tg]').forEach(b=>b.addEventListener('click',e=>SS({tipFilterG:e.currentTarget.dataset.tg})));
   document.querySelectorAll('[data-lbid]').forEach(b=>b.addEventListener('click',e=>SS({selLg:e.currentTarget.dataset.lbid,activeLgId:e.currentTarget.dataset.lbid})));
   document.getElementById('shareLbBtn')?.addEventListener('click',exportLbImage);
-  document.getElementById('syncVenuesBtn')?.addEventListener('click',syncVenuesFromAPI);
   document.getElementById('exportCsvBtn')?.addEventListener('click',()=>exportLbCsv());
   document.getElementById('exportPdfBtn')?.addEventListener('click',()=>exportLbPdf());
   document.getElementById('shareTipsBtn')?.addEventListener('click',shareTips);
@@ -6043,18 +6035,14 @@ setInterval(async()=>{
   if(!active && (_syncTick%6!==0))return;   // inaktívkor csak minden 6. kör (~3 perc)
   const slowCycle=(_syncTick%6===0);        // ritkán változó kulcsok ~3 percenként
   try{
-    const[r,t,live]=await Promise.all([sG('wc_r',true),sG('wc_t',true),sG('wc_live',true)]);
-    // Az eltárolt élő állást CSAK akkor vesszük át, ha frissebb a sajátunknál (időbélyeg) —
-    // így egy beragadt/elavult wc_live nem nyomja vissza a frissen lehúzott állást.
-    const storedNewer = live && live.updatedAt && (!S.liveUpdatedAt || new Date(live.updatedAt).getTime() > new Date(S.liveUpdatedAt).getTime());
+    const[r,t]=await Promise.all([sG('wc_r',true),sG('wc_t',true)]);
     const patch={results:r||S.results,tips:t||S.tips};
-    if(storedNewer){patch.live=live.scores||S.live;patch.liveUpdatedAt=live.updatedAt;}
     if(slowCycle){
       const[sp,lg,mt]=await Promise.all([sG('wc_sp',true),sG('wc_lg',true),sG('wc_mt',true)]);
       patch.special=sp||S.special;patch.leagues=lg||S.leagues;patch.mt=mt||S.mt;
     }
     SS(patch);
-    if(active)refreshLiveIfStale();
+    if(active)refreshLiveIfStale();   // ez olvassa a szerveroldali élő-feedet (vagy ESPN-fallback)
     if(S.user?.isAdmin)autoFillKnockoutTeams();
   }catch(e){}
 },30000);
