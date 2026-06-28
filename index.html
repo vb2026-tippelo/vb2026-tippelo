@@ -3978,11 +3978,38 @@ function computeR32Fixed(){
   }
   return out;
 }
-// Egy KO meccs csapatai: eloszor a hivatalos kitoltes (S.mt), aztan az R32 fix oldalak.
+function fifaNumOf(m){
+  if(m.stage==='r32')return 72+m.mn;
+  if(m.stage==='r16')return 88+m.mn;
+  if(m.stage==='qf')return 96+m.mn;
+  if(m.stage==='sf')return 100+m.mn;
+  if(m.stage==='bronze')return 103;
+  if(m.stage==='final')return 104;
+  return null;
+}
+// Egy KO meccs csapatai: eloszor a hivatalos kitoltes (S.mt), aztan az R32 fix oldalak,
+// vegul R16+ eseten OLDALANKENT a be-taplalo meccs tovabbjutoja — igy egy mar eldolt ag
+// (pl. Kanada) azonnal megjelenik a kovetkezo korben, nem var a masik meccsre.
 function koTeams(m){
   const ov=S.mt[m.id];
   let home=ov&&ov.home?ov.home:null, away=ov&&ov.away?ov.away:null;
   if((!home||!away)&&m.stage==='r32'){const f=r32Fixed()[m.id];if(f){if(!home)home=f.home||null;if(!away)away=f.away||null;}}
+  if((!home||!away)&&m.stage!=='r32'&&m.stage!=='group'){
+    const fn=fifaNumOf(m);
+    const wsrc=WINNER_SOURCES[fn],lsrc=LOSER_SOURCES[fn],srcNums=wsrc||lsrc;
+    if(srcNums){
+      const resolveSide=(srcNum,loser)=>{
+        const fm=fifaMatchObj(srcNum);if(!fm)return null;
+        const res=S.results[fm.id];if(!res)return null;
+        const w=getWinnerSide(fm.id,res);if(!w)return null;       // dontetlen/folyamatban -> meg ures
+        const ft=koTeams(fm);                                     // rekurzio: a be-taplalo csapatai
+        const side=loser?(w==='home'?'away':'home'):w;
+        return side==='home'?ft.home:ft.away;
+      };
+      if(!home)home=resolveSide(srcNums[0],!!lsrc);
+      if(!away)away=resolveSide(srcNums[1],!!lsrc);
+    }
+  }
   return {home,away};
 }
 async function autoFillKnockoutTeams(){
