@@ -22,7 +22,7 @@ const EN_TEAM = {
   'Saudi Arabia':'Szaúd-Arábia','Uruguay':'Uruguay','France':'Franciaország',
   'Senegal':'Szenegál','Iraq':'Irak','Norway':'Norvégia','Argentina':'Argentína',
   'Algeria':'Algéria','Austria':'Ausztria','Jordan':'Jordánia','Portugal':'Portugália',
-  'DR Congo':'DR Kongó','D.R. Congo':'DR Kongó','Democratic Republic of Congo':'DR Kongó',
+  'DR Congo':'DR Kongó','D.R. Congo':'DR Kongó','Democratic Republic of Congo':'DR Kongó','Congo DR':'DR Kongó',
   'Uzbekistan':'Üzbegisztán','Colombia':'Kolumbia','England':'Anglia',
   'Croatia':'Horvátország','Ghana':'Ghána','Panama':'Panama'
 };
