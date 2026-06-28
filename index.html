@@ -2799,8 +2799,8 @@ function rCard(m){
   const hl=S.highlightMatch===m.id;
 
   if(isTBD){
-    const f=m.stage==='r32'?(r32Fixed()[m.id]||null):null;
-    const hFix=f&&f.home?f.home:null, aFix=f&&f.away?f.away:null;
+    const kt=koTeams(m);
+    const hFix=kt.home||null, aFix=kt.away||null;
     const tbdSide=(fix,side)=>fix
       ?`<div class="mc-tbd-slot" style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-color)">${fImg(fix,24)} ${teamName(fix)} <span style="color:#2E9E5A;font-weight:800;font-size:13px">✓</span></div>`
       :`<div class="mc-tbd-slot">${slotLabel(m.id,side)}</div>`;
@@ -4485,8 +4485,7 @@ function rBracket(){
   return `<div>
     <div class="sect">${t('bracket_t')}</div>
     <p style="color:rgba(var(--ink-rgb),.4);font-size:12.5px;margin-bottom:16px">${t('bracket_hint')}</p>
-    ${rProjBracket()}
-    <div class="sect" style="margin-top:34px;display:flex;align-items:center;justify-content:space-between;gap:10px">${en?'Official bracket':'Hivatalos ágrajz'}<button data-bkimg="official" style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(var(--ink-rgb),.6)">📷 ${en?'Image':'Kép'}</button></div>
+    <div class="sect" style="display:flex;align-items:center;justify-content:space-between;gap:10px">${en?'Official bracket':'Hivatalos ágrajz'}<button data-bkimg="official" style="font-family:var(--font-bc);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:transparent;color:rgba(var(--ink-rgb),.6)">📷 ${en?'Image':'Kép'}</button></div>
     ${rBracketTree()}
   </div>
   ${rBracketMobile()}
