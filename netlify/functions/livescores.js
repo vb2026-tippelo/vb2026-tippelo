@@ -168,6 +168,10 @@ exports.handler = async function(event, context) {
       } else if (m._winner) {
         m.adv = m._winner; // ha a summary nem jott ossze, legalabb a tovabbjuto a winner-jelzobol
       }
+      // GUARD: kieseses meccs CSAK eldontott tovabbjutoval "kesz". adv nelkul (dontetlen 90p-allas,
+      // ET/tizenegyes folyamatban, vagy hianyos ESPN-adat) NE vegleguljon, kulonben a kliens
+      // dontetlenkent rogzitene es az agrajz elakadna a kesobbi ET/buntето gyoztest sem atveve.
+      if (!m.adv) { m.finished = false; m.live = true; }
     }));
 
     // takaritsuk a belso mezoket
