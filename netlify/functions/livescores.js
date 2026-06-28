@@ -22,6 +22,9 @@ const EN_TEAM = {
   'Algeria':'Algéria','Austria':'Ausztria','Jordan':'Jordánia','Portugal':'Portugália',
   'DR Congo':'DR Kongó','D.R. Congo':'DR Kongó','Democratic Republic of Congo':'DR Kongó','Congo DR':'DR Kongó',
   'Uzbekistan':'Üzbegisztán','Colombia':'Kolumbia','England':'Anglia',
+  'Bosnia-Herzegovina':'Bosznia-Hercegovina',
+  "Cote d'Ivoire":'Elefántcsontpart',
+  'United States of America':'USA',
   'Croatia':'Horvátország','Ghana':'Ghána','Panama':'Panama'
 };
 const mapTeam = en => EN_TEAM[en] || en;
@@ -126,6 +129,17 @@ exports.handler = async function(event, context) {
     const espnByTeams = parseEspn(json);
     const now = Date.now();
 
+    if (qp.raw === 'unmapped') {
+      const seen={};
+      (json.events||[]).forEach(ev=>{
+        const comp=(ev.competitions&&ev.competitions[0]); if(!comp)return;
+        (comp.competitors||[]).forEach(c=>{
+          const en=((c.team&&(c.team.displayName||c.team.name))||'').trim();
+          if(en && EN_TEAM[en]===undefined) seen[en]=(seen[en]||0)+1;
+        });
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ unmapped:Object.keys(seen), note:'Ezek az ESPN-nevek NINCSENEK a terkepben - HU forditas nelkul maradnak, igy nem parosulnak a menetrendhez. Ures tomb = minden rendben.' }, null, 2) };
+    }
     if (qp.raw === 'espn') {
       return { statusCode: 200, headers, body: JSON.stringify({ espnEvents:(json.events||[]).length, parsed: espnByTeams }, null, 2) };
     }
